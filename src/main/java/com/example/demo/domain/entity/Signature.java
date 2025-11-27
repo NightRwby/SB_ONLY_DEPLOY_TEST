@@ -3,6 +3,7 @@ package com.example.demo.domain.entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -15,6 +16,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Entity
 @Builder
+@Table(name="Signature")
 public class Signature {
     @Id
     @Column(name="signKey")

@@ -1,0 +1,1564 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>SNS 메신저 - 마이페이지</title>
+
+    <!-- 공용 CSS -->
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/myPage.css}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+<body>
+<div th:replace="~{fragments/header :: headerFragment}"></div>
+<div class="page-wrap">
+    <!-- ===== 메인 3컬럼 ===== -->
+    <div class="main-row">
+        <!-- LEFT -->
+        <div class="col-left">
+            <aside class="side">
+                <div class="inner">
+                    <div class="menu-title">마이 메뉴</div>
+                    <div class="menu">
+                        <button class="menu-btn active" data-target="section-profile">프로필</button>
+                        <button class="menu-btn" data-target="section-security">계정/보안</button>
+                        <button class="menu-btn" data-target="section-noti">알림 설정</button>
+                        <button class="menu-btn" data-target="section-privacy">개인정보/차단</button>
+                        <button class="menu-btn" data-target="section-content">게시물 관리</button>
+                        <button class="menu-btn" data-target="section-saved">스크랩/저장함</button>
+                        <button class="menu-btn" data-target="section-devices">기기/세션</button>
+                        <button class="menu-btn" data-target="section-data">데이터/백업</button>
+                        <button class="menu-btn" data-target="section-settings">앱 설정</button>
+                        <button class="menu-btn business-only" data-target="section-business">비즈니스 설정</button>
+                    </div>
+                </div>
+            </aside>
+        </div>
+
+        <!-- MAIN -->
+        <div class="col-main">
+            <main class="stack">
+                <section class="top-comu">
+                    <div class="top-text">
+                        <h1>마이 페이지 <span class="muted mode-hint" id="modeHint">(일상모드)</span></h1>
+                    </div>
+                    <div class="mode-toggle" role="tablist" aria-label="모드 전환">
+                        <button id="btnPersonal" class="on" aria-selected="true">일상 모드</button>
+                        <button id="btnBusiness" aria-selected="false">비즈니스 모드</button>
+                    </div>
+                </section>
+
+                <!-- 프로필 -->
+                <section id="section-profile" class="card">
+                    <h2>프로필</h2>
+                    <div class="grid-2">
+                        <div>
+                            <label class="tool-label">배경 이미지</label>
+                            <img id="bannerPreview" class="banner" alt="banner"/>
+                            <div class="row" style="margin-top:8px;">
+                                <input type="file" id="bannerInput" accept="image/*"/>
+                                <button class="btn gray" id="bannerClear">초기화</button>
+                            </div>
+                        </div>
+                        <div class="avatar-wrap">
+                            <div>
+                                <img id="avatarPreview" class="avatar" alt="avatar"/>
+                                <div class="row" style="margin-top:8px;">
+                                    <input type="file" id="avatarInput" accept="image/*"/>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="tool-label" for="nickname">닉네임</label>
+                                <input id="nickname" class="tool-input" placeholder="닉네임"/>
+                                <div style="height:8px;"></div>
+                                <label class="tool-label" for="statusMsg">상태 메시지</label>
+                                <input id="statusMsg" class="tool-input" placeholder="한 줄 소개"/>
+                                <div style="height:8px;"></div>
+                                <label class="tool-label" for="profileBio">소개</label>
+                                <textarea id="profileBio" class="tool-area" rows="4"
+                                          placeholder="자기소개를 적어주세요."></textarea>
+                                <div class="row" style="margin-top:10px; gap:8px;">
+                                    <button class="btn" id="saveProfile">프로필 저장</button>
+                                    <button class="btn ghost" id="copyProfile">프로필 링크 복사</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 계정/보안 -->
+                <section id="section-security" class="card" hidden>
+                    <h2>계정/보안</h2>
+                    <div class="grid-3">
+                        <div>
+                            <label class="tool-label">이메일</label>
+                            <input id="email" class="tool-input" type="email" placeholder="you@example.com"/>
+                        </div>
+                        <div>
+                            <label class="tool-label">전화번호</label>
+                            <input id="phone" class="tool-input" type="tel" placeholder="010-0000-0000"/>
+                        </div>
+                        <div>
+                            <label class="tool-label">계정 상태</label>
+                            <input class="tool-input" value="정상" disabled/>
+                        </div>
+                    </div>
+
+                    <div style="height:12px;"></div>
+                    <div class="grid-2">
+                        <div class="card sub-card">
+                            <h3>비밀번호 변경</h3>
+                            <label class="tool-label">현재 비밀번호</label>
+                            <input id="pwCurrent" class="tool-input" type="password"/>
+                            <label class="tool-label" style="margin-top:8px;">새 비밀번호</label>
+                            <input id="pwNew" class="tool-input" type="password"/>
+                            <label class="tool-label" style="margin-top:8px;">새 비밀번호 확인</label>
+                            <input id="pwNew2" class="tool-input" type="password"/>
+                            <div class="row" style="margin-top:10px;">
+                                <button class="btn" id="changePw">변경</button>
+                            </div>
+                        </div>
+                        <div class="card sub-card">
+                            <h3>2단계 인증(2FA)</h3>
+                            <div class="row">
+                                <div id="twoFA" class="switch" role="switch" aria-checked="false" tabindex="0">
+                                </div>
+                                <span class="muted">앱/문자 기반 인증</span>
+                            </div>
+                            <div class="row" style="margin-top:8px; gap:8px;">
+                                <button class="btn gray" id="viewBackupCodes">백업 코드 보기</button>
+                                <button class="btn ghost" id="regenBackupCodes">백업 코드 재발급</button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 알림 설정 -->
+                <section id="section-noti" class="card" hidden>
+                    <h2>알림 설정</h2>
+                    <div class="list" id="notiList">
+                        <div class="item">
+                            <div>
+                                <div><strong>메시지 알림</strong></div>
+                                <div class="muted">1:1, 그룹, 멘션</div>
+                            </div>
+                            <div class="row">
+                                <div id="swMsg" class="switch" role="switch" aria-checked="true" tabindex="0"></div>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div>
+                                <div><strong>댓글/답글 알림</strong></div>
+                                <div class="muted">내 글/스크랩 활동</div>
+                            </div>
+                            <div class="row">
+                                <div id="swReply" class="switch" role="switch" aria-checked="true" tabindex="0">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div>
+                                <div><strong>마감 임박(업무)</strong><span class="tag">business</span></div>
+                                <div class="muted">프로젝트/할 일 Due Soon</div>
+                            </div>
+                            <div class="row">
+                                <div id="swDue" class="switch" role="switch" aria-checked="true" tabindex="0"></div>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div>
+                                <div><strong>마케팅/이벤트</strong></div>
+                                <div class="muted">프로모션/소식</div>
+                            </div>
+                            <div class="row">
+                                <div id="swPromo" class="switch" role="switch" aria-checked="false" tabindex="0">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top:12px;">
+                        <button class="btn" id="saveNoti">저장</button>
+                    </div>
+                </section>
+
+                <!-- 개인정보/차단 -->
+                <section id="section-privacy" class="card" hidden>
+                    <h2>개인정보/차단</h2>
+                    <div class="grid-3">
+                        <div>
+                            <label class="tool-label">프로필 공개 범위</label>
+                            <select id="visibility" class="tool-select">
+                                <option value="public">전체공개</option>
+                                <option value="friends">친구만</option>
+                                <option value="private">비공개</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="tool-label">마지막 접속시간 표시</label>
+                            <select id="lastSeen" class="tool-select">
+                                <option value="on">표시</option>
+                                <option value="off">숨김</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="tool-label">읽음 확인(읽음 표시)</label>
+                            <select id="readReceipt" class="tool-select">
+                                <option value="on">사용</option>
+                                <option value="off">미사용</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="height:12px;"></div>
+                    <div class="card sub-card">
+                        <div class="row" style="justify-content:space-between;">
+                            <h3>차단 목록</h3>
+                            <div class="row">
+                                <div class="block-search-wrap">
+                                    <input id="blockInput" class="tool-input" placeholder="@사용자ID" style="width:200px;">
+                                    <button class="btn gray" id="blockAdd">차단</button>
+
+                                    <div id="search-results-container" class="friend-list-box">
+                                        <div id="block-search-results-list"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="block-list-container" class="list" style="margin-top:8px;"></div>
+                    </div>
+                </section>
+
+                <!-- 게시물 관리 (CRUD 추가) -->
+                <section id="section-content" class="card" hidden>
+                    <h2>게시물 관리</h2>
+                    <div class="grid-2">
+                        <div>
+                            <div class="row row-between">
+                                <h3>내가 쓴 글</h3>
+                                <button class="btn ghost btn-sm" id="addPostBtn">글 추가</button>
+                            </div>
+                            <div id="myPosts" class="list"></div>
+                        </div>
+                        <div>
+                            <h3>내 댓글</h3>
+                            <div id="myComments" class="list"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 스크랩/저장함 -->
+                <section id="section-saved" class="card" hidden>
+                    <h2>스크랩/저장함</h2>
+                    <div id="savedWrap" class="grid-3"></div>
+                    <div class="row" style="margin-top:12px;">
+                        <button class="btn ghost" id="clearSaved">저장함 비우기</button>
+                    </div>
+                </section>
+
+                <!-- 기기/세션 -->
+                <section id="section-devices" class="card" hidden>
+                    <h2>기기/세션</h2>
+                    <div id="deviceList" class="list"></div>
+                    <div class="row" style="margin-top:12px; gap:8px;">
+                        <button class="btn ghost" id="logoutOthers">다른 기기 모두 로그아웃</button>
+                        <button class="btn danger" id="logoutAll">모든 기기 로그아웃</button>
+                    </div>
+                </section>
+
+                <!-- 데이터/백업 -->
+                <section id="section-data" class="card" hidden>
+                    <div id="quit-error-message" style="color: red; margin-bottom: 15px;"></div>
+                    <h2>데이터/백업</h2>
+                    <div class="grid-2">
+                        <div class="card sub-card">
+                            <h3>데이터 내보내기</h3>
+                            <div class="muted">내 게시물/댓글/프로필 설정을 JSON으로 다운로드</div>
+                            <div class="row" style="margin-top:10px;">
+                                <button class="btn" id="exportData">JSON 다운로드</button>
+                            </div>
+                        </div>
+                        <div class="card sub-card">
+                            <h3>계정 삭제</h3>
+                            <div class="muted">계정 및 모든 데이터가 영구 삭제됩니다. 복구할 수 없습니다.</div>
+
+                            <form id="quitForm" action="/quit" method="POST" style="margin-top:10px;">
+                                <div class="stack" style="gap:8px;">
+                                    <label class="tool-label" for="quitPassword">비밀번호 확인</label>
+                                    <input id="quitPassword" name="password" class="tool-input" type="password"
+                                           placeholder="비밀번호를 입력하세요" required>
+
+                                    <input type="hidden" name="agreed" value="true">
+
+                                    <div class="row" style="margin-top:10px; justify-content:flex-end;">
+                                        <button type="button" class="btn danger" id="deleteAccount">계정 삭제</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 앱 설정 -->
+                <section id="section-settings" class="card" hidden>
+                    <h2>앱 설정</h2>
+
+                    <div class="grid-3">
+                        <div>
+                            <label class="tool-label">언어</label>
+                            <select id="lang" class="tool-select">
+                                <option value="ko">한국어</option>
+                                <option value="en">English</option>
+                                <option value="ja">日本語</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="tool-label">테마</label>
+                            <select id="theme" class="tool-select">
+                                <option value="light">라이트</option>
+                                <option value="dark">다크</option>
+                                <option value="system">시스템 자동</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="tool-label">알림음</label>
+                            <select id="sound" class="tool-select">
+                                <option value="default">기본</option>
+                                <option value="soft">부드럽게</option>
+                                <option value="pop">팝</option>
+                                <option value="mute">무음</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="height:12px;"></div>
+
+                    <div class="grid-3">
+                        <div class="switch-row">
+                            <div>
+                                <strong>컴팩트 모드</strong>
+                                <div class="muted">여백을 줄여 더 많은 정보를 한 화면에</div>
+                            </div>
+                            <div id="compactMode" class="switch" role="switch" aria-checked="false" tabindex="0">
+                            </div>
+                        </div>
+                        <div class="switch-row">
+                            <div>
+                                <strong>링크 프리뷰</strong>
+                                <div class="muted">URL 자동 미리보기 카드 표시</div>
+                            </div>
+                            <div id="linkPreview" class="switch" role="switch" aria-checked="true" tabindex="0">
+                            </div>
+                        </div>
+                        <div class="switch-row">
+                            <div>
+                                <strong>미디어 자동재생</strong>
+                                <div class="muted">타임라인 동영상/음성 자동 재생</div>
+                            </div>
+                            <div id="autoplayMedia" class="switch" role="switch" aria-checked="false" tabindex="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="height:12px;"></div>
+
+                    <div class="grid-3">
+                        <div>
+                            <label class="tool-label">채팅 글꼴 크기</label>
+                            <select id="fontSize" class="tool-select">
+                                <option value="14">작게 (14px)</option>
+                                <option value="16" selected>보통 (16px)</option>
+                                <option value="18">크게 (18px)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="tool-label">시간 표기</label>
+                            <select id="timeFormat" class="tool-select">
+                                <option value="24h">24시간제</option>
+                                <option value="12h">12시간제</option>
+                            </select>
+                        </div>
+                        <div class="switch-row">
+                            <div>
+                                <strong>데이터 세이버</strong>
+                                <div class="muted">모바일에서 이미지/동영상 저용량 전송</div>
+                            </div>
+                            <div id="dataSaver" class="switch" role="switch" aria-checked="false" tabindex="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="height:12px;"></div>
+
+                    <div class="range-row">
+                        <label class="tool-label" for="volume" style="margin:0;">알림음 볼륨</label>
+                        <input id="volume" type="range" min="0" max="100" step="5" value="70"/>
+                        <span id="volumeVal" class="muted">70%</span>
+                    </div>
+
+                    <div class="row" style="margin-top:12px;">
+                        <button class="btn" id="saveApp">설정 저장</button>
+                    </div>
+                </section>
+
+                <!-- 비즈니스 설정 -->
+                <section id="section-business" class="card" hidden>
+                    <h2>비즈니스 설정</h2>
+                    <div class="grid-3">
+                        <div>
+                            <label class="tool-label">근무 상태</label>
+                            <select id="workStatus" class="tool-select">
+                                <option value="available">업무 가능</option>
+                                <option value="focus">집중 모드</option>
+                                <option value="away">자리비움</option>
+                                <option value="off">오프라인</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="tool-label">근무시간</label>
+                            <input id="workHours" class="tool-input" placeholder="09:00~18:00"/>
+                        </div>
+                        <div>
+                            <label class="tool-label">자동 회의 상태 전환</label>
+                            <select id="autoMeeting" class="tool-select">
+                                <option value="on">사용</option>
+                                <option value="off">미사용</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row" style="margin-top:12px;">
+                        <button class="btn" id="saveBiz">저장</button>
+                    </div>
+                </section>
+            </main>
+        </div>
+
+        <!-- RIGHT -->
+        <div class="col-right">
+            <aside class="side widget">
+                <div class="inner">
+                    <div class="menu-title">내 활동 요약</div>
+                    <div class="kpi">
+                        <div class="box">
+                            <div class="muted">이번주 메시지</div>
+                            <div class="num" id="kpiMsg">0</div>
+                        </div>
+                        <div class="box">
+                            <div class="muted">이번주 멘션</div>
+                            <div class="num" id="kpiMention">0</div>
+                        </div>
+                        <div class="box">
+                            <div class="muted">나의 글</div>
+                            <div class="num" id="kpiPosts">0</div>
+                        </div>
+                        <div class="box">
+                            <div class="muted">스크랩</div>
+                            <div class="num" id="kpiSaved">0</div>
+                        </div>
+                    </div>
+                    <div style="height:12px;"></div>
+                    <div class="card sub-card">
+                        <div><strong>앱 버전</strong></div>
+                        <div class="muted">v1.12.0</div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+</div>
+
+<!-- 토스트 -->
+<div id="toast" class="toast">저장되었습니다.</div>
+
+<!-- 게시물 CRUD 모달 -->
+<div class="modal-backdrop" id="postModalBackdrop" role="dialog" aria-modal="true">
+    <div class="modal-sm">
+        <div class="modal-header">
+            <div class="modal-title" id="postModalTitle">글 추가</div>
+            <button class="btn ghost btn-sm" id="closePostModal">닫기</button>
+        </div>
+        <div class="modal-body">
+            <label class="tool-label" for="postTitle">제목</label>
+            <input id="postTitle" class="tool-input" placeholder="제목을 입력하세요"/>
+
+            <label class="tool-label" for="postCat" style="margin-top:8px;">카테고리</label>
+            <select id="postCat" class="tool-select">
+                <option value="자유">자유</option>
+                <option value="모집">모집</option>
+                <option value="질문">질문</option>
+                <option value="정보">정보</option>
+            </select>
+
+            <label class="tool-label" for="postDate" style="margin-top:8px;">작성일</label>
+            <input id="postDate" type="date" class="tool-input"/>
+
+            <div class="grid-2" style="margin-top:8px;">
+                <div>
+                    <label class="tool-label" for="postLikes">좋아요</label>
+                    <input id="postLikes" type="number" min="0" class="tool-input" value="0"/>
+                </div>
+                <div>
+                    <label class="tool-label" for="postViews">조회수</label>
+                    <input id="postViews" type="number" min="0" class="tool-input" value="0"/>
+                </div>
+            </div>
+
+            <div class="row" style="margin-top:12px; justify-content:flex-end;">
+                <button class="btn" id="savePostModal">저장</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    // 1. [변수 선언] DOM 접근이 필요한 변수는 여기에 선언만 합니다.
+    let blockAdd; // DOMContentLoaded에서 할당
+    let blockSearchResultsList; // DOMContentLoaded에서 할당
+    let loggedInUserEmail = null; // DOMContentLoaded에서 값 할당
+    let selectedUserEmailsToBlock = []; // 차단한 유저의 리스트를 할당
+    let blockedUsersListContainer; // DOMContentLoaded에서 할당
+    let blockInput; // DOMContentLoaded에서 할당
+
+    const LS = {
+        MODE: "app.mode",
+        PROFILE: "my.profile",
+        NOTI: "my.noti",
+        PRIV: "my.privacy",
+        BLOCK: "my.block",
+        POSTS: "my.posts",
+        COMMENTS: "my.comments",
+        SAVED: "my.saved",
+        DEV: "my.devices",
+        APP: "my.appsettings",
+        BIZ: "my.biz",
+        TWOFA: "my.2fa",
+        BACKUP: "my.backupcodes"
+    };
+
+    const sections = [
+        'section-profile', 'section-security', 'section-noti', 'section-privacy',
+        'section-content', 'section-saved', 'section-devices', 'section-data', 'section-settings', 'section-business'
+    ];
+    const toast = document.getElementById('toast');
+    const menuButtons = document.querySelectorAll('.menu-btn');
+
+    // Top toggle
+    const btnPersonal = document.getElementById('btnPersonal');
+    const btnBusiness = document.getElementById('btnBusiness');
+    const modeHint = document.getElementById('modeHint');
+
+    // Profile
+    const avatarPreview = document.getElementById('avatarPreview');
+    const bannerPreview = document.getElementById('bannerPreview');
+    const avatarInput = document.getElementById('avatarInput');
+    const bannerInput = document.getElementById('bannerInput');
+    const bannerClear = document.getElementById('bannerClear');
+    const nickname = document.getElementById('nickname');
+    const statusMsg = document.getElementById('statusMsg'); // 버그 수정: 변수명 통일
+    const profileBio = document.getElementById('profileBio');
+    const btnSaveProfile = document.getElementById('saveProfile');
+    const copyProfile = document.getElementById('copyProfile');
+
+    // Security
+    const email = document.getElementById('email');
+    const phone = document.getElementById('phone');
+    const twoFA = document.getElementById('twoFA');
+    const changePw = document.getElementById('changePw');
+
+    // Noti
+    const swMsg = document.getElementById('swMsg');
+    const swReply = document.getElementById('swReply');
+    const swDue = document.getElementById('swDue');
+    const swPromo = document.getElementById('swPromo');
+    const saveNoti = document.getElementById('saveNoti');
+
+    // Privacy
+    const visibility = document.getElementById('visibility');
+    const lastSeen = document.getElementById('lastSeen');
+    const readReceipt = document.getElementById('readReceipt');
+    // const blockInput = document.getElementById('blockInput'); // 상단 let 선언으로 대체
+    const blockList = document.getElementById('blockList'); // Local Storage 기반이라 삭제할 수도 있지만, 일단 남겨둠
+
+    // Content
+    const myPosts = document.getElementById('myPosts');
+    const myComments = document.getElementById('myComments');
+    const addPostBtn = document.getElementById('addPostBtn');
+
+    // Saved
+    const savedWrap = document.getElementById('savedWrap');
+    const clearSaved = document.getElementById('clearSaved');
+
+    // Devices
+    const deviceList = document.getElementById('deviceList');
+    const logoutOthers = document.getElementById('logoutOthers');
+    const logoutAll = document.getElementById('logoutAll');
+
+    // App settings
+    const lang = document.getElementById('lang');
+    const theme = document.getElementById('theme');
+    const sound = document.getElementById('sound');
+    const compactMode = document.getElementById('compactMode');
+    const linkPreview = document.getElementById('linkPreview');
+    const autoplayMedia = document.getElementById('autoplayMedia');
+    const fontSize = document.getElementById('fontSize');
+    const timeFormat = document.getElementById('timeFormat');
+    const dataSaver = document.getElementById('dataSaver');
+    const volume = document.getElementById('volume');
+    const volumeVal = document.getElementById('volumeVal');
+    const saveApp = document.getElementById('saveApp');
+
+    // Biz
+    const workStatus = document.getElementById('workStatus');
+    const workHours = document.getElementById('workHours');
+    const autoMeeting = document.getElementById('autoMeeting');
+    const saveBiz = document.getElementById('saveBiz');
+
+    // KPI
+    const kpiMsg = document.getElementById('kpiMsg');
+    const kpiMention = document.getElementById('kpiMention');
+    const kpiPosts = document.getElementById('kpiPosts');
+    const kpiSaved = document.getElementById('kpiSaved');
+
+    // Post Modal
+    const postModalBackdrop = document.getElementById('postModalBackdrop');
+    const postModalTitle = document.getElementById('postModalTitle');
+    const closePostModal = document.getElementById('closePostModal');
+    const postTitle = document.getElementById('postTitle');
+    const postCat = document.getElementById('postCat');
+    const postDate = document.getElementById('postDate');
+    const postLikes = document.getElementById('postLikes');
+    const postViews = document.getElementById('postViews');
+    const savePostModal = document.getElementById('savePostModal');
+
+    // 차단 버튼 상태 업데이트 헬퍼
+    function updateBlockButtonStatus() {
+        if (blockAdd) {
+            if (selectedUserEmailsToBlock.length > 0) {
+                blockAdd.textContent = `${selectedUserEmailsToBlock.length}명 차단`;
+                blockAdd.disabled = false;
+            } else {
+                blockAdd.textContent = '차단 추가';
+                blockAdd.disabled = true;
+            }
+        }
+    }
+    // Helpers
+    const fmt = new Intl.NumberFormat();
+    const setSwitch = (el, on) => { el.classList.toggle('on', !!on); el.setAttribute('aria-checked', !!on); };
+    const getSwitch = (el) => el.classList.contains('on');
+    const toggleSwitch = (el) => setSwitch(el, !getSwitch(el));
+    const saveLS = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+    const getLS = (k, def) => {
+        try {
+            const v = JSON.parse(localStorage.getItem(k));
+            return v ?? def;
+        } catch { return def; }
+    };
+    const showToast = (t = "저장되었습니다.") => {
+        toast.textContent = t; toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 1600);
+    };
+    const fileToDataUrl = (file) => new Promise((res, rej) => {
+        const fr = new FileReader();
+        fr.onload = () => res(fr.result);
+        fr.onerror = rej;
+        fr.readAsDataURL(file);
+    });
+
+    // Mode
+    function applyMode(mode) {
+        document.body.dataset.mode = mode;
+        if (mode === 'business') {
+            btnBusiness.classList.add('on'); btnPersonal.classList.remove('on');
+            btnBusiness.setAttribute('aria-selected', 'true'); btnPersonal.setAttribute('aria-selected', 'false');
+            modeHint.textContent = '(비즈니스모드)';
+        } else {
+            btnPersonal.classList.add('on'); btnBusiness.classList.remove('on');
+            btnPersonal.setAttribute('aria-selected', 'true'); btnBusiness.setAttribute('aria-selected', 'false');
+            modeHint.textContent = '(일상모드)';
+        }
+        document.querySelectorAll('.business-only').forEach(el => {
+            el.style.display = (mode === 'business') ? 'block' : 'none';
+        });
+        saveLS(LS.MODE, mode);
+    }
+    btnPersonal.addEventListener('click', () => applyMode('personal'));
+    btnBusiness.addEventListener('click', () => applyMode('business'));
+// Nav
+    function showSection(id) {
+        sections.forEach(s => {
+            const el = document.getElementById(s);
+            if (el) el.hidden = (s !== id);
+        });
+        document.querySelectorAll('.menu-btn').forEach(b => {
+            b.classList.toggle('active', b.dataset.target === id);
+        });
+        location.hash = id;
+    }
+    menuButtons.forEach(b => b.addEventListener('click', () => showSection(b.dataset.target)));
+    window.addEventListener('hashchange', () => {
+        const id = location.hash.replace('#', ''); if (sections.includes(id)) showSection(id);
+    });
+
+    // Profile
+    function initProfile() {
+        const p = getLS(LS.PROFILE, {
+            nickname: "사용자",
+            statusMsg: "",
+            profileBio: "",
+            avatar: "",
+            banner: ""
+        });
+        nickname.value = p.nickname || "사용자";
+        statusMsg.value = p.statusMsg || "";
+        profileBio.value = p.profileBio || "";
+        avatarPreview.src = p.avatar || "./img/default-avatar.png";
+        bannerPreview.src = p.banner || "./img/default-banner.png";
+    }
+    avatarInput.addEventListener('change', async (e) => {
+        const f = e.target.files?.[0]; if (!f) return;
+        avatarPreview.src = await fileToDataUrl(f);
+    });
+    bannerInput.addEventListener('change', async (e) => {
+        const f = e.target.files?.[0]; if (!f) return;
+        bannerPreview.src = await fileToDataUrl(f);
+    });
+    bannerClear.addEventListener('click', () => {
+        bannerPreview.src = "./img/default-banner.png"; bannerInput.value = "";
+    });
+    btnSaveProfile.addEventListener('click', () => {
+        const p = {
+            nickname: (nickname.value || "").trim() || "사용자",
+            statusMsg: (statusMsg.value || "").trim(),
+            profileBio: (profileBio.value || "").trim(),
+            avatar: avatarPreview.src,
+            banner: bannerPreview.src,
+            email: (email?.value || "").trim(),
+            phone: (phone?.value || "").trim()
+        };
+        saveLS(LS.PROFILE, p); showToast();
+    });
+    copyProfile.addEventListener('click', async () => {
+        const url = location.origin + "/u/" + encodeURIComponent((nickname.value || "user").trim() || "user");
+        try { await navigator.clipboard.writeText(url); showToast("프로필 링크가 복사되었습니다."); }
+        catch { showToast("복사 실패. 직접 복사해 주세요."); }
+    });
+
+    // Security
+    function initSecurity() {
+        const p = getLS(LS.PROFILE, {});
+        email.value = p.email || "you@example.com";
+        phone.value = p.phone || "";
+        const two = getLS(LS.TWOFA, { enabled: false });
+        setSwitch(twoFA, !!two.enabled);
+    }
+    twoFA.addEventListener('click', () => toggleSwitch(twoFA));
+    twoFA.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSwitch(twoFA); } });
+    changePw.addEventListener('click', () => {
+        const cur = document.getElementById('pwCurrent').value;
+        const n1 = document.getElementById('pwNew').value;
+        const n2 = document.getElementById('pwNew2').value;
+        if (!cur || !n1 || !n2) { showToast("모든 비밀번호 필드를 입력하세요."); return; }
+        if (n1 !== n2) { showToast("새 비밀번호가 일치하지 않습니다."); return; }
+        if (n1.length < 8) { showToast("비밀번호는 8자 이상이어야 합니다."); return; }
+        document.getElementById('pwCurrent').value = "";
+        document.getElementById('pwNew').value = "";
+        document.getElementById('pwNew2').value = "";
+        showToast("비밀번호가 변경되었습니다. (모의)");
+    });
+    function genCodes(len = 6, n = 8) { return Array.from({ length: n }, () => Math.random().toString(36).slice(2, 2 + len).toUpperCase()); }
+    document.getElementById('viewBackupCodes').addEventListener('click', () => {
+        let codes = getLS(LS.BACKUP, null);
+        if (!codes) { codes = genCodes(); saveLS(LS.BACKUP, codes); }
+        alert("백업 코드\n\n" + codes.join("\n"));
+    });
+    document.getElementById('regenBackupCodes').addEventListener('click', () => {
+        const codes = genCodes(); saveLS(LS.BACKUP, codes); showToast("새 백업 코드가 발급되었습니다.");
+    });
+
+    // Noti
+    function initNoti() {
+        const cfg = getLS(LS.NOTI, { msg: true, reply: true, due: true, promo: false });
+        setSwitch(swMsg, cfg.msg); setSwitch(swReply, cfg.reply); setSwitch(swDue, cfg.due); setSwitch(swPromo, cfg.promo);
+    }
+    saveNoti.addEventListener('click', () => {
+        const cfg = { msg: getSwitch(swMsg), reply: getSwitch(swReply), due: getSwitch(swDue), promo: getSwitch(swPromo) };
+        saveLS(LS.NOTI, cfg); showToast();
+    });
+
+    // Privacy
+    function initPrivacy() {
+        const pv = getLS(LS.PRIV, { visibility: 'public', lastSeen: 'on', readReceipt: 'on' });
+        visibility.value = pv.visibility; lastSeen.value = pv.lastSeen; readReceipt.value = pv.readReceipt;
+    }
+
+
+    // 4. [추가] 사용자 검색 API 호출 함수
+    // BlockRequest.java, UserSearchDto.java 구조 참고
+    function fetchUserListToBlock(query) {
+        if (!loggedInUserEmail) {
+            console.error("로그인된 사용자 이메일을 알 수 없습니다.");
+            return;
+        }
+        if (query.length < 2) { // 최소 2글자 이상 입력 시 검색 권장
+            if (blockSearchResultsList) {
+                blockSearchResultsList.innerHTML = '<div class="info-message">최소 2글자 이상 입력해주세요.</div>';
+                blockSearchResultsList.style.display = 'block';
+            }
+            return;
+        }
+
+        if (blockSearchResultsList) {
+            blockSearchResultsList.style.display = 'block';
+            blockSearchResultsList.innerHTML = '<div class="info-message">검색 중...</div>';
+        }
+
+        // UsersSearchController.java의 GET /api/user/search?query={query} 호출
+        fetch(`/api/user/search?query=${encodeURIComponent(query)}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`API 호출 실패: 상태 코드 ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (Array.isArray(data)) {
+                    // 로그인된 사용자 제외 필터링
+                    const filteredUsers = data.filter(user => user.email !== loggedInUserEmail);
+                    renderBlockSearchList(filteredUsers);
+                } else {
+                    console.error("검색 결과가 배열이 아닙니다:", data);
+                    if (blockSearchResultsList) {
+                        blockSearchResultsList.innerHTML = '<div class="info-message">검색 결과 로드 실패.</div>';
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('사용자 검색 오류:', error);
+                if (blockSearchResultsList) {
+                    blockSearchResultsList.innerHTML = `<div class="info-message">오류 발생: ${error.message}</div>`;
+                }
+            });
+    }
+
+    // 5. [수정] 검색 결과 렌더링 (체크박스 기반 다중 선택 지원)
+    function renderBlockSearchList(users) {
+        if (!blockSearchResultsList) return;
+
+        if (users.length === 0) {
+            blockSearchResultsList.innerHTML = '<div class="info-message">검색 결과가 없습니다.</div>';
+            return;
+        }
+
+        blockSearchResultsList.innerHTML = users.map(user => {
+            const displayName = user.userName || user.email.split('@')[0];
+            // 현재 선택된 상태인지 확인 (다시 렌더링될 때 체크 상태 유지)
+            const isSelected = selectedUserEmailsToBlock.includes(user.email) ? 'checked' : '';
+
+            return `
+            <label class="search-result-item item block-checkbox-item" data-email="${user.email}">
+                <div class="avatar">${displayName.charAt(0)}</div>
+                <div class="info">
+                    <div class="name" title="${displayName}">${displayName}</div>
+                    <div class="email" title="${user.email}">${user.email}</div>
+                </div>
+
+                <input type="checkbox" class="block-checkbox" data-email="${user.email}" ${isSelected}>
+            </label>`;
+        }).join('');
+
+        // 체크박스 이벤트 리스너 연결
+        blockSearchResultsList.querySelectorAll('.block-checkbox').forEach(checkbox => {
+            checkbox.onchange = (e) => {
+                const email = checkbox.dataset.email;
+
+                if (checkbox.checked) {
+                    // 선택 추가
+                    if (!selectedUserEmailsToBlock.includes(email)) {
+                        selectedUserEmailsToBlock.push(email);
+                    }
+                } else {
+                    // 선택 제거
+                    const index = selectedUserEmailsToBlock.indexOf(email);
+                    if (index > -1) {
+                        selectedUserEmailsToBlock.splice(index, 1);
+                    }
+                }
+                updateBlockButtonStatus(); // 버튼 상태 업데이트
+            };
+        });
+
+        // 검색 결과 창 닫기 로직은 유지하거나 필요에 따라 수정
+        if (blockInput) {
+            blockInput.onblur = () => {
+                setTimeout(() => {
+                    // UX를 위해 자동 닫기는 하지 않고 선택 상태만 유지합니다.
+                }, 150);
+            };
+        }
+    }
+
+
+    // ===== 게시물 CRUD =====
+    let postData = [];
+    let commentData = [];
+    let editingPostIndex = null;
+
+    function loadPosts() {
+        postData = getLS(LS.POSTS, [
+            { id: 101, title: "첫 글 인사드립니다", date: "2025-10-20", cat: "자유", likes: 12, views: 320 },
+            { id: 102, title: "사이드 프로젝트 팀 구합니다", date: "2025-10-23", cat: "모집", likes: 8, views: 210 }
+        ]);
+        commentData = getLS(LS.COMMENTS, [
+            { id: 201, post: "핫이슈] 오늘 경기 어땠나", date: "2025-10-24", text: "후반 교체가 아쉬움" },
+            { id: 202, post: "정보공유] VSCode 단축키", date: "2025-10-22", text: "유용합니다!" }
+        ]);
+    }
+
+    function savePosts() {
+        saveLS(LS.POSTS, postData);
+        saveLS(LS.COMMENTS, commentData);
+    }
+
+    function renderPosts() {
+        myPosts.innerHTML = "";
+        if (!postData.length) {
+            myPosts.innerHTML = `<div class="empty">작성한 글이 없습니다.</div>`;
+        } else {
+            postData.forEach((p, idx) => {
+                const row = document.createElement('div');
+                row.className = 'item';
+                row.innerHTML = `
+        <div>
+          <div><strong>[${p.cat}] ${p.title}</strong></div>
+          <div class="muted">${p.date || "-"} ·  ${p.likes ?? 0} ·  ${p.views ?? 0}</div>
+        </div>
+        <div class="row">
+          <button class="btn gray btn-sm" data-action="edit" data-idx="${idx}">수정</button>
+          <button class="btn danger btn-sm" data-action="del" data-idx="${idx}">삭제</button>
+        </div>`;
+                row.querySelector('[data-action="del"]').addEventListener('click', () => {
+                    if (!confirm("이 글을 삭제할까요?")) return;
+                    postData.splice(idx, 1);
+                    savePosts();
+                    renderPosts();
+                    updateKpi();
+                    showToast("삭제되었습니다.");
+                });
+                row.querySelector('[data-action="edit"]').addEventListener('click', () => {
+                    openPostModal('edit', idx);
+                });
+                myPosts.appendChild(row);
+            });
+        }
+
+        // 댓글 렌더
+        myComments.innerHTML = "";
+        if (!commentData.length) {
+            myComments.innerHTML = `<div class="empty">작성한 댓글이 없습니다.</div>`;
+        } else {
+            commentData.forEach((c, idx) => {
+                const row = document.createElement('div');
+                row.className = 'item';
+                row.innerHTML = `
+        <div>
+          <div><strong>${c.post}</strong></div>
+          <div class="muted">${c.date}</div>
+          <div>${c.text}</div>
+        </div>
+        <div class="row">
+          <button class="btn danger btn-sm" data-idx="${idx}">삭제</button>
+        </div>`;
+                row.querySelector('button').addEventListener('click', () => {
+                    if (!confirm("이 댓글을 삭제할까요?")) return;
+                    commentData.splice(idx, 1);
+                    savePosts();
+                    renderPosts();
+                    showToast("삭제되었습니다.");
+                });
+                myComments.appendChild(row);
+            });
+        }
+
+        updateKpi();
+    }
+
+    function openPostModal(mode = 'add', index = null) {
+        editingPostIndex = (mode === 'edit') ? index : null;
+        if (mode === 'edit' && postData[index]) {
+            const p = postData[index];
+            postModalTitle.textContent = "글 수정";
+            postTitle.value = p.title || "";
+            postCat.value = p.cat || "자유";
+            postDate.value = p.date || new Date().toISOString().slice(0, 10);
+            postLikes.value = p.likes ?? 0;
+            postViews.value = p.views ?? 0;
+        } else {
+            postModalTitle.textContent = "글 추가";
+            postTitle.value = "";
+            postCat.value = "자유";
+            postDate.value = new Date().toISOString().slice(0, 10);
+            postLikes.value = 0;
+            postViews.value = 0;
+        }
+        postModalBackdrop.style.display = 'flex';
+        postTitle.focus();
+    }
+
+    function closePostModalFn() {
+        postModalBackdrop.style.display = 'none';
+    }
+
+    addPostBtn.addEventListener('click', () => openPostModal('add'));
+    closePostModal.addEventListener('click', closePostModalFn);
+    postModalBackdrop.addEventListener('click', (e) => {
+        if (e.target === postModalBackdrop) closePostModalFn();
+    });
+
+    savePostModal.addEventListener('click', () => {
+        const title = (postTitle.value || "").trim();
+        if (!title) { showToast("제목을 입력해 주세요."); postTitle.focus(); return; }
+        const cat = postCat.value || "자유";
+        const date = postDate.value || new Date().toISOString().slice(0, 10);
+        const likes = Math.max(0, Number(postLikes.value || 0));
+        const views = Math.max(0, Number(postViews.value || 0));
+
+        if (editingPostIndex === null) {
+            const newId = (postData[0]?.id || 100) + 1;
+            postData.unshift({ id: newId, title, cat, date, likes, views });
+        } else {
+            const p = postData[editingPostIndex];
+            postData[editingPostIndex] = { ...p, title, cat, date, likes, views };
+        }
+        savePosts();
+        renderPosts();
+        closePostModalFn();
+        showToast("저장되었습니다.");
+    });
+
+    function initContent() {
+        loadPosts();
+        renderPosts();
+    }
+
+    // Saved
+    function initSaved() {
+        const saved = getLS(LS.SAVED, [
+            { id: 301, title: "개발자 밈 모음 10선", cat: "유머/밈" },
+            { id: 302, title: "핫딜 모음(테크)", cat: "정보공유" },
+            { id: 303, title: "구미 카페 추천 루트", cat: "후기/리뷰" }
+        ]);
+        savedWrap.innerHTML = "";
+        if (!saved.length) {
+            savedWrap.innerHTML = `<div class="empty" style="grid-column:1/-1;">저장된 항목이 없습니다.</div>`;
+        } else {
+            saved.forEach((s, idx) => {
+                const card = document.createElement('div');
+                card.className = 'card sub-card';
+                card.innerHTML = `
+        <div><strong>${s.title}</strong> <span class="tag">${s.cat}</span></div>
+        <div class="row" style="margin-top:8px; gap:8px;">
+          <button class="btn gray btn-sm" data-idx="${idx}">열기</button>
+          <button class="btn danger btn-sm" data-del="${idx}">삭제</button>
+        </div>`;
+                card.querySelector('[data-idx]').addEventListener('click', () => showToast("페이지로 이동(모의)"));
+                card.querySelector('[data-del]').addEventListener('click', () => {
+                    const cur = getLS(LS.SAVED, []); cur.splice(idx, 1); saveLS(LS.SAVED, cur); initSaved(); showToast("삭제되었습니다.");
+                });
+                savedWrap.appendChild(card);
+            });
+        }
+        const savedNow = getLS(LS.SAVED, saved);
+        kpiSaved.textContent = savedNow.length;
+    }
+    clearSaved?.addEventListener('click', () => { saveLS(LS.SAVED, []); initSaved(); showToast("저장함이 비워졌습니다."); });
+
+    // Devices
+    function initDevices() {
+        const devs = getLS(LS.DEV, [
+            { id: "web-1", name: "Chrome on Windows", ip: "123.45.67.8", last: "2025-10-31 18:20" },
+            { id: "ios-1", name: "iPhone iOS 17", ip: "123.45.67.9", last: "2025-10-31 08:12" }
+        ]);
+        deviceList.innerHTML = "";
+        devs.forEach((d, idx) => {
+            const row = document.createElement('div'); row.className = 'item';
+            row.innerHTML = `
+      <div>
+        <div><strong>${d.name}</strong></div>
+        <div class="muted">${d.ip} · 마지막 활동 ${d.last}</div>
+      </div>
+      <div class="row"><button class="btn danger btn-sm" data-idx="${idx}">로그아웃</button></div>`;
+            row.querySelector('button').addEventListener('click', () => {
+                const cur = getLS(LS.DEV, []); cur.splice(idx, 1); saveLS(LS.DEV, cur); initDevices(); showToast("해당 기기에서 로그아웃되었습니다.");
+            });
+            deviceList.appendChild(row);
+        });
+
+        // 대충 KPI용 더미 수치
+        kpiMsg.textContent = fmt.format(128);
+        kpiMention.textContent = fmt.format(6);
+    }
+    logoutOthers?.addEventListener('click', () => {
+        const devs = getLS(LS.DEV, []); saveLS(LS.DEV, devs.slice(0, 1)); initDevices(); showToast("다른 기기에서 로그아웃되었습니다.");
+    });
+    logoutAll?.addEventListener('click', () => {
+        saveLS(LS.DEV, []); initDevices(); showToast("모든 기기에서 로그아웃되었습니다.");
+    });
+
+    // Data export / delete
+    document.getElementById('exportData').addEventListener('click', () => {
+        const dump = {
+            profile: getLS(LS.PROFILE, {}),
+            noti: getLS(LS.NOTI, {}),
+            privacy: getLS(LS.PRIV, {}),
+            block: getLS(LS.BLOCK, []),
+            posts: getLS(LS.POSTS, []),
+            comments: getLS(LS.COMMENTS, []),
+            saved: getLS(LS.SAVED, []),
+            devices: getLS(LS.DEV, []),
+            app: getLS(LS.APP, {}),
+            biz: getLS(LS.BIZ, {})
+        };
+        const blob = new Blob([JSON.stringify(dump, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = 'mydata.json'; a.click();
+        URL.revokeObjectURL(url);
+        showToast("JSON 다운로드 시작");
+    });
+    document.getElementById('deleteAccount').addEventListener('click', async () => {
+    const quitPassword = document.getElementById('quitPassword');
+    const password = quitPassword.value.trim();
+
+    // 1. 비밀번호 입력 확인
+    if (!password) {
+        showToast("비밀번호를 입력하세요.");
+        quitPassword.focus();
+        return;
+    }
+
+    // 2. 폼 데이터 생성
+    const formData = new URLSearchParams();
+    formData.append('password', password);
+    formData.append('agreed', 'true'); // QuitDto에서 동의 항목을 true로 받기 위함
+
+    try {
+        const response = await fetch('/quit/ajax', { // UserController의 신규 엔드포인트
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                // CSRF 토큰 처리가 필요하면 여기에 추가
+            },
+            body: formData
+        });
+
+        if (response.ok) {
+            // 성공 (HTTP 200) - 요청하신 흐름
+            alert("계정이 삭제되었습니다. 메인화면으로 이동합니다.");
+            window.location.href = "/main"; // 메인화면으로 리다이렉트
+        } else {
+            // 비밀번호 불일치 시 서버는 400 Bad Request (클라이언트 오류)를 반환합니다.
+            // 이는 의도된 동작이며, 콘솔에 400 에러가 뜨는 것은 정상입니다.
+            const errorMessage = await response.text();
+
+            // 팝업창 띄우기 (요청하신 흐름)
+            alert(errorMessage);
+
+            // 비밀번호 불일치 시 입력 필드 초기화 후 포커스 (화면 이동 없음)
+            quitPassword.value = '';
+            quitPassword.focus();
+        }
+    } catch (error) {
+        console.error('Fetch error:', error);
+        alert("네트워크 오류가 발생했습니다.");
+    }
+    });
+
+    // App settings
+    function applyTheme(val) {
+        if (val === 'dark') document.body.classList.add('dark');
+        else if (val === 'light') document.body.classList.remove('dark');
+        else {
+            const prefers = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            document.body.classList.toggle('dark', prefers);
+        }
+    }
+    function bindSwitch(el) {
+        el.addEventListener('click', () => toggleSwitch(el));
+        el.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSwitch(el); } });
+    }
+    [compactMode, linkPreview, autoplayMedia, dataSaver].forEach(el => el && bindSwitch(el));
+    if (volume && volumeVal) {
+        volume.addEventListener('input', () => volumeVal.textContent = `${volume.value}%`);
+    }
+    function initApp() {
+        const def = {
+            lang: 'ko', theme: 'light', sound: 'default',
+            compactMode: false, linkPreview: true, autoplayMedia: false,
+            fontSize: '16', timeFormat: '24h', dataSaver: false, volume: 70
+        };
+        const app = getLS(LS.APP, def);
+        lang.value = app.lang ?? def.lang;
+        theme.value = app.theme ?? def.theme;
+        sound.value = app.sound ?? def.sound;
+        setSwitch(compactMode, !!app.compactMode);
+        setSwitch(linkPreview, !!app.linkPreview);
+        setSwitch(autoplayMedia, !!app.autoplayMedia);
+        fontSize.value = app.fontSize ?? def.fontSize;
+        timeFormat.value = app.timeFormat ?? def.timeFormat;
+        setSwitch(dataSaver, !!app.dataSaver);
+        volume.value = Number(app.volume ?? def.volume);
+        volumeVal.textContent = `${volume.value}%`;
+        applyTheme(app.theme);
+        document.body.dataset.fontSize = app.fontSize;
+        document.body.classList.toggle('compact', !!app.compactMode);
+    }
+    saveApp.addEventListener('click', () => {
+        const app = {
+            lang: lang.value, theme: theme.value, sound: sound.value,
+            compactMode: getSwitch(compactMode),
+            linkPreview: getSwitch(linkPreview),
+            autoplayMedia: getSwitch(autoplayMedia),
+            fontSize: fontSize.value,
+            timeFormat: timeFormat.value,
+            dataSaver: getSwitch(dataSaver),
+            volume: Number(volume.value)
+        };
+        saveLS(LS.APP, app);
+        applyTheme(app.theme);
+        document.body.dataset.fontSize = app.fontSize;
+        document.body.classList.toggle('compact', !!app.compactMode);
+        showToast();
+    });
+
+    // Biz
+    function initBiz() {
+        const biz = getLS(LS.BIZ, { workStatus: 'available', workHours: '09:00~18:20', autoMeeting: 'on' });
+        workStatus.value = biz.workStatus; workHours.value = biz.workHours; autoMeeting.value = biz.autoMeeting;
+    }
+    saveBiz.addEventListener('click', () => {
+        const biz = { workStatus: workStatus.value, workHours: (workHours.value || "").trim(), autoMeeting: autoMeeting.value };
+        saveLS(LS.BIZ, biz); showToast();
+    });
+
+    function updateKpi() {
+        kpiPosts.textContent = postData.length;
+        const saved = getLS(LS.SAVED, []);
+        kpiSaved.textContent = saved.length;
+    }
+
+    // Boot
+    function boot() {
+        const mode = getLS(LS.MODE, 'personal'); applyMode(mode);
+        initProfile(); initSecurity(); initNoti(); initPrivacy();
+        initContent(); initSaved(); initDevices();
+        initApp(); initBiz();
+
+        // 차단 목록 초기 로드
+        fetchAndRenderBlockList();
+
+        document.querySelectorAll('.switch').forEach(sw => {
+            sw.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSwitch(sw); } });
+        });
+
+        const first = location.hash.replace('#', '');
+        showSection(sections.includes(first) ? first : 'section-profile');
+    }
+
+    // 종료시 일부 상태 저장
+    window.addEventListener('beforeunload', () => {
+        twoFA && saveLS(LS.TWOFA, { enabled: getSwitch(twoFA) });
+        const priv = { visibility: visibility.value, lastSeen: lastSeen.value, readReceipt: readReceipt.value };
+        saveLS(LS.PRIV, priv);
+        const profile = getLS(LS.PROFILE, {});
+        profile.email = (email.value || "").trim();
+        profile.phone = (phone.value || "").trim();
+        saveLS(LS.PROFILE, profile);
+    });
+
+    // ======================================================================
+    // 2. [차단 기능 API 함수 정의]
+    // ======================================================================
+
+    //6.차단요청
+    function blockUserRequest(targetUserEmail) {
+        return fetch('/api/block', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ targetUserEmail: targetUserEmail }),
+        })
+        .then(response => {
+            if (!response.ok) {
+                // 서버 오류 응답(4xx, 5xx) 처리
+                return response.json().then(err => {
+                    throw new Error(err.message || `${targetUserEmail} 님 차단 요청 실패`);
+                });
+            }
+            // 성공 시 성공 이메일 반환
+            return { email: targetUserEmail, status: 'success' };
+        })
+        .catch(error => {
+            // 네트워크 오류 처리
+            console.error(`차단 요청 중 오류 발생: ${targetUserEmail}`, error);
+            return { email: targetUserEmail, status: 'error', message: error.message };
+        });
+    }
+
+    //7.차단 해제 요청
+    function unblockUser(targetUserEmail,buttonElement){
+        fetch('/api/block',{
+            method:'DELETE',
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ targetUserEmail:targetUserEmail })
+        })
+        .then(response => {
+            if(!response.ok){
+                return response.json().then(err => {
+                    throw new Error(err.message || '차단 해제 요청 실패');
+                });
+            }
+            showToast(`${targetUserEmail}님의 차단이 해제되었습니다.`); // 성공 토스트
+
+            //목록 새로고침
+            fetchAndRenderBlockList();
+        })
+        .catch(error=> {
+            console.error('차단 해제 요청 실패 : ',error);
+            alert('차단 해제 요청 중 오류가 발생했습니다.');
+        });
+    }
+
+
+    //8.차단 목록을 DB에서 가져와서 렌더링하는 함수
+    function fetchAndRenderBlockList(){
+        fetch('/api/blocklist')
+            .then(res=>{
+                if(!res.ok){
+                    throw new Error(`목록 로드 실패 : ${res.status}`);}
+                    return res.json();})
+                 .then(data=>{
+                    renderBlockList(data || [] );})
+                 .catch(err=>{
+                    console.error(`차단 목록 로드 실패 :`,err);
+
+                    if(blockedUsersListContainer){
+                        blockedUsersListContainer.innerHTML ='<p style="color:red;">차단목록을 불러오는데 실패했습니다. (API 확인 필요)</p>';
+                        }
+                    });
+    }
+
+
+    //9.차단 목록을 HTML에 렌더링하는 함수
+    function renderBlockList(users) {
+        const container = blockedUsersListContainer;
+        if (!container) return;
+
+        container.innerHTML = '';
+
+        if (!users || users.length === 0) {
+            container.innerHTML = '<div class="empty" style="grid-column: 1 / -1;">차단된 사용자가 없습니다.</div>';
+            return;
+        }
+
+        // 목록 렌더링
+        const html = users.map(user => {
+            // 데이터 정규화 (DTO 구조에 따라 다를 수 있음)
+            const targetEmail = user.email || user.blockedUserEmail;
+            const targetName1 = user.userName || user.blockedUserNickname || targetEmail.split('@')[0];
+            const targetName2 = user.userName || user.blockedUserNickname || targetEmail.split('@')[0];
+            // 프로필 이미지가 있으면 URL, 없으면 null (백엔드에서 profileUrl을 준다면 사용)
+            const profileImgUrl = user.profileImageUrl || null;
+
+            return `
+            <div class="blocked-user-card" id="block-card-${targetEmail}">
+                <div class="blocked-card-avatar">
+                    ${getAvatarHtml(profileImgUrl, targetName1)}
+                </div>
+
+                <div class="blocked-card-info">
+                    <div class="blocked-card-name" title="${targetName2}">${targetName2}</div>
+                    <div class="blocked-card-email" title="${targetEmail}">${targetEmail}</div>
+                </div>
+
+                <button class="blocked-card-btn" onclick="handleClickUnblock('${targetEmail}')">
+                    해제
+                </button>
+            </div>`;
+        }).join('');
+
+        container.innerHTML = html;
+    }
+
+    // [Helper] 아바타 HTML 생성기 (이미지 vs 초성)
+    function getAvatarHtml(url, name) {
+        if (url) {
+            // 이미지가 있는 경우
+            return `<img src="${url}" alt="${name}" onerror="this.parentElement.innerText='${name.charAt(0)}'">`;
+        } else {
+            // 이미지가 없는 경우: 이름의 첫 글자(초성 느낌) 표시
+            return name ? name.charAt(0).toUpperCase() : '?';
+        }
+    }
+
+    // [Action] 차단 해제 버튼 클릭 핸들러
+    window.handleClickUnblock = function(email) {
+        if (confirm(`${email} 님의 차단을 해제하시겠습니까?`)) {
+            // 버튼 로딩 상태 표시 (선택 사항)
+            const card = document.getElementById(`block-card-${email}`);
+            if(card) card.style.opacity = '0.5';
+
+            // API 호출 (기존 unblockUser 함수 재활용 가능하지만, 여기서 직접 호출 flow)
+            fetch('/api/block', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ targetUserEmail: email })
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('해제 실패');
+                return res.text(); // or res.json()
+            })
+            .then(() => {
+                showToast('차단이 해제되었습니다.');
+                fetchAndRenderBlockList(); // 목록 새로고침
+
+                // 검색 결과도 달라질 수 있으므로, 검색창에 값이 있다면 재검색 트리거 가능
+                if(blockInput && blockInput.value.trim().length > 0) {
+                     fetchUserListToBlock(blockInput.value.trim());
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('오류가 발생했습니다.');
+                if(card) card.style.opacity = '1';
+            });
+        }
+    };
+
+    // ======================================================================
+    // 3. [DOM 로드 후 초기화 및 이벤트 등록]
+    // ======================================================================
+
+    document.addEventListener('DOMContentLoaded',function(){
+        // DOM 요소들을 DOMContentLoaded 내부에서 안전하게 할당
+        blockAdd = document.getElementById('blockAdd');
+        blockSearchResultsList = document.getElementById('search-results-container');
+        blockedUsersListContainer = document.getElementById('block-list-container');
+        blockInput = document.getElementById('blockInput');
+
+        // 로그인 사용자 이메일 값도 DOM이 로드된 후에 할당
+        const loggedInUserEmailEl = document.getElementById('loggedInUserEmail');
+        if (loggedInUserEmailEl) {
+            loggedInUserEmail = loggedInUserEmailEl.value;
+        } else {
+            // 디버깅을 위해 하드코딩 (운영 환경에서는 서버에서 이메일 값을 제공해야 함)
+            // console.error("loggedInUserEmail 요소를 찾을 수 없습니다. 로그인 사용자 이메일 필드가 HTML에 있는지 확인하세요.");
+            loggedInUserEmail = "debug@example.com"; // 임시값 할당
+        }
+
+
+        // 1.차단 추가버튼 클릭 이벤트
+        blockAdd.onclick = () => {
+            if (selectedUserEmailsToBlock.length > 0) {
+                const count = selectedUserEmailsToBlock.length;
+
+                if (!confirm(`선택된 ${count}명의 사용자를 차단하시겠습니까?`)) {
+                    return;
+                }
+
+                // 1. 요청할 이메일 목록 복사 및 전역 배열 즉시 초기화
+                const targetsToBlock = [...selectedUserEmailsToBlock];
+                selectedUserEmailsToBlock = [];
+                updateBlockButtonStatus(); // 버튼 UI 초기화 (예: 0명 차단, 비활성화)
+
+                // 2. 모든 차단 요청에 대한 Promise 배열 생성
+                const blockPromises = targetsToBlock.map(email => blockUserRequest(email));
+
+                // 3. 모든 요청이 완료될 때까지 기다림
+                Promise.all(blockPromises)
+                    .then(results => {
+                        const successfulBlocks = results.filter(r => r.status === 'success');
+                        // const failedBlocks = results.filter(r => r.status === 'error'); // 실패 사용자 확인용
+
+                        if (successfulBlocks.length > 0) {
+                            showToast(`총 ${successfulBlocks.length}명의 사용자를 차단했습니다.`);
+                            fetchAndRenderBlockList(); // 최종 목록 새로고침은 한 번만 수행
+                        }
+
+                        // 최종 UI 정리 작업: 모든 비동기 작업이 완료된 후 실행
+                        if (blockInput) {
+                            blockInput.value = ''; // Input 영역 비우기
+                        }
+                        if (blockSearchResultsList) {
+                            blockSearchResultsList.innerHTML = '';
+                            blockSearchResultsList.style.display = 'none'; // 검색 결과 숨기기
+                        }
+
+                    })
+                    .catch(error => {
+                        // Promise.all 내의 심각한 오류 처리
+                        console.error('차단 처리 중 알 수 없는 오류 발생:', error);
+                        showToast('차단 처리 중 알 수 없는 오류가 발생했습니다.', 'error');
+                    });
+
+            } else {
+                alert('차단할 사용자를 선택해 주세요.');
+            }
+        };
+        // 초기 버튼 상태 설정
+        updateBlockButtonStatus();
+
+
+        // 2.차단 대상 검색 인풋이벤트
+        if(blockInput){
+            blockInput.addEventListener('input',function(){
+                const inputValue = this.value.trim();
+
+                if(inputValue.length > 0){
+                    if(blockSearchResultsList){blockSearchResultsList.style.display = 'block'}
+                    fetchUserListToBlock(inputValue);
+                } else {
+                    if(blockSearchResultsList){
+                        blockSearchResultsList.style.display ='none';
+                        blockSearchResultsList.innerHTML='';
+                        }
+                    // 검색창 비우면 차단 버튼 초기화
+                    if(blockAdd){
+                        blockAdd.disabled = true;
+                        blockAdd.textContent = '차단 추가';
+                    }
+                }
+            });
+        }
+    });
+
+    // 4. Boot 함수에서 차단 목록 로드 함수 호출
+    function boot() {
+        const mode = getLS(LS.MODE, 'personal'); applyMode(mode);
+        initProfile(); initSecurity(); initNoti(); initPrivacy();
+        initContent(); initSaved(); initDevices();
+        initApp(); initBiz();
+
+        // 차단 목록 초기 로드
+        fetchAndRenderBlockList();
+
+        document.querySelectorAll('.switch').forEach(sw => {
+            sw.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSwitch(sw); } });
+        });
+
+        const first = location.hash.replace('#', '');
+        showSection(sections.includes(first) ? first : 'section-profile');
+    }
+
+    // 최종 boot() 호출은 스크립트의 가장 마지막에 유지
+    boot();
+</script>
+</body>
+
+</html>

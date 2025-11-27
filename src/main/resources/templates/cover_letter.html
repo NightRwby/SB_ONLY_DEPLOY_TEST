@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="ko"         xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>공지사항 - BlahBlah</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Main CSS -->
+    <link rel="stylesheet" th:href="@{/css/cover_letter.css}">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+
+</head>
+<body>
+
+<!--헤더-->
+<div th:replace="~{fragments/header :: headerFragment}"></div>
+
+<div class="main-layout">
+    <!-- LEFT: SIDE TABS -->
+    <aside class="side left-side">
+        <div class="side-tabs" id="sideTabs">
+            <div class="title">게시판</div>
+
+            <div class="tab" data-board="cover">
+                <span>자소서게시판</span><span class="count">12</span>
+            </div>
+            <ul class="sublist" data-sub="cover">
+                <li class="subitem" data-cat=""><span>전체</span><span class="chip">ALL</span></li>
+                <li class="subitem" data-cat="합격후기"><span>합격후기</span><span class="chip">#합격</span></li>
+                <li class="subitem" data-cat="불합격피드백"><span>불합격 피드백</span><span class="chip">#피드백</span></li>
+                <li class="subitem" data-cat="자소서템플릿"><span>자소서 템플릿</span><span class="chip">#템플릿</span></li>
+                <li class="subitem" data-cat="문항별예시"><span>문항별 예시</span><span class="chip">#STAR</span></li>
+                <li class="subitem" data-cat="경력기술서"><span>경력기술서</span><span class="chip">#이력</span></li>
+            </ul>
+
+            <div class="tab" data-board="tips">
+                <span>꿀팁게시판</span><span class="count">8</span>
+            </div>
+            <ul class="sublist" data-sub="tips">
+                <li class="subitem" data-filter="tips:면접"><span>면접 꿀팁 모음</span><span class="chip">#면접</span>
+                </li>
+                <li class="subitem" data-filter="tips:포트폴리오"><span>포트폴리오 가이드</span><span class="chip">#포폴</span>
+                </li>
+                <li class="subitem" data-filter="tips:자격증"><span>자격증 로드맵</span><span class="chip">#자격증</span>
+                </li>
+                <li class="subitem" data-filter="tips:AI도구"><span>AI 도구 활용</span><span class="chip">#툴</span>
+                </li>
+            </ul>
+
+            <div class="tab" data-board="free">
+                <span>자유게시판</span><span class="count">5</span>
+            </div>
+            <ul class="sublist" data-sub="free">
+                <li class="subitem" data-filter="free:잡담"><span>잡담 / 일상</span><span class="chip">#잡담</span></li>
+                <li class="subitem" data-filter="free:질문"><span>질문 있어요</span><span class="chip">#QnA</span></li>
+                <li class="subitem" data-filter="free:후기"><span>스터디/후기</span><span class="chip">#후기</span></li>
+            </ul>
+
+            <div class="tab" data-board="hot">
+                <span>핫이슈게시판</span><span class="count">6</span>
+            </div>
+            <ul class="sublist" data-sub="hot">
+                <li class="subitem" data-filter="hot:인기"><span>오늘의 인기글</span><span class="chip">Top</span></li>
+                <li class="subitem" data-filter="hot:급상승"><span>급상승 태그</span><span class="chip">🔥</span></li>
+                <li class="subitem" data-filter="hot:공지"><span>운영 공지</span><span class="chip">Notice</span></li>
+            </ul>
+        </div>
+    </aside>
+
+    <!-- CENTER: BOARD -->
+    <main>
+        <section class="top-comu">
+            <div class="top-text">
+                <h1 id="boardTitle">자소서 게시판</h1>
+            </div>
+        </section>
+
+        <section class="board-card" aria-label="검색 및 필터">
+            <form id="toolbarForm" class="toolbar" onsubmit="return false;">
+                <div class="tool-group">
+                    <label for="cat" class="tool-label">카테고리</label>
+                    <select id="cat" class="tool-select">
+                        <option value="">전체</option>
+                        <option value="합격후기">합격후기</option>
+                        <option value="불합격피드백">불합격피드백</option>
+                        <option value="자소서템플릿">자소서템플릿</option>
+                        <option value="문항별예시">문항별예시</option>
+                        <option value="경력기술서">경력기술서</option>
+                    </select>
+                </div>
+                <div class="tool-group wide">
+                    <label for="q" class="tool-label">검색</label>
+                    <input id="q" class="tool-input" placeholder="제목·내용·태그 검색" />
+                </div>
+                <div class="tool-group">
+                    <label for="sort" class="tool-label">정렬</label>
+                    <select id="sort" class="tool-select">
+                        <option value="latest">최신순</option>
+                        <option value="views">조회수순</option>
+                        <option value="likes">추천순</option>
+                    </select>
+                </div>
+                <div class="tool-group">
+                    <label class="tool-label sr-only">액션</label>
+                    <button id="resetBtn" class="btn ghost" type="button">초기화</button>
+                </div>
+                <div class="tool-group">
+                    <label class="tool-label sr-only">액션</label>
+                    <button id="writeBtn" class="btn" type="button">글쓰기</button>
+                </div>
+            </form>
+
+            <div class="chips" aria-label="빠른 필터">
+                <button class="chip" data-chip="합격후기"># 합격후기</button>
+                <button class="chip" data-chip="불합격피드백"># 불합격피드백</button>
+                <button class="chip" data-chip="자소서템플릿"># 자소서템플릿</button>
+                <button class="chip" data-chip="문항별예시"># 문항별예시</button>
+                <button class="chip" data-chip="경력기술서"># 경력기술서</button>
+            </div>
+        </section>
+
+        <section class="table-wrap" aria-label="게시글 목록">
+            <table id="boardTable">
+                <thead>
+                <tr>
+                    <th style="width:72px;">번호</th>
+                    <th>제목</th>
+                    <th style="width:120px;">카테고리</th>
+                    <th style="width:120px;">작성자</th>
+                    <th style="width:120px;">날짜</th>
+                    <th style="width:90px;">조회</th>
+                    <th style="width:90px;">추천</th>
+                    <th style="width:110px;">관리</th>
+                </tr>
+                </thead>
+                <tbody id="tbody"></tbody>
+            </table>
+            <nav class="pagination" id="pagination" aria-label="페이지네비게이션"></nav>
+        </section>
+    </main>
+
+    <!-- RIGHT: PROFILE -->
+    <aside class="side right-side">
+        <section class="profile-card" aria-label="내 프로필">
+            <div class="p-header">
+                <div class="p-avatar" id="pAvatar" aria-label="프로필 이미지" role="img">NM</div>
+                <div>
+                    <div class="p-name">
+                        <span id="pName">남규민</span>
+                        <span class="p-state-label">
+                                    <span id="pDot" class="p-status-dot online"></span>
+                                    <span id="pStateText">온라인</span>
+                                </span>
+                    </div>
+                    <p class="p-message" id="pMessage">“작은 실험을 크게 키우는 중.”</p>
+                </div>
+            </div>
+            <div class="p-sep"></div>
+            <div class="p-actions">
+                <button class="p-btn" id="editProfileOpen">프로필 편집</button>
+            </div>
+        </section>
+    </aside>
+</div>
+</div>
+
+<!-- WRITE MODAL (작성 + 수정 공용) -->
+<div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title" id="modalTitle">새 글 작성</div>
+            <div class="right">
+                <button class="btn ghost" id="closeModal">닫기</button>
+                <button class="btn" id="savePost">저장</button>
+            </div>
+        </div>
+        <div class="modal-grid">
+            <div>
+                <label class="tool-label" for="wTitle">제목</label>
+                <input id="wTitle" class="tool-input" placeholder="한 줄 요약 또는 핵심 문구" />
+            </div>
+            <div>
+                <label class="tool-label" for="wCat">카테고리</label>
+                <select id="wCat" class="tool-select">
+                    <option value="합격후기">합격후기</option>
+                    <option value="불합격피드백">불합격피드백</option>
+                    <option value="자소서템플릿">자소서템플릿</option>
+                    <option value="문항별예시">문항별예시</option>
+                    <option value="경력기술서">경력기술서</option>
+                </select>
+            </div>
+            <div style="grid-column:1 / -1;">
+                <label class="tool-label" for="wImages">이미지 업로드</label>
+                <div class="upload-wrap">
+                    <div class="upload-row">
+                        <input id="wImages" type="file" accept="image/*" multiple />
+                        <button type="button" class="btn ghost" id="clearImages">전체 삭제</button>
+                    </div>
+                    <div class="thumbs" id="thumbs"></div>
+                </div>
+            </div>
+            <div style="grid-column:1 / -1;">
+                <label class="tool-label" for="wBody">본문</label>
+                <textarea id="wBody" placeholder="STAR 방식 등으로 내용을 정리해 주세요. 이미지 설명을 함께 적으면 좋아요."></textarea>
+                <div class="meta" id="charCount">0자</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- VIEW MODAL -->
+<div class="modal-backdrop" id="viewBackdrop" role="dialog" aria-modal="true" aria-labelledby="viewTitle">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title" id="viewTitle">게시글 상세</div>
+            <div class="right"><button class="btn ghost" id="closeView">닫기</button></div>
+        </div>
+        <div id="viewMeta" class="meta"></div>
+        <div id="viewBody" style="white-space:pre-wrap;margin-top:10px;"></div>
+        <div id="viewImages" class="post-images"></div>
+    </div>
+</div>
+
+<!-- PROFILE EDIT MODAL -->
+<div class="modal-backdrop" id="profileBackdrop" role="dialog" aria-modal="true" aria-labelledby="profileTitle">
+    <div class="modal">
+        <div class="modal-header">
+            <div class="modal-title" id="profileTitle">프로필 편집</div>
+            <div class="right">
+                <button class="btn ghost" id="closeProfile">닫기</button>
+                <button class="btn" id="saveProfile">저장</button>
+            </div>
+        </div>
+        <div class="modal-grid">
+            <div>
+                <label class="tool-label" for="editName">이름</label>
+                <input id="editName" class="tool-input" />
+            </div>
+            <div>
+                <label class="tool-label">온라인 상태</label>
+                <label class="switch">
+                    <input type="checkbox" id="editOnline" />
+                    <span id="onlineLabel">온라인</span>
+                </label>
+            </div>
+            <div style="grid-column:1 / -1;">
+                <label class="tool-label" for="editMsg">상태 메시지</label>
+                <textarea id="editMsg" placeholder="오늘의 한마디를 적어보세요."></textarea>
+            </div>
+            <div style="grid-column:1 / -1;">
+                <label class="tool-label" for="editAvatar">프로필 이미지</label>
+                <input id="editAvatar" type="file" accept="image/*" />
+                <div class="meta" style="margin-top:6px;">이미지를 선택하면 우측 아바타에 즉시 반영됩니다.</div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<!--푸터-->
+<!-- 푸터 -->
+<div th:replace="~{fragments/footer :: footerFragment}"></div>
+<script>
+    /* 더미 데이터 */
+    const seed = [
+        { id: 12, title: "합격 자소서 공개 (항목별)", cat: "합격후기", author: "익명1", date: "2025-10-25", views: 1624, likes: 58, tags: ["#합격후기"], body: "요약 본문 예시", images: [] },
+        { id: 11, title: "불합 피드백 받고 수정한 버전", cat: "불합격피드백", author: "익명2", date: "2025-10-24", views: 804, likes: 17, tags: ["#불합격피드백"], body: "본문 예시", images: [] },
+        { id: 10, title: "1000자 3문항 템플릿", cat: "자소서템플릿", author: "익명3", date: "2025-10-23", views: 1450, likes: 41, tags: ["#자소서템플릿"], body: "본문 예시", images: [] },
+        { id: 9, title: "문항별 예시 (STAR)", cat: "문항별예시", author: "익명4", date: "2025-10-23", views: 972, likes: 29, tags: ["#문항예시"], body: "본문 예시", images: [] },
+        { id: 8, title: "경력기술서 샘플", cat: "경력기술서", author: "익명5", date: "2025-10-22", views: 520, likes: 13, tags: ["#경력기술서"], body: "본문 예시", images: [] },
+        { id: 7, title: "불합 피드백 부탁드립니다", cat: "불합격피드백", author: "익명6", date: "2025-10-22", views: 734, likes: 12, tags: ["#불합격피드백"], body: "본문 예시", images: [] },
+        { id: 6, title: "최종 합 후기 + 질문", cat: "합격후기", author: "익명7", date: "2025-10-21", views: 1802, likes: 63, tags: ["#합격후기"], body: "본문 예시", images: [] },
+        { id: 5, title: "500자 템플릿 공유", cat: "자소서템플릿", author: "익명8", date: "2025-10-20", views: 640, likes: 18, tags: ["#자소서템플릿"], body: "본문 예시", images: [] },
+        { id: 4, title: "항목별 예시 업데이트", cat: "문항별예시", author: "익명9", date: "2025-10-19", views: 590, likes: 14, tags: ["#문항예시"], body: "본문 예시", images: [] },
+        { id: 3, title: "합격 스토리텔링 포인트", cat: "합격후기", author: "익명10", date: "2025-10-18", views: 712, likes: 22, tags: ["#합격후기"], body: "본문 예시", images: [] },
+        { id: 2, title: "STAR 경력기술서 양식", cat: "경력기술서", author: "익명11", date: "2025-10-18", views: 338, likes: 9, tags: ["#경력기술서"], body: "본문 예시", images: [] },
+        { id: 1, title: "신입 공통 1000자 4문항 템플릿", cat: "자소서템플릿", author: "운영자", date: "2025-10-17", views: 2100, likes: 71, tags: ["#자소서템플릿", "#신입"], body: "본문 예시", images: [] },
+    ];
+
+    /* 상태 */
+    let posts = [...seed];
+    let currentPage = 1;
+    const PAGE_SIZE = 10;
+    const fmt = new Intl.NumberFormat();
+    let uploadImages = [];
+    let editingId = null;   // null이면 새 글, 값이 있으면 수정
+
+    /* DOM */
+    const tbody = document.getElementById('tbody');
+    const pag = document.getElementById('pagination');
+    const catSel = document.getElementById('cat');
+    const sortSel = document.getElementById('sort');
+    const qInput = document.getElementById('q');
+    const resetBtn = document.getElementById('resetBtn');
+    const writeBtn = document.getElementById('writeBtn');
+
+    /* 모달 요소 */
+    const modal = document.getElementById('modalBackdrop');
+    const modalTitleEl = document.getElementById('modalTitle');
+    const wTitle = document.getElementById('wTitle');
+    const wCat = document.getElementById('wCat');
+    const wBody = document.getElementById('wBody');
+    const charCount = document.getElementById('charCount');
+    const wImages = document.getElementById('wImages');
+    const thumbs = document.getElementById('thumbs');
+
+    const viewModal = document.getElementById('viewBackdrop');
+    const viewTitle = document.getElementById('viewTitle');
+    const viewMeta = document.getElementById('viewMeta');
+    const viewBody = document.getElementById('viewBody');
+    const viewImages = document.getElementById('viewImages');
+
+    /* 프로필 관련 DOM (작성자 이름으로 사용) */
+    const pName = document.getElementById('pName');
+    const pMessage = document.getElementById('pMessage');
+    const pDot = document.getElementById('pDot');
+    const pStateText = document.getElementById('pStateText');
+    const pAvatar = document.getElementById('pAvatar');
+
+    const profileBackdrop = document.getElementById('profileBackdrop');
+    const editProfileOpen = document.getElementById('editProfileOpen');
+    const closeProfile = document.getElementById('closeProfile');
+    const saveProfile = document.getElementById('saveProfile');
+    const editName = document.getElementById('editName');
+    const editMsg = document.getElementById('editMsg');
+    const editOnline = document.getElementById('editOnline');
+    const onlineLabel = document.getElementById('onlineLabel');
+    const editAvatar = document.getElementById('editAvatar');
+
+    /* 유틸: 내 이름 가져오기 */
+    const getMyName = () =>
+        (pName && pName.textContent.trim()) || "익명";
+
+    /* ---------- 필터 & 렌더 ---------- */
+    function applyFilters() {
+        const cat = catSel.value.trim();
+        const q = (qInput.value || "").trim().toLowerCase();
+        let data = [...posts];
+
+        if (cat) data = data.filter(d => d.cat === cat);
+        if (q) {
+            data = data.filter(d =>
+                (d.title + " " + (d.tags || []).join(" ") + " " + (d.body || "")).toLowerCase().includes(q)
+            );
+        }
+
+        const sort = sortSel.value;
+        if (sort === 'latest')
+            data.sort((a, b) => new Date(b.date) - new Date(a.date) || b.id - a.id);
+        else if (sort === 'views')
+            data.sort((a, b) => b.views - a.views);
+        else if (sort === 'likes')
+            data.sort((a, b) => b.likes - a.likes);
+
+        return data;
+    }
+
+    function render() {
+        const data = applyFilters();
+        const total = data.length;
+        const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+        if (currentPage > totalPages) currentPage = totalPages;
+
+        const start = (currentPage - 1) * PAGE_SIZE;
+        const pageItems = data.slice(start, start + PAGE_SIZE);
+        const myName = getMyName();
+
+        tbody.innerHTML = pageItems.map(row => {
+            const mine = row.author === myName;
+            return `
+    <tr>
+      <td>${row.id}</td>
+      <td class="title">
+        <a href="javascript:void(0)" data-id="${row.id}" class="open-view">${row.title}</a>
+        ${(row.tags || []).map(t => `<span class="tag">${t}</span>`).join('')}
+      </td>
+      <td><span class="badge">${row.cat}</span></td>
+      <td>${row.author}</td>
+      <td>${row.date}</td>
+      <td>${fmt.format(row.views)}</td>
+      <td>${fmt.format(row.likes)}</td>
+      <td class="manage">
+        ${mine
+                    ? `
+          <button class="manage-btn row-edit" data-id="${row.id}">수정</button>
+          <button class="manage-btn row-del" data-id="${row.id}">삭제</button>
+        `
+                    : `<span class="manage-muted">-</span>`
+                }
+      </td>
+    </tr>`;
+        }).join('');
+
+        // 상세 보기
+        tbody.querySelectorAll('.open-view').forEach(a => {
+            a.addEventListener('click', () => {
+                const id = Number(a.dataset.id);
+                const post = posts.find(p => p.id === id);
+                if (!post) return;
+                openView(post);
+            });
+        });
+
+        // 수정 / 삭제 (이벤트 위임)
+        tbody.addEventListener('click', onRowAction);
+
+        // 페이지네이션
+        const pages = [];
+        const range = (f, t) => Array.from({ length: t - f + 1 }, (_, i) => f + i);
+        const neighbors = 1;
+        let sp = Math.max(1, currentPage - neighbors);
+        let ep = Math.min(totalPages, currentPage + neighbors);
+
+        if (sp > 1) pages.push(1, '...');
+        pages.push(...range(sp, ep));
+        if (ep < totalPages) pages.push('...', totalPages);
+
+        pag.innerHTML = `
+    <button class="page-btn" ${currentPage === 1 ? 'disabled' : ''} data-page="${currentPage - 1}">이전</button>
+    ${pages.map(p => p === '...'
+            ? `<span class="page-btn" style="pointer-events:none;border-style:dashed;">...</span>`
+            : `<button class="page-btn ${p === currentPage ? 'active' : ''}" data-page="${p}">${p}</button>`
+        ).join('')}
+    <button class="page-btn" ${currentPage === totalPages ? 'disabled' : ''} data-page="${currentPage + 1}">다음</button>
+  `;
+    }
+
+    pag.addEventListener('click', (e) => {
+        const btn = e.target.closest('.page-btn');
+        if (!btn) return;
+        const page = Number(btn.dataset.page);
+        if (!isNaN(page)) { currentPage = page; render(); }
+    });
+
+    [catSel, sortSel].forEach(el =>
+        el.addEventListener('change', () => { currentPage = 1; render(); })
+    );
+    qInput.addEventListener('input', () => { currentPage = 1; render(); });
+
+    resetBtn.addEventListener('click', () => {
+        catSel.value = "";
+        sortSel.value = "latest";
+        qInput.value = "";
+        document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+        currentPage = 1;
+        render();
+    });
+
+    document.querySelectorAll('.chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            const val = chip.dataset.chip;
+            const willActive = !chip.classList.contains('active');
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+            if (willActive) chip.classList.add('active');
+            catSel.value = willActive ? val : "";
+            currentPage = 1;
+            render();
+        });
+    });
+
+    /* ---------- 행 액션 (수정/삭제) ---------- */
+    function onRowAction(e) {
+        const editBtn = e.target.closest('.row-edit');
+        const delBtn = e.target.closest('.row-del');
+        if (!editBtn && !delBtn) return;
+
+        const id = Number((editBtn || delBtn).dataset.id);
+        const post = posts.find(p => p.id === id);
+        if (!post) return;
+
+        const myName = getMyName();
+        if (post.author !== myName) {
+            alert("내가 작성한 글만 수정/삭제할 수 있습니다.");
+            return;
+        }
+
+        if (editBtn) {
+            // 수정 모드
+            editingId = id;
+            modalTitleEl.textContent = "글 수정";
+            wTitle.value = post.title;
+            wCat.value = post.cat;
+            wBody.value = post.body || "";
+            charCount.textContent = `${wBody.value.length}자`;
+            uploadImages = [...(post.images || [])];
+            renderThumbs();
+            openModal();
+        } else if (delBtn) {
+            if (!confirm("이 글을 삭제하시겠습니까?")) return;
+            posts = posts.filter(p => p.id !== id);
+            // 수정 중이던 글을 삭제한 경우 리셋
+            if (editingId === id) editingId = null;
+            currentPage = 1;
+            render();
+        }
+    }
+
+    /* ---------- WRITE / VIEW MODALS ---------- */
+    function openModal() {
+        modal.style.display = 'flex';
+        wTitle.focus();
+    }
+    function closeModal() {
+        modal.style.display = 'none';
+        // 모달 닫을 때 수정 상태 초기화
+        editingId = null;
+        modalTitleEl.textContent = "새 글 작성";
+        wTitle.value = "";
+        wCat.value = "합격후기";
+        wBody.value = "";
+        charCount.textContent = "0자";
+        uploadImages = [];
+        renderThumbs();
+    }
+
+    document.getElementById('closeModal').addEventListener('click', closeModal);
+    writeBtn.addEventListener('click', () => {
+        editingId = null;
+        modalTitleEl.textContent = "새 글 작성";
+        openModal();
+    });
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+
+    function openView(post) {
+        viewTitle.textContent = post.title;
+        viewMeta.textContent =
+            `작성자: ${post.author} · 날짜: ${post.date} · 카테고리: ${post.cat}`;
+        viewBody.textContent = post.body || "";
+        viewImages.innerHTML =
+            (post.images || []).map(img => `<img src="${img.dataUrl}" alt="post image">`).join('');
+        viewModal.style.display = 'flex';
+    }
+    function closeViewModal() { viewModal.style.display = 'none'; }
+    document.getElementById('closeView').addEventListener('click', closeViewModal);
+    viewModal.addEventListener('click', (e) => { if (e.target === viewModal) closeViewModal(); });
+
+    const clearImages = document.getElementById('clearImages');
+    if (clearImages) clearImages.addEventListener('click', () => {
+        uploadImages = [];
+        renderThumbs();
+    });
+
+    wBody.addEventListener('input', () => {
+        charCount.textContent = `${wBody.value.length}자`;
+    });
+
+    wImages.addEventListener('change', async (e) => {
+        const files = Array.from(e.target.files || []);
+        for (const file of files) {
+            if (!file.type.startsWith('image/')) continue;
+            const dataUrl = await fileToDataUrl(file);
+            uploadImages.push({ name: file.name, dataUrl });
+        }
+        renderThumbs();
+        wImages.value = '';
+    });
+
+    function renderThumbs() {
+        thumbs.innerHTML = uploadImages.map((img, idx) => `
+    <div class="thumb">
+      <img src="${img.dataUrl}" alt="${img.name}">
+      <button class="del" data-idx="${idx}" type="button">삭제</button>
+    </div>
+  `).join('');
+        thumbs.querySelectorAll('.del').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const idx = Number(btn.dataset.idx);
+                uploadImages.splice(idx, 1);
+                renderThumbs();
+            });
+        });
+    }
+
+    function fileToDataUrl(file) {
+        return new Promise((resolve, reject) => {
+            const fr = new FileReader();
+            fr.onload = () => resolve(fr.result);
+            fr.onerror = reject;
+            fr.readAsDataURL(file);
+        });
+    }
+
+    // 저장 버튼 (새 글 + 수정 공용)
+    document.getElementById('savePost').addEventListener('click', () => {
+        const title = wTitle.value.trim();
+        if (!title) {
+            alert("제목을 입력해 주세요.");
+            wTitle.focus();
+            return;
+        }
+        const cat = wCat.value;
+        const body = wBody.value.trim();
+        const author = getMyName();
+        const today = new Date().toISOString().slice(0, 10);
+
+        if (editingId === null) {
+            // 새 글
+            const newId = (posts[0]?.id || 0) + 1;
+            const newPost = {
+                id: newId,
+                title,
+                cat,
+                author,
+                date: today,
+                views: 0,
+                likes: 0,
+                tags: [`#${cat}`],
+                body,
+                images: [...uploadImages]
+            };
+            posts = [newPost, ...posts];
+        } else {
+            // 수정
+            const idx = posts.findIndex(p => p.id === editingId);
+            if (idx === -1) {
+                alert("수정 대상 글을 찾을 수 없습니다.");
+            } else {
+                const orig = posts[idx];
+                if (orig.author !== author) {
+                    alert("내가 작성한 글만 수정할 수 있습니다.");
+                } else {
+                    posts[idx] = {
+                        ...orig,
+                        title,
+                        cat,
+                        body,
+                        tags: [`#${cat}`],
+                        images: [...uploadImages]
+                        // views, likes, date는 그대로 두고 싶으면 유지
+                    };
+                }
+            }
+        }
+
+        closeModal();
+        currentPage = 1;
+        render();
+    });
+
+    /* LEFT TAB: 단순 열기/닫기 (필터X) */
+    const sideTabs = document.getElementById('sideTabs');
+    sideTabs.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            const board = tab.dataset.board;
+            const sub = sideTabs.querySelector(`[data-sub="${board}"]`);
+            const isActive = tab.classList.contains('active');
+
+            sideTabs.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            sideTabs.querySelectorAll('.sublist').forEach(ul => ul.classList.remove('open'));
+
+            if (!isActive) {
+                tab.classList.add('active');
+                if (sub) sub.classList.add('open');
+            }
+        });
+    });
+    const coverTab = sideTabs.querySelector('.tab[data-board="cover"]');
+    if (coverTab) coverTab.click();
+
+    /* PROFILE 편집 */
+    editProfileOpen.addEventListener('click', () => {
+        editName.value = pName.textContent.trim();
+        editMsg.value = pMessage.textContent.replace(/^“|”$/g, '').trim();
+        const isOnline = pDot.classList.contains('online');
+        editOnline.checked = isOnline;
+        onlineLabel.textContent = isOnline ? '온라인' : '오프라인';
+        profileBackdrop.style.display = 'flex';
+        editName.focus();
+    });
+    closeProfile.addEventListener('click', () => profileBackdrop.style.display = 'none');
+    profileBackdrop.addEventListener('click', (e) => {
+        if (e.target === profileBackdrop) profileBackdrop.style.display = 'none';
+    });
+
+    editOnline.addEventListener('change', () => {
+        onlineLabel.textContent = editOnline.checked ? '온라인' : '오프라인';
+    });
+
+    editAvatar.addEventListener('change', async (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file || !file.type.startsWith('image/')) return;
+        const dataUrl = await fileToDataUrl(file);
+        pAvatar.style.background = `center/cover no-repeat url(${dataUrl})`;
+        pAvatar.textContent = "";
+    });
+
+    saveProfile.addEventListener('click', () => {
+        const name = editName.value.trim();
+        const msg = editMsg.value.trim();
+        if (name) pName.textContent = name;
+        pMessage.textContent = msg ? `“${msg}”` : "";
+        pDot.classList.remove('online', 'offline');
+        pDot.classList.add(editOnline.checked ? 'online' : 'offline');
+        pStateText.textContent = editOnline.checked ? '온라인' : '오프라인';
+        profileBackdrop.style.display = 'none';
+        render(); // 작성자 이름 바뀔 수 있으니 버튼 표시 다시 계산
+    });
+
+    /* 초기 렌더 */
+    render();
+</script>
+
+</body>
+</html>

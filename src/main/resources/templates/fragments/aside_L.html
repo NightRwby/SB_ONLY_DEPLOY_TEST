@@ -1,0 +1,27 @@
+
+<aside id="aside_L" th:fragment="asideLFragment">
+    <div class="side_nav">
+        <div class="slt_wrap">
+            <h4 class="side_nav_title">게시판 목록</h4>
+        </div>
+        <div id="followscr">
+            <ul>
+                <a href="/community/free/list" class="side_item si_free"
+                   th:classappend="${category == 'free'} ? 'active'">자유게시판</a>
+
+                <a href="/noticepage" class="side_item si_notice"
+                   th:classappend="${category == 'notice'} ? 'active'">공지사항</a>
+
+                <a href="/community/cover-letter/list" class="side_item si_CL"
+                   th:classappend="${category == 'cover-letter'} ? 'active'">자소서 게시판</a>
+
+                <a href="/community/hot/list" class="side_item si_IS"
+                   th:classappend="${category == 'hot'} ? 'active'">HOT ISSUE 게시판</a>
+            </ul>
+            <div class="side_note">
+                자유롭게 일상, 질문, 정보, 후기 등을 올려주세요.<br>
+                기본 예절만 지켜주시면 됩니다
+            </div>
+        </div>
+    </div>
+</aside>

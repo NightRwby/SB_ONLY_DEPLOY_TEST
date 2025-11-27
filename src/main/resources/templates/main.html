@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>블라블라</title>
+    <!-- Main CSS -->
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+<body>
+
+<!-- 헤더 -->
+<div th:replace="~{fragments/header :: headerFragment}"></div>
+
+<!-- 메인 콘텐츠 -->
+<main>
+
+
+
+    <!-- 섹션 2 -->
+    <section class="section-2">
+        <!-- 중앙 고정 시작하기 버튼 (나중에 다른 기능 추가 할거임) -->
+        <button type="button" class="start-btn" id="start-btn"
+                th:attr="data-target=${#authorization.expression('isAuthenticated()') ? '/chatPage' : '/login'}">시작하기
+        </button>
+        <button type="button"
+                class="community-btn"
+                id="community"
+                data-href="/community/home">
+            커뮤니티
+        </button>
+        <div class="slider-container" id="slider-container">
+            <div class="slide">
+                <img class="slide-image" src="./img/슬라이드1.png" alt="슬라이드 이미지 1">
+            </div>
+            <div class="slide">
+                <img class="slide-image" src="./img/슬라이드2.png" alt="슬라이드 이미지 2">
+            </div>
+            <div class="slide">
+                <img class="slide-image" src="./img/슬라이드3.png" alt="슬라이드 이미지 3">
+            </div>
+        </div>
+        <div class="slider-nav" id="slider-nav">
+            <!-- 스크립트로 점 채울려고 -->
+        </div>
+    </section>
+
+    <!-- 섹션 1 -->
+    <section class="section-1">
+        <div class="anim-container" id="text-anim-container">
+            <h1 class="anim-text main-title">커뮤니케이션</h1>
+            <h1 class="anim-text main-title">새로운 경험의 시작</h1>
+            <h2 class="anim-text tagline">Work<span>Talk</span><span>Share</span></h2>
+        </div>
+    </section>
+
+    <!-- 섹션 3 -->
+    <section class="section-3 content-box-style">
+        <div class="emote-wrap">
+            <img class="emote-image" src="/img/이모티콘_이미지.png" alt="이모티콘 설명 이미지?">
+        </div>
+    </section>
+
+    <!-- 섹션 4 핫이슈? 넣는건가 일단 만듬 -->
+    <section class="section-4">
+        <div class="content-box-style">
+            <div class="favorit-contents">
+                <h3>나만의 <span style="color: black;">관심사</span>를 선택해봐!</h3>
+                <p>선택하면 채팅치다가도 관심사의 이슈를 볼 수 있어!<br/>클릭하는 재미도 쏠쏠</p>
+                <button class="sport">스포츠</button>
+                <button class="talent">연예인</button>
+                <button class="politics">정치</button>
+                <button class="any">애니메이션</button>
+                <button class="movie">영화</button>
+                <button class="drama">드라마</button>
+                <button class="car">자동차</button>
+                <button class="house">부동산</button>
+            </div>
+        </div>
+        <div class="content-box-style">
+            <div class="video-wrap"> <!-- 왼쪽은 비디오로 해야 핫이슈 움직이는 거 볼 수 있을거같아서 일단 비디오 -->
+                <video autoplay muted loop playsinline preload="auto"
+                       controlslist="nodownload noplaybackrate nofullscreen noremoteplayback" disablepictureinpicture
+                       aria-hidden="true">
+                    <source src="/video/hotissue.mp4" type="video/mp4">
+                    <!-- 브라우저가 비디오를 지원하지 않는 경우를 위한 대체 텍스트 -->
+                    당신의 브라우저는 동영상을 지원하지 않습니다.
+                </video>
+            </div>
+        </div>
+    </section>
+
+    <!-- 섹션 5 -->
+    <section class="section-5">
+        <div class="icon-grid">
+            <a href="javascript:void(0);" class="icon-block">
+                <div class="icon-placeholder">💬</div>
+                <h3>실시간 채팅</h3>
+                <p>빠르고 안정적인 1:1, 그룹 채팅 지원</p>
+            </a>
+            <a href="javascript:void(0);" class="icon-block">
+                <div class="icon-placeholder">📄</div>
+                <h3>파일 전송</h3>
+                <p>사진, 문서, 영상 파일 공유 지원</p>
+            </a>
+            <a href="javascript:void(0);" class="icon-block">
+                <div class="icon-placeholder">😊</div>
+                <h3>감성 이모티콘</h3>
+                <p>감정을 표현하는 다양한 이모티콘 제공</p>
+            </a>
+            <a href="javascript:void(0);" class="icon-block">
+                <div class="icon-placeholder">🛡️</div>
+                <h3>강력한 보안</h3>
+                <p>엔드투엔드 암호화로 안전한 대화</p>
+            </a>
+        </div>
+    </section>
+
+</main>
+
+<!-- 푸터 -->
+<div th:replace="~{fragments/footer :: footerFragment}"></div>
+
+<!-- 스크립트트 -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        /* 콘텐츠 1 글자 애니메이션 */
+        const textElements = document.querySelectorAll('#text-anim-container .anim-text');
+        if (textElements.length > 0) {
+            setTimeout(() => { textElements[0]?.classList.add('visible'); }, 500);
+            setTimeout(() => { textElements[1]?.classList.add('visible'); }, 1500);
+            setTimeout(() => { textElements[2]?.classList.add('visible'); }, 2500);
+        }
+
+        /* 콘텐츠 2 자동 슬라이더 */
+        const slider = document.getElementById('slider-container');
+        const nav = document.getElementById('slider-nav');
+        if (slider && nav) {
+            const slides = slider.querySelectorAll('.slide');
+            const slideCount = slides.length;
+            let currentSlide = 0;
+            let slideInterval = setInterval(nextSlide, 4000);
+
+            if (slideCount > 0) {
+                for (let i = 0; i < slideCount; i++) {
+                    const dot = document.createElement('div');
+                    dot.classList.add('slider-nav-dot');
+                    dot.dataset.index = i;
+                    if (i === 0) dot.classList.add('active');
+                    dot.addEventListener('click', function () {
+                        goToSlide(parseInt(this.dataset.index));
+                    });
+                    nav.appendChild(dot);
+                }
+            }
+
+            const navDots = nav.querySelectorAll('.slider-nav-dot');
+
+            function goToSlide(slideIndex) {
+                currentSlide = slideIndex % slideCount;
+                if (currentSlide < 0) currentSlide = slideCount - 1;
+
+                slider.style.transform = `translateX(-${currentSlide * (100 / slideCount)}%)`;
+
+                navDots.forEach((dot, index) => {
+                    dot.classList.toggle('active', index === currentSlide);
+                });
+
+                clearInterval(slideInterval);
+                slideInterval = setInterval(nextSlide, 4000);
+            }
+
+            function nextSlide() {
+                goToSlide(currentSlide + 1);
+            }
+        } // <-- 슬라이더 조건문은 여기서 닫힙니다.
+
+        /* ✅ 시작 버튼 기능 활성화 (슬라이더와 분리) */
+        const startBtn = document.getElementById('start-btn');
+        if (startBtn) {
+            startBtn.addEventListener('click', function () {
+                // Thymeleaf로 설정된 data-target 속성 값을 가져와 바로 이동합니다.
+                const targetUrl = this.getAttribute('data-target');
+
+                if (targetUrl) {
+                    window.location.href = targetUrl;
+                }
+            });
+        }
+        const communityBtn = document.getElementById('community');
+
+        if (communityBtn) {
+            // 2. 버튼 클릭 이벤트 리스너를 등록합니다.
+            communityBtn.addEventListener('click', () => {
+                // 3. 'data-href' 속성 값을 읽어옵니다.
+                const targetUrl = communityBtn.getAttribute('data-href');
+
+                if (targetUrl) {
+                    // 4. 페이지를 해당 URL로 이동시킵니다.
+                    window.location.href = targetUrl;
+                }
+            });
+        }
+
+    });
+</script>
+</body>
+
+</html>

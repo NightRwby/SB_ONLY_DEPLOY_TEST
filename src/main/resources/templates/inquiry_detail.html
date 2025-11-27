@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ko"        xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>문의상세</title>
+
+    <!-- Main CSS -->
+    <link rel="stylesheet" th:href="@{/css/inquiry_detail.css}">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+</head>
+
+<body>
+
+<!-- 헤더 -->
+<div th:replace="~{fragments/header :: headerFragment}"></div>
+
+
+<!-- 메인 -->
+<main id="main">
+    <div class="title">
+        <h2>고객님의 문의사항을 안내드립니다.</h2>
+        <div class="directing">
+            <div class="directing-new">
+                <a th:href="@{/inquiry/new}">새 문의</a>
+            </div>
+            <div class="d-line"></div>
+            <div class="directing-list">
+                <a th:href="@{/inquiry}">문의 내역</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="useriqr">
+        <div class="useriqr-hd">
+            <h2 class="usertitle" th:text="${inquiry.title}">문의 제목</h2>
+            <div class="useriqr-info">
+                <div class="useriqr-fdate" th:text="'문의 등록 시간 : ' + ${#temporals.format(inquiry.createdAt, 'yy.MM.dd a HH:mm')}">문의 등록 시간 : 25.10.10 AM 04:20</div>
+                <div class="useriqr-ldate" th:text="'문의 수정 시간 : ' + ${#temporals.format(inquiry.updatedAt, 'yy.MM.dd a HH:mm')}">문의 수정 시간 : 25.10.10 AM 04:20</div>
+                <div class="useriqr-state" th:text="'처리 상태 : ' + (${inquiry.status} ? '처리 완료' : '처리 대기')">처리 상태 : 처리 대기</div>
+                <div class="useriqr-btn">
+                    <div class="useriqr-ubtn">
+                        <button onclick="location.href='#'" th:onclick="|location.href='@{/inquiry/{id}/edit(id=${inquiry.id})}'|">수정하기</button>
+                    </div>
+                    <div class="lll"></div> <div class="inquiry-end-btn" th:if="${!inquiry.status}">
+                    <form th:action="@{/inquiry/{id}/end(id=${inquiry.id})}" method="post" onsubmit="return confirm('이 문의를 처리 완료 상태로 변경하시겠습니까?');" style="display:inline;">
+                        <button type="submit" th:if="${!inquiry.status}">처리완료</button>
+                    </form>
+                </div>
+
+                    <div class="lll" th:if="${!inquiry.status}"></div>
+
+                    <div class="useriqr-dbtn">
+                        <form th:action="@{/inquiry/{id}/delete(id=${inquiry.id})}" method="post" onsubmit="return confirm('정말로 이 문의를 삭제하시겠습니까?');" style="display:inline;">
+                            <button type="submit">삭제하기</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="useriqr-main">
+            <div class="useriqr-main-text" th:text="${inquiry.content}"></div>
+        </div>
+    </div>
+
+    <!-- <div id="bliqr">
+        <div class="bliqr-hd">
+            <h2>${어쩌구저쩌구문의제목변수} 답변</h2>
+            <div class="bliqr-info"></div>
+        </div>
+        <div class="bliqr-main">
+            <div>
+                어쨋든 문의한 내용이 있을 거 아니야
+                그게 여기로 들어가야한다고
+                답변한 내용이 여기 들어감
+            </div>
+        </div>
+    </div> -->
+
+    <div class="infowrap">
+        <div class="info">
+            <div class="infoitems">고객님의 소중한 의견을 문의 사항과 피드백으로 남겨주세요.</div>
+            <div class="infoitems">저희 답변이 고객님께 도움이 되었길 바라며 저희 서비스를 이용해주셔서 감사합니다.</div>
+        </div>
+        <div class="supdirect">
+            <div class="supdirecttext">새로운 도움이 필요하다면 <a th:href="@{/inquiry/center}" class="supdirectlink">고객센터</a>를 이용해주세요.
+            </div>
+        </div>
+    </div>
+
+
+</main>
+<!-- 푸터 -->
+<div th:replace="~{fragments/footer :: footerFragment}"></div>
+
+</body>
+
+</html>

@@ -1,6 +1,5 @@
 package com.example.demo.config.auth.jwt;
 
-
 import java.security.SecureRandom;
 
 public class KeyGenerator {

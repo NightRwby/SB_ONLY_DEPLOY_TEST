@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>공지 상세 - BlahBlah</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/notice.css}">
+
+</head>
+<body>
+
+<!-- 헤더 -->
+<div th:replace="~{fragments/header :: headerFragment}"></div>
+
+<!-- 본문 -->
+<section class="container">
+    <article class="notice-article mt-4">
+        <div id="postContent" class="notice-content">
+            <!-- 더미 본문 -->
+            <p>안녕하세요, BlahBlah입니다.</p>
+            <p>서비스 품질 향상을 위해 관련 정책을 다음과 같이 개정합니다. 자세한 사항은 본문을 확인해 주세요.</p>
+            <ul>
+                <li>적용 일자: 2025-08-20</li>
+                <li>주요 변경: 데이터 보관 기간 안내 보강, 고객 문의 처리 절차 명시 등</li>
+            </ul>
+            <p class="mb-0">항상 BlahBlah를 이용해 주셔서 감사합니다.</p>
+        </div>
+    </article>
+
+    <!-- 첨부파일 예시 -->
+    <div class="noticeattach mt-4">
+        <h6 class="fw-bold mb-2">첨부파일</h6>
+        <a href="#" class="d-inline-flex align-items-center gap-2 text-decoration-none">
+            <span class="badge text-bg-light">PDF</span>
+            <span>개정 전문 안내문.pdf</span>
+        </a>
+    </div>
+
+    <!-- 이전/다음 -->
+    <hr class="my-4">
+    <div class="d-flex justify-content-between align-items-center gap-2">
+        <a id="prevLink" href="/noticedetail?id=0" class="text-decoration-none">&larr; 이전 글</a>
+        <a id="nextLink" href="/noticedetail?id=0" class="text-decoration-none">다음 글 &rarr;</a>
+    </div>
+
+    <!-- 목록 버튼 -->
+    <div class="text-center my-4">
+        <a class="btn btn-outline-dark rounded-pill px-4" href="/noticepage">목록</a>
+    </div>
+</section>
+
+<!-- 푸터 -->
+<div th:replace="~{fragments/footer :: footerFragment}"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // 실제로는 서버에서 ID로 글을 조회하겠지만 지금은 목록과 동일한 더미로 연결
+    const notices = [
+      { id: 101, category: "공지", title: "개인정보 처리방침 개정 안내", date: "2025-08-10", views: 1280 },
+      { id: 102, category: "업데이트", title: "이모티콘 신규 팩 출시", date: "2025-08-08", views: 734 },
+      { id: 103, category: "점검", title: "8/12(월) 서비스 점검 안내", date: "2025-08-05", views: 542 },
+      { id: 104, category: "공지", title: "부정 이용 대응 강화 공지", date: "2025-08-01", views: 982 },
+      { id: 105, category: "이벤트", title: "신규 가입 환영 이벤트", date: "2025-07-28", views: 2110 },
+    ];
+    const fmtDate = (s) => new Date(s).toLocaleDateString("ko-KR", { year: "numeric", month: "2-digit", day: "2-digit" });
+
+    function getParam(name) {
+      const url = new URL(location.href);
+      return url.searchParams.get(name);
+    }
+    function render() {
+      const id = Number(getParam("id")) || notices[0].id;
+      const idx = notices.findIndex(n => n.id === id);
+      const post = idx >= 0 ? notices[idx] : notices[0];
+
+      document.getElementById("postTitle").textContent = post.title;
+      document.getElementById("postMeta").textContent = `${post.category} · ${fmtDate(post.date)} · 조회 ${post.views.toLocaleString()}`;
+
+      // 이전/다음
+      const prev = notices[idx - 1] || null;
+      const next = notices[idx + 1] || null;
+      const prevLink = document.getElementById("prevLink");
+      const nextLink = document.getElementById("nextLink");
+
+      if (prev) { prevLink.href = `/noticedetail?id=${prev.id}`; prevLink.classList.remove("disabled"); }
+      else { prevLink.classList.add("disabled"); prevLink.href = "#"; }
+
+      if (next) { nextLink.href = `/noticedetail?id=${next.id}`; nextLink.classList.remove("disabled"); }
+      else { nextLink.classList.add("disabled"); nextLink.href = "#"; }
+    }
+    render();
+</script>
+</body>
+
+</html>

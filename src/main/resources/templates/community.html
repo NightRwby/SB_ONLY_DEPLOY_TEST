@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blha Blha 커뮤니티</title>
+    <link rel="stylesheet" th:href="@{/css/community.css}">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+
+<body>
+<div th:replace="~{fragments/header :: headerFragment}"></div>
+<div class="wrapper">
+    <main class="community-shell">
+        <div class="community-frame">
+            <aside class="aside-left">
+                <div class="aside-card aside-board">
+                    <div class="aside-title">게시판</div>
+
+                    <button class="aside-item aside-item-active">
+                        <span class="aside-label">자유게시판</span>
+                        <span class="aside-count">12</span>
+                    </button>
+
+                    <button class="aside-item">
+                        <span class="aside-label">핫이슈게시판</span>
+                        <span class="aside-count">8</span>
+                    </button>
+
+                    <button class="aside-item">
+                        <span class="aside-label">자소서게시판</span>
+                        <span class="aside-count">6</span>
+                    </button>
+
+                    <button class="aside-item">
+                        <span class="aside-label">공지사항</span>
+                        <span class="aside-count">3</span>
+                    </button>
+                </div>
+            </aside>
+
+            <div class="community-main">
+                <section class="top-comu">
+                    <div class="top-text">
+                        <h1><span class="accent-text">Blha Blha</span> COMMUNITY</h1>
+                        <p class="top-sub">
+                            지금 실시간으로 뜨거운 이슈와 자유로운 이야기를 만나보세요.
+                        </p>
+                    </div>
+                </section>
+
+                <section class="notice-board">
+                    <div class="notice-card hot">
+                        <div class="notice-sub">이주의 핫이슈</div>
+                        <ul class="hot-list">
+                            <li class="hot-content">
+                                <span class="title-text">손흥민 토트넘 리턴행 결정! 공식 발표 임박</span>
+                                <div class="stats-box">
+                                    <div class="stats-info">좋아요 3,892 · 조회수 12,658</div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="notice-card favor">
+                        <div class="notice-sub">인기 게시글</div>
+                        <ul class="favor-list">
+                            <li class="hot-content">
+                                <span class="title-text">손흥민 토트넘 리턴행 결정! “마음은 늘 런던에 있었다”</span>
+                                <div class="stats-box">
+                                    <div class="stats-info">좋아요 3,892 · 댓글 412</div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </section>
+
+                <section class="freedom-notice">
+                    <div class="freedom-main">
+                        <label class="freedom-maint">자유게시판</label>
+                    </div>
+
+                    <div class="freedom-box">
+                        <ul class="freedom-list">
+                            <li class="freedom-content">
+                                <div class="freedom-text-wrap">
+                                        <span class="freedom-title">
+                                            박지성 맨체스터 유나이티드 감독 오피셜! 퍼거슨 제자였던 내가 맨유 감독?
+                                        </span>
+                                    <span class="freedom-meta">익명 · 5분 전</span>
+                                </div>
+                                <div class="free-stats">
+                                    <div class="stats-info2">좋아요 3,892 · 조회수 12,658</div>
+                                </div>
+                            </li>
+                        </ul>
+
+                        <div class="button-area">
+                            <button class="page-btn before">이전</button>
+                            <button class="page-btn active">1</button>
+                            <button class="page-btn">2</button>
+                            <button class="page-btn">3</button>
+                            <button class="page-btn next">다음</button>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="office-box">
+                    <div class="office-title">
+                        <label class="office-text">회사 소개</label>
+                    </div>
+                    <div class="slide-box">
+                        <img th:src="@{/img/logo.png}" alt="기업 이미지">
+                    </div>
+                </section>
+            </div>
+
+            <aside class="aside-right">
+                <div class="aside-card aside-profile">
+                    <div class="profile-top">
+                        <div class="profile-avatar">
+                            <span>NM</span>
+                        </div>
+                        <div class="profile-info">
+                            <div class="profile-name-row">
+                                <span class="profile-name">남규민</span>
+                                <span class="profile-status-dot"></span>
+                                <span class="profile-status-text">온라인</span>
+                            </div>
+                            <p class="profile-bio">“작은 실험을 크게 키우는 중.”</p>
+                        </div>
+                    </div>
+                    <button class="profile-edit-btn">프로필 편집</button>
+                </div>
+            </aside>
+        </div>
+    </main>
+</div>
+<div th:replace="~{fragments/footer :: footerFragment}"></div>
+</body>
+
+</html>

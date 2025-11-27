@@ -1,0 +1,2416 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+>
+
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>ChatPage</title>
+    <link rel="stylesheet" th:href="@{/css/chatPage.css}">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+
+    <!--헤더/푸터 jquery방식 -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+
+    <!--  GLightbox(이미지 모달창)  -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
+
+</head>
+
+<body>
+
+<div th:replace="~{fragments/header :: headerFragment}"></div>
+<main>
+    <div class="main-content">
+        <aside class="icon-bar-left" id="icon-bar-left">
+            <button class="icon-btn" data-view="chat" title="채팅 목록">챗</button>
+            <button class="icon-btn" data-view="document" title="내 보관함">보관</button>
+            <button class="icon-btn" data-view="community" title="커뮤니티">커뮤</button>
+            <button class="icon-btn" data-view="help" title="만든이">제작</button>
+        </aside>
+
+        <aside class="sub-panel-left" id="sub-panel-left">
+            <div class="sub-panel-content" id="sub-panel-content"></div>
+        </aside>
+
+        <section class="chat-area-wrapper" id="chat-area-wrapper">
+            <div class="empty-state" id="empty-state" style="display:flex;">
+                <div>
+                    <p style="font-size:18px;">환영합니다!</p>
+                    <p style="font-size:14px;">좌측 ‘채팅 / 보관함 / 커뮤니티 / 제작자’를 선택하거나 우측 친구/참여자 목록에서
+                        대화를 시작하세요.</p>
+                </div>
+            </div>
+        </section>
+
+        <aside class="friend-panel-right" id="friend-panel-right">
+            <div class="friend-column">
+                <div class="panel-header">친구 목록</div>
+                <div class="my-profile">
+                    <div class="avatar" id="my-avatar">나</div>
+                    <div class="name" id="my-display-name"></div>
+                </div>
+                <div class="add-friend-wrapper">
+                    <button id="add-friend-btn">친구 추가</button>
+                </div>
+                <div class="friend-list" id="friend-list">
+                </div>
+            </div>
+
+            <div class="member-column">
+                <div class="member-header">
+                    <div class="member-tabs">
+                        <span class="member-tab active">참여자</span>
+                        <button id="invite-member-btn" class="member-tab btn-tab">+ 참여자 추가</button>
+                        <button id="open-friend-panel-btn" class="member-tab btn-tab">친구 목록</button>
+                    </div>
+                    <input type="text" class="member-search" placeholder="참여자 검색">
+                </div>
+
+                <div class="member-list-wrapper">
+                    <div class="friend-list" id="member-list"></div>
+                </div>
+            </div>
+        </aside>
+    </div>
+</main>
+<div th:replace="~{fragments/footer :: footerFragment}"></div>
+
+<div id="friend-profile-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>프로필</h3>
+            <button class="modal-close-btn" data-modal="friend-profile-modal">✖</button>
+        </div>
+        <div class="profile-modal-body">
+            <div class="avatar" id="modal-friend-avatar">?</div>
+            <h3 id="modal-friend-name">친구 이름</h3>
+            <p id="modal-friend-status">상태 메시지</p>
+            <div class="profile-modal-actions">
+                <button class="btn-chat" id="start-chat-btn">채팅하기</button>
+                <button class="btn-cancel" data-modal="friend-profile-modal">닫기</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="add-friend-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>친구 추가 및 요청</h3>
+            <button class="modal-close-btn" data-modal="add-friend-modal">✖</button>
+        </div>
+        <div class="add-friend-modal-body" style="display:flex; flex-direction:column; gap:15px;">
+            <h4>🔍 사용자 검색 (친구 요청)</h4>
+            <input type="text" id="friend-search-input" placeholder="이메일, 닉네임 또는 이름으로 검색">
+            <div id="search-results-list" class="search-results-list">
+            </div>
+
+            <h4 style="margin-top:10px;">✉️ 받은 친구 요청</h4>
+            <div id="received-requests-list" class="requests-list">
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div id="add-member-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>멤버 초대 (채팅방에 추가)</h3>
+            <button class="modal-close-btn" data-modal="add-member-modal">✖</button>
+        </div>
+        <div class="member-add-modal-body" style="display:flex; flex-direction:column; gap:8px;">
+            <input type="text" id="member-search-input" class="member-search" placeholder="초대할 멤버 검색 (이메일/닉네임)">
+            <div id="member-search-results-list" class="search-results-list">
+                <div class="info-message">검색어를 입력하세요.</div>
+            </div>
+            <div class="modal-actions">
+                <button id="add-member-confirm-btn" class="btn-primary">선택된 멤버 초대</button>
+                <button class="btn-cancel" data-modal="add-member-modal">취소</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="invite-member-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>멤버 초대 (레거시/친구 목록 기반)</h3>
+            <button class="modal-close-btn" data-modal="invite-member-modal">✖</button>
+        </div>
+        <div class="invite-member-body">
+            <p class="invite-desc">초대할 친구를 선택하세요.</p>
+            <ul id="invite-friend-list" class="invite-friend-list">
+            </ul>
+            <button class="btn-cancel" data-modal="invite-member-modal"
+                    style="margin-top:10px; width:100%;">닫기
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="notification-area"></div>
+</body>
+<script>
+    // GLightbox 인스턴스를 저장할 전역(또는 접근 가능한 범위) 변수
+    let chatLightboxInstance = null;
+    const iconDownload = `<svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>`;
+    const iconCheck = `<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`;
+    const progressRingHTML = `
+        <svg class="progress-ring" viewBox="0 0 36 36">
+            <circle class="progress-ring__circle" cx="18" cy="18" r="15.9155" />
+        </svg>
+    `;
+
+    // =======================================================
+    // 2. [전역 함수] 바이트 포맷 변환 함수 (createChatMessageHTML에서 사용)
+    // =======================================================
+    function formatBytes(bytes, decimals = 2) {
+        if (!+bytes) return '0 Bytes';
+        const k = 1024;
+        const dm = decimals < 0 ? 0 : decimals;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+    }
+
+
+    // =======================================================
+    // 3. [전역 함수] 다운로드 진행률 함수 (HTML onclick에서 직접 호출)
+    // =======================================================
+    async function downloadWithProgress(url, fileName, btnId) {
+        const btn = document.getElementById(btnId);
+        if (!btn) return;
+
+        // 1. 이미 완료된 상태라면 초기화 후 다시 시작 (재다운로드 기능)
+        if (btn.classList.contains('completed')) {
+            btn.classList.remove('completed');
+            btn.innerHTML = `${iconDownload} ${progressRingHTML}`; // 아이콘 초기화
+            // 약간의 딜레이 후 다시 시작
+            setTimeout(() => downloadWithProgress(url, fileName, btnId), 100);
+            return;
+        }
+
+        // 2. 로딩 상태 시작
+        btn.classList.add('loading');
+        const circle = btn.querySelector('.progress-ring__circle');
+        const radius = circle.r.baseVal.value;
+        const circumference = radius * 2 * Math.PI;
+
+        circle.style.strokeDasharray = `${circumference} ${circumference}`;
+        circle.style.strokeDashoffset = circumference;
+
+        try {
+            // 3. Fetch 요청 (인증 헤더 포함)
+            const ACCESS_TOKEN_COOKIE_NAME = 'access-token';
+            const jwtToken = getCookie(ACCESS_TOKEN_COOKIE_NAME);
+
+            const response = await fetch(url, {
+                headers: { 'Authorization': `Bearer ${jwtToken}` }
+            });
+
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+            // 4. Content-Length 가져오기 (진행률 계산용)
+            const contentLength = response.headers.get('Content-Length');
+            if (!contentLength) {
+                console.warn('Content-Length 헤더가 없어 진행률을 표시할 수 없습니다.');
+            }
+            const total = parseInt(contentLength, 10);
+            let loaded = 0;
+
+            // 5. Stream 리더 생성
+            const reader = response.body.getReader();
+            const chunks = [];
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                chunks.push(value);
+                loaded += value.length;
+
+                // 6. 진행률 업데이트 (CSS stroke-dashoffset 조절)
+                if (total) {
+                    const percent = loaded / total;
+                    const offset = circumference - (percent * circumference);
+                    circle.style.strokeDashoffset = offset;
+                }
+            }
+
+            // 7. 다운로드 완료 후 Blob 생성 및 저장
+            const blob = new Blob(chunks);
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = downloadUrl;
+
+            // 파일명 결정 (인자값이 없으면 URL에서 추출)
+            let finalName = fileName;
+            if (!finalName) {
+                 const disposition = response.headers.get('Content-Disposition');
+                 if (disposition && disposition.indexOf('attachment') !== -1) {
+                     const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                     const matches = filenameRegex.exec(disposition);
+                     if (matches != null && matches[1]) {
+                         finalName = matches[1].replace(/['"]/g, '');
+                         finalName = decodeURIComponent(finalName); // 한글 디코딩
+                     }
+                 }
+            }
+            if(!finalName) finalName = url.substring(url.lastIndexOf('/') + 1);
+
+            a.download = finalName;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(downloadUrl);
+            document.body.removeChild(a);
+
+            // 8. UI 완료 상태로 변경
+            btn.classList.remove('loading');
+            btn.classList.add('completed');
+            btn.innerHTML = iconCheck; // 체크 아이콘으로 변경
+
+        } catch (error) {
+            console.error('Download failed:', error);
+            alert('다운로드 중 오류가 발생했습니다.');
+            btn.classList.remove('loading');
+            // 에러 시 UI 초기화
+            btn.innerHTML = `${iconDownload} ${progressRingHTML}`;
+        }
+    }
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return null;
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- DOM 요소 캐싱 ---
+        const chatRoomMap = {};
+        const addMemberModal = document.getElementById('add-member-modal');
+        const memberSearchInput = document.getElementById('member-search-input') || document.querySelector('.member-search');
+        const memberSearchResultsList = document.getElementById('member-search-results-list');
+        const addMemberButton = document.getElementById('add-member-confirm-btn');
+        const loggedInUserEmail = '[[${myProfile.email}]]';
+        const iconBar = document.getElementById('icon-bar-left');
+        const subPanel = document.getElementById('sub-panel-left');
+        const subPanelContent = document.getElementById('sub-panel-content');
+        const friendSearchInput = document.getElementById('friend-search-input') || document.querySelector('#add-friend-modal input[type="text"]');
+        const searchResultsList = document.getElementById('search-results-list');
+        const receivedRequestsList = document.getElementById('received-requests-list');
+
+        // tabBar가 HTML에 없다고 가정하고 동적으로 생성하거나, 존재하는 구조를 활용해야 합니다.
+        let tabBar = document.getElementById('tab-bar');
+        const mainElement = document.querySelector('main');
+        if (!tabBar) {
+            const tempTabBar = document.createElement('div');
+            tempTabBar.id = 'tab-bar';
+            tempTabBar.className = 'tab-bar';
+            mainElement?.querySelector('.main-content')?.insertAdjacentElement('beforebegin', tempTabBar);
+            tabBar = tempTabBar;
+        }
+
+        const chatAreaWrapper = document.getElementById('chat-area-wrapper');
+        const emptyState = document.getElementById('empty-state');
+        const NOTIFICATION_AREA_ID = 'notification-area';
+        const friendPanel = document.getElementById('friend-panel-right');
+        const openFriendPanelBtn = document.getElementById('open-friend-panel-btn');
+        const addFriendBtn = document.getElementById('add-friend-btn');
+        const addFriendModal = document.getElementById('add-friend-modal');
+        const addFriendInput = document.getElementById('add-friend-input');
+        const addFriendConfirmBtn = document.getElementById('add-friend-confirm-btn');
+
+        const friendProfileModal = document.getElementById('friend-profile-modal');
+        const startChatBtn = document.getElementById('start-chat-btn');
+        const modalFriendAvatar = document.getElementById('modal-friend-avatar');
+        const modalFriendName = document.getElementById('modal-friend-name');
+        const modalFriendStatus = document.getElementById('modal-friend-status');
+        const friendList = document.getElementById('friend-list');
+
+        const memberList = document.getElementById('member-list');
+        const inviteMemberBtn = document.getElementById('invite-member-btn');
+        const inviteMemberModal = document.getElementById('invite-member-modal');
+        const inviteFriendList = document.getElementById('invite-friend-list');
+
+        if (memberList) {
+            memberList.innerHTML = '<div class="empty-member">채팅방을 선택하면 참여자가 표시됩니다.</div>';
+        }
+
+        // --- STOMP/WebSocket 관련 전역 변수 ---
+        let stompClient = null;
+        let subscriptions = {}; // { tabId: StompSubscription }
+        let currentRoomId = null; // 현재 활성화된 채팅방의 ID (tabId)
+        let currentRoomIdForAdd = null; // 멤버 추가 모달용 Room ID
+        // ------------------------------------
+
+        // 맴버 목록
+        const chatParticipants = {};
+        const myProfile = {
+           userId: '[[${myProfile?.id}]]',
+           email: '[[${myProfile?.email}]]',
+           nickName: '[[${myProfile?.nickName}]]'
+        };
+        myProfile.initial = getKoreanInitials(myProfile.nickName);
+        // 검증 로그
+        console.log("DEBUG: My Profile Data:", myProfile);
+        console.log("DEBUG: User ID Status:",
+            myProfile.userId === '' ? 'EMPTY STRING (Error likely)' : `OK (${myProfile.userId})`
+        );
+
+        // 상태...
+        let currentLeftView = null;
+        let activeTabId = null;
+        let modalFriendData = null;
+        const openTabs = {}; // { tabId: {type,name,roomId} }
+        const chatHistories = {}; // { tabId: [ {type,text,time,senderInitial?} ] }
+        let isSending = false; // 중복 전송 방지 플래그
+        const fileListManagers = {}; // { tabId: FileAreaManagerInstance }
+
+        const getCurrentTime = () =>
+            new Date().toLocaleTimeString('ko-KR', { hour: 'numeric', minute: '2-digit', hour12: true });
+
+        // --- STOMP/WebSocket 연결 및 통신 로직 ---
+        function connectStomp() {
+            if (stompClient && stompClient.connected) {
+                return;
+            }
+
+            const socket = new SockJS('/ws-stomp');
+            stompClient = Stomp.over(socket);
+
+            // [수정 1] 쿠키에서 액세스 토큰 가져오기
+            const jwtToken = getCookie('access-token'); // 쿠키 이름 확인 필요
+
+            // [수정 2] 헤더 객체 생성
+            const headers = {
+                'Authorization': 'Bearer ' + jwtToken,
+                'access-token': jwtToken
+            };
+
+            // [수정 3] connect 함수에 headers 전달
+            stompClient.connect(headers, (frame) => { // headers 객체 전달
+                console.log('STOMP Connected: ' + frame);
+                Object.keys(openTabs).forEach(tabId => {
+                    if (openTabs[tabId].type === 'group' || openTabs[tabId].type === 'friend') {
+                        subscribeChatRoom(tabId, openTabs[tabId].roomId);
+                    }
+                });
+            }, (error) => {
+                console.error('STOMP Connection Error: ' + error);
+                setTimeout(connectStomp, 5000);
+            });
+        }
+
+        function subscribeChatRoom(tabId, roomId) {
+            if (subscriptions[tabId] || !stompClient || !stompClient.connected) {
+                return;
+            }
+
+            const subscription = stompClient.subscribe(`/sub/chat/room/${roomId}`, (message) => {
+                const receivedMessage = JSON.parse(message.body);
+                // receivedMessage에는 messageType, fileUrl, metadata가 포함될 수 있습니다.
+                displayReceivedMessage(tabId, receivedMessage);
+            });
+
+            subscriptions[tabId] = subscription;
+            console.log(`STOMP Subscribed to: /sub/chat/room/${roomId}`);
+        }
+
+
+
+        // --- 파일 전송 관련 REST API 함수 ---
+        async function uploadFile(file, roomId, senderEmail) {
+            const ACCESS_TOKEN_COOKIE_NAME = 'access-token';
+            const jwtToken = getCookie(ACCESS_TOKEN_COOKIE_NAME);
+            if (!jwtToken) {
+                alert("로그인이 필요합니다.");
+                return null;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('roomId', roomId);
+            formData.append('senderEmail', senderEmail); // 컨트롤러에서 받는 파라미터명 확인
+
+            try {
+                const response = await fetch('/api/chat/upload', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${jwtToken}` },
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error('업로드 실패');
+
+                // [핵심] 서버가 보낸 JSON (originalFileName, storageKey, fileUrl) 반환
+                return await response.json();
+            } catch (error) {
+                console.error('File Upload Error:', error);
+                return null;
+            }
+        }
+
+        // STOMP 메시지 확장 함수 (미디어 포함)
+        function sendMediaStompMessage(tabId, roomId, type, fileUrl, metadata, caption) {
+            if (!stompClient || !stompClient.connected) {
+                console.error('STOMP connection missing for media.');
+                return;
+            }
+
+            const tabInfo = openTabs[tabId];
+            const roomChatType = tabInfo.type.toUpperCase();
+
+            const chatMessage = {
+                chatType: roomChatType,
+                roomId: roomId,
+                sender: myProfile.email,
+                message: caption || '',   // 캡션이 없으면 빈 문자열
+                type: type,               // 'IMAGE' or 'FILE'
+                fileUrl: fileUrl,
+                metadata: metadata,       // JSON 문자열 상태
+                senderName: myProfile.nickName,
+                senderInitial: myProfile.initial
+                // createdAt 제거 확인 (서버가 처리)
+            };
+
+            // 🔑 [핵심 수정] 파일 메시지 보낼 때도 인증 헤더 필수!
+            const jwtToken = getCookie('access-token');
+            const headers = { 'Authorization': 'Bearer ' + jwtToken };
+
+            console.log(`🚀 [MEDIA SEND] Type: ${type}, URL: ${fileUrl}`);
+
+            // headers 객체 추가
+            stompClient.send(`/pub/chat/message`, headers, JSON.stringify(chatMessage));
+        }
+
+
+
+        // 파일 다운로드 및 팝업 함수
+        function handleDownload(storageKey, metadata) {
+             try {
+                 const meta = JSON.parse(metadata);
+                 const fileName = meta.fileName || 'unknown_file';
+
+                 // API 호출 규약 변경: storageKey 사용
+                 const downloadUrl = `/api/chat/download?storageKey=${encodeURIComponent(storageKey)}&fileName=${encodeURIComponent(fileName)}`;
+
+                 if (confirm(`파일 "${fileName}"을(를) 다운로드하시겠습니까?`)) {
+                     window.open(downloadUrl, '_blank');
+                 }
+             } catch (e) {
+                 console.error('Download preparation failed:', e);
+                 alert('다운로드 정보를 처리하는 중 오류가 발생했습니다.');
+             }
+        }
+
+        // 💡 [전역 함수 등록] 다운로드 핸들러
+        window.handleDownload = handleDownload;
+        window.handleImageClick = (url) => { window.open(url, '_blank'); };
+
+        // --- 💡 File Area Manager 클래스 ---
+        class FileAreaManager {
+            constructor(chatAreaEl, tabId, roomId) {
+                this.tabId = tabId;
+                this.roomId = roomId;
+                this.chatAreaEl = chatAreaEl;
+                this.fileDropArea = chatAreaEl.querySelector('.file-drop-area');
+                this.previewContainer = chatAreaEl.querySelector('.file-preview-container');
+                this.fileListEl = chatAreaEl.querySelector('.file-list-summary');
+                this.sendBtn = chatAreaEl.querySelector('.chat-send-btn');
+                this.inputEl = chatAreaEl.querySelector('.chat-input');
+                this.fileInput = chatAreaEl.querySelector('.file-input-hidden');
+                this.toggleBtn = chatAreaEl.querySelector('.file-toggle-btn');
+                this.fileList = [];
+
+                if (!this.fileDropArea || !this.previewContainer || !this.inputEl || !this.sendBtn) { return; }
+
+                this.addEventListeners();
+                this.updateSendButtonState();
+            }
+
+            addEventListeners() {
+                this.toggleBtn.addEventListener('click', () => {
+                    // 1. 파일 드롭 영역의 활성화/비활성화 상태를 토글
+                    const isActive = this.fileDropArea.classList.toggle('active'); // 토글 후의 새로운 상태
+
+                    this.toggleBtn.textContent = '✖';
+
+                    // 2. 새로운 상태(isActive)에 따라 버튼의 회전 클래스를 제어
+                    if (isActive) {
+                         // 영역이 방금 열렸다면 (active: true) -> '✖' 모양(0도 회전)
+                         this.toggleBtn.classList.add('opened');
+                    } else {
+                         // 영역이 방금 닫혔다면 (active: false) -> '+' 모양(45도 회전)
+                         this.toggleBtn.classList.remove('opened');
+                         // 버튼클릭시 업로드파일 리스트 전부제거
+                         this.clearFiles();
+                    }
+                });
+
+                // --- 드래그/드롭 이벤트 ---
+                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                    this.fileDropArea.addEventListener(eventName, (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    });
+                });
+
+                this.fileDropArea.addEventListener('dragenter', () => this.fileDropArea.classList.add('highlight'));
+                this.fileDropArea.addEventListener('dragleave', () => this.fileDropArea.classList.remove('highlight'));
+
+                this.fileDropArea.addEventListener('drop', (e) => {
+                    this.fileDropArea.classList.remove('highlight');
+                    this.handleDrop(e.dataTransfer.files);
+                });
+
+                // --- 파일 선택 이벤트 ---
+                this.fileInput.addEventListener('change', (e) => {
+                     this.handleDrop(e.target.files);
+                     e.target.value = null;
+                });
+
+                // 파일 드롭 영역 클릭 시 input 클릭 유도
+                this.fileDropArea.addEventListener('click', () => {
+                     this.fileInput.click();
+                });
+
+                // 🔑 [추가] 파일 목록 요약 컨테이너에 이벤트 위임을 사용하여 X 버튼 클릭 처리
+                this.fileListEl.addEventListener('click', (e) => {
+                    const button = e.target.closest('.remove-file-btn');
+                    if (button) {
+                        const fileName = button.dataset.fileName;
+                        // removeFile 함수를 호출하여 this.fileList에서 파일 제거 및 UI 업데이트
+                        this.removeFile(fileName);
+                    }
+                });
+
+
+                // --- 텍스트 입력 필드 이벤트 (Send 버튼 활성화/비활성화) ---
+                this.inputEl.addEventListener('input', () => {
+                    this.updateSendButtonState();
+                });
+
+                // --- 엔터 키 입력 이벤트 (채팅/파일 전송) ---
+                this.inputEl.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.handleSend();
+                    }
+                });
+
+                // --- 전송 버튼 클릭 이벤트 ---
+                this.sendBtn.addEventListener('click', () => {
+                    this.handleSend();
+                });
+            }
+
+            handleDrop(files) {
+                Array.from(files).forEach(file => {
+                     const fileType = file.type.startsWith('image/') ? 'IMAGE' : 'FILE';
+                     this.fileList.push({ file: file, type: fileType, name: file.name, size: file.size });
+                });
+                this.updateUI();
+            }
+
+            removeFile(fileName) {
+                this.fileList = this.fileList.filter(f => f.name !== fileName);
+                this.updateUI();
+            }
+
+            clearFiles() {
+                this.fileList = [];
+                this.updateUI();
+                this.fileDropArea.classList.remove('active');
+
+                // 파일 목록이 비워질 때 'opened' 클래스를 제거하여 + 모양(45도)으로 돌아갑니다.
+                this.toggleBtn.classList.remove('opened');
+                this.toggleBtn.textContent = '✖';
+            }
+            updateSendButtonState() {
+                 const hasText = this.inputEl.value.trim().length > 0;
+                 const hasFiles = this.fileList.length > 0;
+                 this.sendBtn.disabled = !(hasText || hasFiles);
+            }
+
+            updateUI() {
+                this.updateSendButtonState();
+
+                // 1. 🔑 [수정 1] 파일 목록 요소는 즉시 비웁니다.
+                this.fileListEl.innerHTML = '';
+
+                // 2. 파일이 없는 경우
+                if (this.fileList.length === 0) {
+
+                    // 🔑 [수정 2: 핵심] 먼저 has-files 클래스를 제거하여 CSS Transition (max-height: 200px -> 0)을 즉시 시작합니다.
+                    this.previewContainer.classList.remove('has-files');
+
+                    // 🔑 [수정 3: 안정성 확보] Transition 시간(0.3s)이 지난 후, DOM에서 내용물을 완전히 제거하고 display: none으로 전환합니다.
+                    // Transition이 부드럽게 완료될 시간을 줍니다.
+                    setTimeout(() => {
+                        this.previewContainer.innerHTML = '';
+                        this.previewContainer.style.display = 'none'; // 영역을 완전히 제거 (max-height 0 완료 후)
+                    }, 350);
+
+                    return;
+                }
+
+                // 3. 파일이 있는 경우
+
+                // 🔑 [수정 4: 필수] 파일이 갱신될 때마다 프리뷰 컨테이너의 내용을 가장 먼저 비웁니다.
+                // 이전 파일의 미리보기가 남아있지 않도록 합니다.
+                this.previewContainer.innerHTML = '';
+
+                // display: flex를 설정하고 has-files 클래스를 추가하여 Transition (max-height: 0 -> 200px)을 시작합니다.
+                this.previewContainer.style.display = 'flex';
+                this.previewContainer.classList.add('has-files');
+
+                const hasNonImage = this.fileList.some(f => f.type === 'FILE');
+
+                if (!hasNonImage) {
+                    this.renderImagePreviews();
+                } else {
+                    this.previewContainer.innerHTML = '<div class="file-preview-message">파일 포함: 미리보기 없음</div>';
+                }
+
+                // 4. 파일 목록 요약을 fileListEl에 다시 렌더링
+                this.fileList.forEach(f => {
+                     const cleanFileName = f.name.replace(/'/g, "\\'");
+                     // console.log(fileListManagers); // 콘솔 로그는 프로덕션 코드에서는 제거하는 것이 좋습니다.
+                     this.fileListEl.insertAdjacentHTML('beforeend',
+                        `<div class="file-summary-item">
+                             <span>${f.name} (${(f.size / 1024 / 1024).toFixed(2)} MB)</span>
+                             <button class="remove-file-btn"
+                                     data-file-name="${cleanFileName}"
+                                     data-tab-id="${this.tabId}">✖</button>
+                         </div>`);
+                });
+            }
+
+            renderImagePreviews() {
+                 const numImages = this.fileList.length;
+                 this.fileList.forEach((fileInfo) => {
+                     const reader = new FileReader();
+                     reader.onload = (e) => {
+                         const img = document.createElement('img');
+                         img.src = e.target.result;
+                         img.alt = fileInfo.name;
+                         img.style.maxWidth = numImages === 1 ? '100%' : '50%';
+                         if (this.fileList.some(f => f.name === fileInfo.name)) {
+                             this.previewContainer.appendChild(img);
+                         }
+                     };
+                     reader.readAsDataURL(fileInfo.file);
+                 });
+            }
+
+            // 전송 핸들러 통합 함수
+            handleSend() {
+                const caption = this.inputEl.value.trim();
+                const hasText = caption.length > 0;
+                const hasFiles = this.fileList.length > 0;
+
+                if (!hasText && !hasFiles) return;
+                if (isSending) return;
+
+                // 1. 파일이 있는 경우
+                if (hasFiles) {
+                    this.sendFiles(caption);
+                }
+                // 2. 텍스트만 있는 경우 (여기가 끊겨 있었습니다!)
+                else if (hasText) {
+                     // [수정] 전역 함수 sendStompMessage를 여기서 호출해야 합니다!
+                     if (typeof sendStompMessage === 'function') {
+                         sendStompMessage(this.tabId, this.roomId, caption);
+                     } else {
+                         console.error("sendStompMessage 함수를 찾을 수 없습니다.");
+                     }
+
+                     this.inputEl.value = '';
+                     this.updateSendButtonState();
+                }
+            }
+
+
+            async sendFiles(caption) {
+                if (this.fileList.length === 0 || isSending) return;
+                isSending = true;
+
+                // 1. 모든 파일 업로드 병렬 처리
+                // (uploadFile 함수에 senderEmail 인자 추가 전달 필요)
+                const uploadPromises = this.fileList.map(fileInfo =>
+                    uploadFile(fileInfo.file, this.roomId, myProfile.email)
+                );
+
+                try {
+                    const responses = await Promise.all(uploadPromises);
+
+                    // 2. 업로드 성공한 파일들에 대해 STOMP 메시지 전송
+                    responses.forEach((response, index) => {
+                        if (response) {
+                            const originalFileInfo = this.fileList[index];
+
+                            // [핵심] 메타데이터 JSON 생성 (DB 저장용)
+                            const metadataObj = {
+                                fileName: response.originalFileName, // 서버 응답값
+                                fileSize: originalFileInfo.size,     // 원본 파일 크기
+                                storageKey: response.storageKey      // 다운로드 키
+                            };
+
+                            // 3. 미디어 메시지 전송 (헤더 포함된 함수 호출)
+                            sendMediaStompMessage(
+                                this.tabId,
+                                this.roomId,
+                                originalFileInfo.type,       // 'IMAGE' or 'FILE'
+                                response.fileUrl,            // 서버가 준 다운로드 URL
+                                JSON.stringify(metadataObj), // 메타데이터를 문자열로 변환
+                                caption
+                            );
+                        }
+                    });
+
+                    this.clearFiles();
+                    this.inputEl.value = '';
+                } catch (e) {
+                    console.error("파일 전송 중 오류:", e);
+                } finally {
+                    isSending = false;
+                }
+            }
+        }
+        // 전역에 FileAreaManager 인스턴스를 관리하는 객체 (기존 코드에서 사용됨)
+        window.fileListManagers = {};
+
+
+        // --- 실제 백엔드 통신 함수 (fetch 기반) ---
+
+        /**
+         * 새 채팅방을 DB에 저장하도록 서버에 요청하고 Room ID를 받아옵니다.
+         */
+        async function requestServerCreateRoom(roomName, roomType, memberIds) {
+            const ACCESS_TOKEN_COOKIE_NAME = 'access-token';
+            const jwtToken = getCookie(ACCESS_TOKEN_COOKIE_NAME);
+
+            console.log("획득된 JWT 토큰:", jwtToken);
+
+            if (!jwtToken) {
+                alert("로그인이 필요합니다.");
+                return null;
+            }
+
+            // DTO 구조와 일치하는 JSON 객체 생성
+            const requestData = {
+                roomName: roomName,
+                creatorId: myProfile.userId,
+                roomType: roomType,
+                memberIds: memberIds
+            };
+
+            console.log("--- 서버 요청 JSON 데이터 ---");
+            console.log(JSON.stringify(requestData));
+            console.log("----------------------------");
+
+            try {
+                const response = await fetch('/api/chat/room', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${jwtToken}`
+                    },
+                    body: JSON.stringify(requestData) // 수정된 객체 전송
+                });
+
+                if (!response.ok) {
+                    // 서버에서 보낸 에러 메시지(있는 경우)를 출력하면 디버깅에 도움됨
+                    const errorBody = await response.text();
+                    throw new Error(`채팅방 생성에 실패했습니다 (${response.status} ${response.statusText}): ${errorBody}`);
+                }
+                const data = await response.json();
+                console.log(`[SERVER RESPONSE] New Room Created: ID=${data.roomId}, Name=${roomName}`);
+                return data.roomId;
+            } catch (error) {
+                console.error('Room Creation Error:', error);
+                alert('채팅방 생성 중 서버 오류가 발생했습니다. 콘솔을 확인해주세요.');
+                return null;
+            }
+        }
+
+
+
+        // requestServerLoadRooms 함수 추가
+        async function requestServerLoadRooms() {
+            const ACCESS_TOKEN_COOKIE_NAME = 'access-token';
+            const jwtToken = getCookie(ACCESS_TOKEN_COOKIE_NAME);
+
+            if (!jwtToken) {
+                console.error("로그인이 필요합니다. (토큰 없음)");
+                return [];
+            }
+
+            try {
+                // [DB CONNECTION] 서버의 실제 채팅방 목록 API 호출 (myProfile.userId 기반)
+                const response = await fetch(`/api/chat/room/list/${myProfile.userId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${jwtToken}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('채팅방 목록 로드에 실패했습니다: ' + response.statusText);
+                }
+
+                const rooms = await response.json();
+                console.log(`[SERVER RESPONSE] Loaded ${rooms.length} chat rooms for user: ${myProfile.userId}`);
+
+                return rooms;
+            } catch (error) {
+                console.error('Room List Load Error:', error);
+                return [];
+            }
+        }
+
+        /**
+         * 특정 방의 과거 채팅 내역을 서버에서 불러옵니다.
+         */
+        async function requestServerLoadHistory(roomId) {
+            try {
+                const response = await fetch(`/api/chat/history/${roomId}`);
+
+                if (!response.ok) throw new Error('과거 내역 로드 실패: ' + response.statusText);
+                const history = await response.json();
+                console.log('history',history);
+                console.log(`[SERVER RESPONSE] Loaded ${history.length} history messages for Room: ${roomId}`);
+                return history; // [{senderId, senderName, message, time, type, fileUrl, metadata}, ...]
+            } catch (error) {
+                console.error('History Load Error:', error);
+                return [];
+            }
+        }
+
+        /**
+         * 특정 방의 참여자 목록을 서버에서 불러옵니다.
+         */
+        async function requestServerLoadParticipants(roomId) {
+            try {
+                const response = await fetch(`/api/chat/participants/${roomId}`); // <-- 실제 API 엔드포인트
+                if (!response.ok) throw new Error('참여자 목록 로드 실패: ' + response.statusText);
+                const participants = await response.json();
+                console.log(`[SERVER RESPONSE] Loaded ${participants.length} participants for Room: ${roomId}`);
+                console.log("participants!!!!!",participants);
+                return participants; // [{email, nickName, userId}]
+            } catch (error) {
+                console.error('Participants Load Error:', error);
+                return [];
+            }
+        }
+
+        // --- 기존 UI 로직 통합 및 수정 ---
+
+        function createTabButton(tabId, name, closable = true) {
+            if (tabBar.querySelector(`.tab[data-tab-id="${tabId}"]`)) return;
+            const tab = document.createElement('div');
+            tab.className = 'tab';
+            tab.dataset.tabId = tabId;
+            tab.innerHTML = closable ? `${name} <span class="close-btn" data-id="${tabId}">✖</span>` : name;
+            tabBar.appendChild(tab);
+
+            tab.addEventListener('click', (e) => {
+                if (e.target.classList.contains('close-btn')) {
+                    closeTab(tabId);
+                } else {
+                    activateTab(tabId);
+                }
+            });
+        }
+
+        iconBar.addEventListener('click', (e) => {
+            const btn = e.target.closest('.icon-btn');
+            if (!btn) return;
+            toggleLeftPanel(btn.dataset.view);
+        });
+
+        function toggleLeftPanel(view) {
+            if (subPanel.classList.contains('open') && currentLeftView === view) {
+                subPanel.classList.remove('open');
+                iconBar.querySelector(`.icon-btn[data-view="${currentLeftView}"]`)?.classList.remove('active');
+                currentLeftView = null;
+            } else {
+                iconBar.querySelectorAll('.icon-btn').forEach(b => b.classList.remove('active'));
+                iconBar.querySelector(`.icon-btn[data-view="${view}"]`)?.classList.add('active');
+                updateSubPanelContent(view);
+                subPanel.classList.add('open');
+                currentLeftView = view;
+            }
+        }
+
+        // updateSubPanelContent: loadAndRenderRooms 함수 재정의 및 전역 등록
+        function updateSubPanelContent(view) {
+            let contentHTML = '';
+
+            if (view === 'chat') {
+                contentHTML = `
+                    <div class="panel-actions">
+                        <label class="title-text">채팅방</label>
+                        <button id="btn-add-group">+ 새 채팅방</button>
+                    </div>
+                    <div class="folder-tree chat-tree">
+                        <input type="text" id="room-search" class="chat-mok" placeholder="채팅방 검색">
+                        <div class="divider"><span>채팅 목록</span></div>
+                        <div id="chat-room-list" class="chat-room-list">
+                            <div style="text-align: center; padding: 20px;">채팅 목록을 불러오는 중...</div>
+                        </div>
+                    </div>`;
+            } else if (view === 'document') {
+                contentHTML = `
+                    <div class="panel-actions">
+                        <label class="title-text">내 보관함</label>
+                    </div>
+                    <div class="folder-tree">
+                        <ul>
+                            <li class="folder">
+                                <span class="folder-label">보관함</span>
+                                <ul>
+                                    <li class="file" data-type="document" data-id="d1" data-name="프로젝트 기획서">프로젝트 기획서</li>
+                                    <li class="file" data-type="document" data-id="d2" data-name="2025년 보고서">2025년 보고서</li>
+                                    <li class="file" data-type="document" data-id="d3" data-name="사진보관함">사진보관함</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>`;
+            } else if (view === 'community') {
+                contentHTML = `
+                    <div class="panel-actions">
+                        <label class="title-text">커뮤니티</label>
+                    </div>
+                    <div class="folder-tree">
+                        <ul>
+                            <li class="folder">
+                                <span class="folder-label">게시판</span>
+                                <ul>
+                                    <li class="file" data-type="community" data-id="c1" data-name="공지사항">공지사항</li>
+                                    <li class="file" data-type="community" data-id="c2" data-name="자유게시판">자유게시판</li>
+                                    <li class="file" data-type="community" data-id="c3" data-name="핫이슈게시판">핫이슈게시판</li>
+                                    <li class="file" data-type="community" data-id="c4" data-name="문서게시판">문서게시판</li>
+                                    <li class="file" data-type="community" data-id="c5" data-name="자소서게시판">자소서게시판</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>`;
+            } else {
+                contentHTML = `
+                    <div class="panel-actions">
+                        <label class="title-text">4조 프로젝트</label>
+                    </div>
+                    <div class="folder-tree">
+                        <p>김홍섭, 남규민, 정지원, 정재민</p>
+                    </div>`;
+            }
+
+            subPanelContent.innerHTML = contentHTML;
+
+            function attachDeleteButtons(chatRoomList) {
+                chatRoomList.querySelectorAll('.chat-room-item').forEach(item => {
+                    if (item.querySelector('.delete-room')) return;
+                    const delBtn = document.createElement('button');
+                    delBtn.textContent = '삭제';
+                    delBtn.className = 'delete-room';
+                    delBtn.style.marginLeft = '8px';
+                    delBtn.style.background = '#000000';
+                    delBtn.style.color = '#ffffff';
+                    delBtn.style.border = 'none';
+                    delBtn.style.borderRadius = '4px';
+                    delBtn.style.cursor = 'pointer';
+                    delBtn.style.padding = '2px 6px';
+
+                    delBtn.addEventListener('click', async (e) => {
+                        e.stopPropagation();
+                        const roomName = item.dataset.name;
+                        const roomId = item.dataset.roomId;
+
+                        if (confirm(`채팅방 "${roomName}"을 삭제하시겠습니까?`)) {
+
+                            // [DB CONNECTION] 서버에 방 삭제 요청
+                            const success = await requestServerDeleteRoom(roomId);
+
+                            if (success) {
+                                item.remove(); // 서버에서 성공했을 경우에만 UI에서 제거
+                                alert(`"${roomName}" 채팅방이 삭제되었습니다.`);
+                                const tabId = `group_${item.dataset.id}`;
+                                if (openTabs[tabId]) closeTab(tabId);
+                            } else {
+                                // 삭제 실패 시 별도 처리
+                                console.warn(`방 삭제 실패: ${roomName}`);
+                            }
+                        }
+                    });
+                    item.querySelector('.room-title')?.appendChild(delBtn);
+                });
+            }
+
+            if (view === 'chat') {
+                const chatRoomList = document.getElementById('chat-room-list');
+
+                // loadAndRenderRooms: DTO 필드 반영 및 정렬
+                async function loadAndRenderRooms() {
+                    try {
+                        const rooms = await requestServerLoadRooms();
+
+                        // 마지막 메시지 시간 기준으로 내림차순 정렬
+                        rooms.sort((a, b) => {
+                             const timeA = a.lastMessageTime ? new Date(a.lastMessageTime).getTime() : 0;
+                             const timeB = b.lastMessageTime ? new Date(b.lastMessageTime).getTime() : 0;
+                             return timeB - timeA; // 내림차순 (최신순)
+                        });
+
+                        chatRoomList.innerHTML = '';
+                        if (rooms.length === 0) {
+                            chatRoomList.innerHTML = '<div style="text-align: center; padding: 20px;">참여 중인 채팅방이 없습니다.</div>';
+                            return;
+                        }
+
+                        rooms.forEach(room => {
+                            const item = document.createElement('div');
+                            item.className = 'chat-room-item';
+                            item.dataset.id = room.roomId; // 고유 ID로 사용
+                            item.dataset.type = 'group';
+                            item.dataset.roomId = room.roomId;
+                            item.dataset.name = room.roomName;
+
+                            const unreadBadge = room.unreadCount > 0
+                                ? `<span class="unread-badge">${room.unreadCount}</span>`
+                                : '';
+
+                            // lastMessageTime이 유효한 경우 포맷팅
+                            const lastTime = room.lastMessageTime ? new Date(room.lastMessageTime).toLocaleTimeString('ko-KR', { hour: 'numeric', minute: '2-digit', hour12: true }) : '';
+
+                            item.innerHTML = `
+                                <div class="room-title">
+                                    <span class="room-hash">#</span>
+                                    <span class="room-name">${room.roomName}</span>
+                                    <span class="room-time">${lastTime}</span>
+                                </div>
+                                <div class="room-meta">
+                                    <span class="room-last">${room.lastMessage || '새 채팅방입니다.'}</span>
+                                    <span class="room-count">${room.memberCount || 0}명</span>
+                                    ${unreadBadge}
+                                </div>
+                            `;
+                            chatRoomList.appendChild(item);
+                        });
+                        attachDeleteButtons(chatRoomList);
+                    } catch (e) {
+                        console.error('Failed to render chat rooms:', e);
+                        chatRoomList.innerHTML = `
+                            <div style="color: red; padding: 20px;">
+                                채팅 목록을 불러오는 중 오류가 발생했습니다.<br>
+                                ${e.message || '서버 연결 실패'}
+                            </div>`;
+                    }
+                }
+                window.loadAndRenderRooms = loadAndRenderRooms; // 전역 등록
+                loadAndRenderRooms();
+
+                const addGroupBtn = document.getElementById('btn-add-group');
+
+                if (addGroupBtn) {
+                    addGroupBtn.addEventListener('click', async () => {
+                        const name = prompt('새 그룹 채팅 이름을 입력하세요 (예: 새 프로젝트)');
+                        if (!name) return;
+
+                        // 서버 DTO가 요구하는 필수 필드 정의
+                        const roomType = 'GROUP';
+                        const memberIds = [myProfile.userId];
+
+                        // 1. 서버에 방 생성 요청 및 Room ID 받기
+                        const newRoomId = await requestServerCreateRoom(name, roomType, memberIds);
+
+                        if (!newRoomId) {
+                            alert('채팅방 생성에 실패했습니다. (서버 오류 또는 유효성 검사 실패)');
+                            return;
+                        }
+
+                        // 2. 서버로부터 최신 방 목록을 가져와 UI를 완전히 갱신
+                        // (수동으로 DOM 요소를 추가하는 기존 로직은 제거)
+                        await loadAndRenderRooms();
+
+                        // 3. 사용자 알림 및 새로 생성된 방으로 이동
+                        alert(`"${name}" 채팅방이 생성되었습니다.`);
+
+                        // 새로 생성된 방의 탭을 바로 열어주기 위한 로직
+                        const newRoomItem = document.querySelector(`.chat-room-item[data-room-id="${newRoomId}"]`);
+                        if (newRoomItem) {
+                            // openTab 함수가 적절히 정의되어 있다고 가정
+                            const tabId = `group_${newRoomId}`;
+                        }
+                    });
+                }
+
+                if (chatRoomList) {
+                    chatRoomList.addEventListener('click', (e) => {
+                        const item = e.target.closest('.chat-room-item');
+                        if (!item || e.target.classList.contains('delete-room')) return;
+
+                        // **[채팅방 진입]**
+                        const tabId = `group_${item.dataset.id}`;
+                        const name = item.dataset.name || '그룹 채팅';
+                        const roomId = item.dataset.roomId; // 실제 DB Room ID
+                        openTab(tabId, name, 'group', roomId);
+                    });
+                }
+            }
+
+            if (view === 'document' || view === 'community') {
+                subPanelContent.querySelectorAll('.file').forEach(fileEl => {
+                    fileEl.addEventListener('dblclick', () => {
+                        const type = fileEl.dataset.type;
+                        const id = fileEl.dataset.id;
+                        const name = fileEl.dataset.name;
+                        const tabId = `${type}_${id}`;
+                        openTab(tabId, name, type);
+                    });
+                });
+            }
+        }
+
+        /**
+         * 특정 Room ID를 서버에 전송하여 DB에서 삭제하도록 요청합니다.
+         */
+        async function requestServerDeleteRoom(roomId) {
+            const ACCESS_TOKEN_COOKIE_NAME = 'access-token';
+            const jwtToken = getCookie(ACCESS_TOKEN_COOKIE_NAME);
+
+            if (!jwtToken) {
+                alert("로그인이 필요합니다.");
+                return false;
+            }
+
+            try {
+                const response = await fetch(`/api/chat/room/${roomId}`, {
+                    method: 'DELETE', // HTTP DELETE 메서드 사용
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${jwtToken}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('채팅방 삭제에 실패했습니다: ' + response.statusText);
+                }
+
+                console.log(`[SERVER RESPONSE] Room Deleted: ID=${roomId}`);
+                return true; // 삭제 성공
+            } catch (error) {
+                console.error('Room Deletion Error:', error);
+                alert('채팅방 삭제 중 서버 오류가 발생했습니다. 콘솔을 확인해주세요.');
+                return false; // 삭제 실패
+            }
+        }
+
+        addFriendBtn.addEventListener('click', () => {
+            addFriendModal.classList.add('open');
+            friendSearchInput.focus();
+        });
+
+        function showAddMemberModal(tabId) {
+            if (!addMemberModal || !memberSearchInput || !memberSearchResultsList) {
+                console.error("ERROR: 멤버 추가 모달 관련 DOM 요소를 찾을 수 없습니다. HTML ID를 확인하세요.");
+                return;
+            }
+
+            // 1. rawId (UUID) 추출
+            currentRoomIdForAdd = openTabs[tabId]?.roomId;
+
+            // 2. 모달 내용 초기화 및 표시
+            memberSearchInput.value = '';
+            memberSearchResultsList.innerHTML = '<div class="info-message">검색어를 입력하세요. (이메일, 닉네임, 이름)</div>';
+            addMemberModal.classList.add('open');
+            memberSearchInput.focus();
+        }
+        if (memberSearchInput) {
+            memberSearchInput.addEventListener('input', (e) => {
+                const query = e.target.value.trim();
+                if (query.length > 1 && currentRoomIdForAdd) {
+                    searchUsersForRoom(query, currentRoomIdForAdd);
+                } else {
+                    memberSearchResultsList.innerHTML = '<div class="info-message">검색어를 입력하세요.</div>';
+                }
+            });
+        }
+
+        // --- A. 친구 목록 로드 및 렌더링 ---
+        function loadFriendList() {
+            fetch('/api/friends/list', {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('친구 목록 로드 실패: ' + response.status);
+                return response.json();
+            })
+            .then(friends => {
+                renderFriendList(friends);
+            })
+            .catch(error => {
+                console.error('❌ 친구 목록 로드 실패:', error);
+                if (friendList) {
+                    friendList.innerHTML = `<div class="empty-list error">목록 로드 오류</div>`;
+                }
+            });
+        }
+        /**
+         * 서버에서 받은 친구 데이터를 화면에 렌더링합니다. (수정됨: friend.userName 사용)
+         * @param {Array<Object>} friends - UserDto 객체의 배열
+         */
+        function renderFriendList(friends) {
+            if (!friendList) return;
+
+            if (friends.length === 0) {
+                friendList.innerHTML = `<div class="empty-list">아직 친구가 없습니다.</div>`;
+                return;
+            }
+
+            const getMockStatus = (index) => {
+                const statuses = ['온라인', '오프라인', '회의 중'];
+                return statuses[index % statuses.length];
+            };
+
+            friendList.innerHTML = friends.map((friend, index) => {
+                const mockStatus = getMockStatus(index);
+                const statusClass = mockStatus.toLowerCase().replace(/\s/g, '-');
+
+                // friend.userName 사용
+                const initial = friend.userName ? friend.userName[0] : '?';
+
+                return `
+                    <div class="friend-item"
+                         data-id="${friend.email}"
+                         data-name="${friend.userName}"
+                         data-status="${mockStatus}"
+                         data-status-class="${statusClass}">
+                        <div class="avatar">${initial}</div>
+                        <div class="name">${friend.userName}</div>
+                        <div class="status-dot ${statusClass}"></div>
+                    </div>`;
+            }).join('');
+        }
+
+        // --- B. 친구 검색 로직 (friendSearchInput 이벤트 리스너는 DOMContentLoaded 시작 부분에서 이미 캐싱됨) ---
+        if (friendSearchInput) {
+            friendSearchInput.addEventListener('input', (e) => {
+                const query = e.target.value.trim();
+                if (query.length > 1) {
+                    searchUsers(query);
+                } else {
+                    if (searchResultsList) searchResultsList.innerHTML = '';
+                }
+            });
+        }
+        /**
+         * 사용자 검색 API를 호출하고 결과를 렌더링합니다. (수정됨: user.userName 사용)
+         */
+        function searchUsers(query) {
+            if (!searchResultsList) return;
+
+            searchResultsList.innerHTML = '<div class="loading-message">검색 중...</div>';
+
+            fetch(`/api/friends/search?query=${encodeURIComponent(query)}`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(response => response.json())
+            .then(users => {
+                if (users.length === 0) {
+                    searchResultsList.innerHTML = '<div class="info-message">검색 결과가 없습니다.</div>';
+                    return;
+                }
+
+                searchResultsList.innerHTML = users.map(user => {
+                    // 로그인된 사용자는 검색 결과에서 제외
+                    if (user.email === loggedInUserEmail) return '';
+
+                    // user.userName 사용
+                    const initial = user.userName ? user.userName[0] : '?';
+
+                    return `
+                        <div class="search-result-item" data-email="${user.email}">
+                            <div class="avatar">${initial}</div>
+                            <div class="name">${user.userName} (${user.email})</div>
+                            <button class="btn-request" data-email="${user.email}">요청</button>
+                        </div>`;
+                }).join('');
+
+                // 친구 요청 버튼 이벤트 리스너 추가
+                searchResultsList.querySelectorAll('.btn-request').forEach(btn => {
+                    btn.onclick = (e) => {
+                        sendFriendRequest(e.target.dataset.email, e.target);
+                    };
+                });
+            })
+            .catch(error => {
+                console.error('사용자 검색 실패:', error);
+                searchResultsList.innerHTML = '<div class="error-message">사용자 검색 중 오류가 발생했습니다.</div>';
+            });
+        }
+        async function searchUsersForRoom(query, roomId) {
+            memberSearchResultsList.innerHTML = '<div class="loading-message">검색 중...</div>';
+
+            try {
+                // [수정 A] 1. 현재 채팅방 멤버 이메일 목록을 먼저 가져옵니다.
+                const currentMembersEmails = await fetchCurrentMembersEmails(roomId);
+
+                // 2. 전체 사용자 검색 결과 로드 (기존 로직)
+                const response = await fetch(`/api/user/search?query=${encodeURIComponent(query)}`);
+                const users = await response.json();
+
+                // [수정 B] 3. 현재 멤버가 아닌 사용자만 필터링합니다.
+                const filteredUsers = users.filter(user => {
+                    // user.email이 currentMembersEmails 리스트에 포함되어 있지 않은 경우만 true 반환
+                    return !currentMembersEmails.includes(user.email);
+                });
+
+                if (filteredUsers.length === 0) {
+                    memberSearchResultsList.innerHTML = '<div class="info-message">검색 결과가 없습니다. (혹은 검색된 사용자가 이미 모두 멤버입니다.)</div>';
+                    return;
+                }
+
+                // 4. 렌더링 (filteredUsers 사용)
+                memberSearchResultsList.innerHTML = filteredUsers.map(user => {
+                    // userId가 없다면 email을 fallback으로 사용
+                    const userId = user.id || user.email;
+                    const initial = user.userName ? user.userName[0] : '?';
+
+                    return `
+                        <div class="search-result-item" data-id="${userId}">
+                            <div class="avatar">${initial}</div>
+                            <div class="name">${user.userName || user.nickName} (${user.email})</div>
+                            <input type="checkbox" class="member-checkbox" data-user-id="${userId}">
+                        </div>`;
+                }).join('');
+
+            } catch (error) {
+                console.error('사용자 검색 실패:', error);
+                memberSearchResultsList.innerHTML = '<div class="error-message">사용자 검색 중 오류가 발생했습니다.</div>';
+            }
+        }
+
+        /**
+         * GLightbox를 초기화하거나, 새로 추가된 '.glightbox' 요소에 대해 기능을 재바인딩하는 함수
+         * 이 함수는 새 메시지가 DOM에 추가될 때마다 호출되어야 합니다.
+         */
+        function initializeChatLightbox() {
+            if (chatLightboxInstance) {
+                chatLightboxInstance.destroy();
+                chatLightboxInstance = null;
+            }
+
+            // 1. 모든 이미지 요소 선택
+            const images = document.querySelectorAll('.chat-messages .image-preview');
+            let imagesLoaded = 0;
+
+            // 이미지가 없거나 이미 로드된 경우 (캐시된 경우) 바로 초기화
+            if (images.length === 0 || Array.from(images).every(img => img.complete)) {
+                createLightboxInstance();
+                return;
+            }
+
+            // 2. 각 이미지의 로드 상태를 감시
+            images.forEach(img => {
+                if (img.complete) {
+                    // 이미 로드 완료된 경우
+                    imagesLoaded++;
+                } else {
+                    // 로드 이벤트를 기다림
+                    img.onload = () => {
+                        imagesLoaded++;
+                        if (imagesLoaded === images.length) {
+                            // 모든 이미지가 로드되면 초기화 함수 호출
+                            createLightboxInstance();
+                        }
+                    };
+                    // 에러 발생 시에도 카운트 (무한 대기 방지)
+                    img.onerror = () => {
+                        imagesLoaded++;
+                        if (imagesLoaded === images.length) {
+                            createLightboxInstance();
+                        }
+                    };
+                }
+            });
+
+            // 3. GLightbox 인스턴스 생성 함수 (옵션은 여기에 위치)
+            function createLightboxInstance() {
+                // 이미 200ms 딜레이를 주었더라도, 안전하게 최종 생성
+                chatLightboxInstance = GLightbox({
+                    selector: '.glightbox',
+                    gallery: 'chat-photos',
+                    loop: true,
+                    caption: false,
+                    draggable: false,
+                    zoomable: true,
+                    touchNavigation: true,
+                    keyboardNavigation: true,
+                    openEffect: 'zoom',
+                    closeEffect: 'zoom',
+                    mousewheel: true,
+                    download: false,
+                });
+                // console.log("GLightbox: 모든 이미지가 로드된 후 초기화 완료");
+            }
+        }
+        function appendChatMessageToDOM(messageData) {
+            // 1. 메시지 HTML 생성
+            const messageHtml = createChatMessageHTML(messageData);
+
+            // 2. 채팅 목록에 메시지 추가 (예: insertAdjacentHTML 사용)
+            const chatContainer = document.getElementById('chat-messages-${activeTabId}');
+
+            if (chatContainer) { // 컨테이너가 존재하는지 확인하는 안전장치 추가
+                chatContainer.insertAdjacentHTML('beforeend', messageHtml);
+
+                // 3. 새 메시지가 DOM에 추가된 직후 GLightbox를 재실행
+                initializeChatLightbox();
+            }
+        }
+        if (addFriendConfirmBtn && addFriendInput && friendList) {
+            addFriendConfirmBtn.addEventListener('click', () => {
+                const name = (addFriendInput.value || '').trim();
+                if (!name) { alert('추가할 친구 이름을 입력해주세요.'); return; }
+                const id = 'f' + Math.floor(Math.random() * 1e6);
+                const item = document.createElement('div');
+                item.className = 'friend-item';
+                item.dataset.id = id;
+                item.dataset.name = name;
+                item.dataset.status = '온라인';
+                item.innerHTML = `<div class="avatar">${name[0]}</div><div class="name">${name}</div>`;
+                friendList.appendChild(item);
+                addFriendInput.value = '';
+                addFriendModal.classList.remove('open');
+            });
+        }
+
+        if (addMemberButton) {
+            addMemberButton.addEventListener('click', () => {
+                addSelectedMembers(currentRoomIdForAdd);
+            });
+        }
+
+        async function addSelectedMembers(roomId) {
+            if (!roomId) return;
+
+            // 체크된 사용자 ID(또는 email) 목록 추출
+            const selectedUsers = Array.from(memberSearchResultsList.querySelectorAll('.member-checkbox:checked'))
+                                         .map(cb => cb.dataset.userId);
+
+            if (selectedUsers.length === 0) {
+                alert("추가할 멤버를 선택해주세요.");
+                return;
+            }
+
+            try {
+                // 서버의 새로운 API 엔드포인트 호출
+                const response = await fetch(`/api/chat/room/${roomId}/members`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(selectedUsers) // List<Long> 또는 List<String>(email)
+                });
+
+                if (response.ok) {
+                    alert(`${selectedUsers.length}명의 멤버가 성공적으로 추가되었습니다.`);
+                    addMemberModal.classList.remove('open'); // 모달 닫기
+                    // 후속 작업: 채팅방 정보 또는 목록 새로고침
+                    // loadAndRenderRooms가 전역에 등록되었다고 가정
+                    if (window.loadAndRenderRooms) window.loadAndRenderRooms();
+
+                    // 현재 열린 탭의 참여자 목록도 새로고침해야 합니다.
+                    if (activeTabId && openTabs[activeTabId].roomId === roomId) {
+                        const participants = await requestServerLoadParticipants(roomId);
+                        chatParticipants[activeTabId] = participants.map(p => ({
+                            email: p.email, nickName: p.nickName, userId: p.userId
+                        }));
+                        renderMemberList(activeTabId, roomId);
+                    }
+                } else {
+                    const errorText = await response.text();
+                    throw new Error(errorText || '멤버 추가 실패');
+                }
+            } catch (error) {
+                console.error('멤버 추가 중 오류 발생:', error);
+                alert('멤버 추가 실패: ' + error.message);
+            }
+        }
+
+        friendList.addEventListener('click', (e) => {
+            const friendItem = e.target.closest('.friend-item');
+            if (!friendItem) return;
+            const { id, name, status } = friendItem.dataset;
+            modalFriendData = { id, name, status };
+            modalFriendAvatar.textContent = (name && name[0]) || '?';
+            modalFriendName.textContent = name || '친구';
+            modalFriendStatus.textContent = status || '';
+            friendProfileModal.classList.add('open');
+        });
+
+        startChatBtn.addEventListener('click', () => {
+            if (!modalFriendData) return;
+            // 1:1 채팅방 Room ID 결정 (서버에서 관리하는 방식에 따라 다름)
+            const roomId = `DM_${myProfile.userId}_${modalFriendData.id}`;
+            const tabId = `friend_${modalFriendData.id}`;
+            openTab(tabId, modalFriendData.name, 'friend', roomId);
+
+            friendProfileModal.classList.remove('open');
+            if (window.innerWidth < 768) friendPanel.classList.remove('open');
+        });
+
+        inviteMemberBtn.addEventListener('click', () => {
+            // 1. 현재 활성화된 탭 ID 확인
+            if (!activeTabId) {
+                 alert('먼저 그룹 채팅방을 열어주세요.');
+                 return;
+            }
+
+            const tabInfo = openTabs[activeTabId];
+
+            // 2. 그룹 채팅방인지 확인
+            if (tabInfo.type !== 'group') {
+                 alert('그룹 채팅방에서만 멤버를 추가할 수 있습니다.');
+                 return;
+            }
+
+            // 3. 멤버 검색 및 추가 모달 호출
+            showAddMemberModal(activeTabId);
+        });
+
+        document.querySelectorAll('.modal-close-btn, .btn-cancel').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const modalId = e.target.dataset.modal;
+                if (modalId) document.getElementById(modalId).classList.remove('open');
+            });
+        });
+        document.querySelectorAll('.modal').forEach(m => {
+            m.addEventListener('click', (e) => { if (e.target === m) m.classList.remove('open'); });
+        });
+
+        // --- [수정] openTab 함수 (renderChatArea 호출 추가 및 roomId 전달) ---
+        async function openTab(tabId, name, type, roomId = null) {
+             // 1. 이미 열린 탭이면 활성화하고 리턴
+             if (openTabs[tabId]) {
+                 activateTab(tabId);
+                 // 탭이 열려 있어도 다시 클릭할 때 읽음 처리를 갱신해야 함
+                 if (roomId) updateLastReadTime(roomId);
+                 return;
+             }
+
+             openTabs[tabId] = { type, name, roomId };
+
+             // 2. 채팅방일 경우 STOMP 구독 및 히스토리/멤버 로딩
+             if (type === 'group' || type === 'friend') {
+                 connectStomp();
+
+                 if (roomId) {
+                     const readTimeUpdatePromise = updateLastReadTime(roomId);
+
+                     const [history, participants] = await Promise.all([
+                         requestServerLoadHistory(roomId),
+                         requestServerLoadParticipants(roomId),
+                         readTimeUpdatePromise
+                     ]);
+
+                     // [수정] 히스토리 업데이트: 미디어 필드 반영하여 저장
+                     chatHistories[tabId] = history.map(msg => ({
+                         type: (msg.senderId === myProfile.userId) ? 'mine' : 'other',
+                         text: msg.message,
+                         time: new Date(msg.createdAt).toLocaleTimeString('ko-KR', { hour: 'numeric', minute: '2-digit', hour12: true }),
+                         senderInitial: msg.senderName ? msg.senderName[0] : '?',
+
+                         // [추가] 미디어 필드
+                         messageType: msg.type,
+                         fileUrl: msg.fileUrl,
+                         metadata: msg.metadata,
+                         senderName: msg.senderName // 렌더링 시 사용
+                     }));
+
+                     chatParticipants[tabId] = participants.map(p => ({
+                         email: p.email, nickName: p.nickName, userId: p.userId
+                     }));
+
+                     subscribeChatRoom(tabId, roomId);
+                 }
+             }
+
+             createTabButton(tabId, name, true);
+             // [수정] 탭 콘텐츠를 여기서 바로 렌더링하도록 변경
+             renderChatArea(tabId, name, roomId);
+
+             // 3. 탭 활성화
+             activateTab(tabId);
+        }
+
+        // --- [추가] renderChatArea (파일 드롭 영역 및 입력 필드 추가) ---
+        function renderChatArea(tabId, name, roomId) {
+            const existingContent = document.getElementById(`tab-content-${tabId}`);
+            if (existingContent) {
+                return;
+            }
+
+            // HTML 템플릿 수정: 파일 드롭 영역, 미리보기, 파일 요약, 텍스트 입력, 전송 버튼 포함
+            const chatContent = `
+                <div class="chat-header">
+                    <h3>${name}</h3>
+                </div>
+
+                <ul id="chat-messages-${tabId}" class="chat-messages">
+                    </ul>
+
+                <div class="chat-utility-area">
+                    <div class="file-drop-area" data-tab-id="${tabId}">
+                        <input type="file" class="file-input-hidden" multiple style="display: none;">
+                        <p>파일을 여기에 드래그하거나 클릭하여 추가하세요.</p>
+                    </div>
+
+                    <div class="file-preview-container">
+                        </div>
+                    <div class="file-list-summary">
+                        </div>
+                </div>
+
+                <div class="chat-input-area">
+                    <button class="file-toggle-btn">➕</button> <input type="text" class="chat-input" placeholder="메시지 또는 캡션을 입력하세요">
+                    <button class="chat-send-btn" disabled>전송</button>
+                </div>
+            `;
+
+            const newContent = document.createElement('div');
+            newContent.className = 'tab-content';
+            newContent.id = `tab-content-${tabId}`;
+
+            if (openTabs[tabId].type !== 'group' && openTabs[tabId].type !== 'friend') {
+                 newContent.innerHTML = `<div style="padding:20px;">[${openTabs[tabId].type.toUpperCase()}] ${name} 페이지</div>`;
+            } else {
+                 newContent.innerHTML = chatContent;
+            }
+
+            chatAreaWrapper.appendChild(newContent);
+            emptyState.style.display = 'none';
+
+            // FileAreaManager 초기화 및 전역 등록
+            const contentEl = newContent;
+            if (roomId) {
+                fileListManagers[tabId] = new FileAreaManager(
+                    contentEl,
+                    tabId,
+                    roomId
+                );
+            }
+
+            // 전송 버튼 이벤트 리스너 추가 (메시지 및 파일 전송 통합)
+            const sendBtn = contentEl.querySelector('.chat-send-btn');
+            const inputEl = contentEl.querySelector('.chat-input');
+            const fileManager = fileListManagers[tabId];
+
+            if (sendBtn && inputEl) {
+                const handleSend = () => {
+                    const text = inputEl.value.trim();
+
+                    // 1. 파일이 존재하는 경우 (캡션이 있든 없든)
+                    if (fileManager && fileManager.fileList.length > 0) {
+                        fileManager.sendFiles(text);
+                    }
+                    // 2. 텍스트만 존재하는 경우
+                    else if (text) {
+                        sendStompMessage(tabId, roomId, text);
+                    }
+
+                    inputEl.value = '';
+                    // 전송 후 버튼 상태 갱신
+                    if (fileManager) fileManager.updateSendButtonState();
+                };
+
+                sendBtn.addEventListener('click', handleSend);
+                inputEl.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSend();
+                    }
+                });
+
+                // 텍스트 입력 시 전송 버튼 상태 업데이트
+                inputEl.addEventListener('input', () => {
+                     if (fileManager) fileManager.updateSendButtonState();
+                });
+            }
+
+            // 히스토리 로딩 후 스크롤
+            const history = chatHistories[tabId] || [];
+            const messagesHTML = history.map(msg => createChatMessageHTML(msg)).join('');
+            const messageListEl = document.getElementById(`chat-messages-${tabId}`);
+            if (messageListEl) {
+                 messageListEl.innerHTML = messagesHTML;
+                 scrollToBottom(tabId);
+                 setTimeout(initializeChatLightbox, 200);
+            }
+
+        } // End renderChatArea
+
+        function getKoreanInitials(text) {
+            if (!text || typeof text !== 'string') return '';
+            const CHOSUNG = ['ㄱ', 'ㄲ', 'ㄴ', 'ㄷ', 'ㄸ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅃ', 'ㅅ', 'ㅆ', 'ㅇ', 'ㅈ', 'ㅉ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
+            let result = '';
+            const firstChar = text.charAt(0);
+            const charCode = firstChar.charCodeAt(0);
+
+            // 첫 글자가 한글 범위에 속하는지 확인
+            if (charCode >= 44032 && charCode <= 55203) {
+                // 한글인 경우 초성만 추출
+                const index = Math.floor((charCode - 44032) / 588);
+                result = CHOSUNG[index];
+            } else {
+                // 한글이 아닌 경우 첫 글자 그대로 사용
+                result = firstChar;
+            }
+            return result;
+        }
+
+        function renderMemberList(tabId, roomId) {
+            if (!memberList) return;
+            currentRoomId = roomId;
+            memberList.innerHTML = '';
+
+            // members는 항상 배열이거나 빈 배열([])이므로 안전합니다.
+            const members = chatParticipants[tabId] || [];
+            if (members.length === 0) {
+                memberList.innerHTML = '<div class="empty-member">참여자가 없습니다.</div>';
+                return;
+            }
+
+            // myProfile에서 로그인 사용자 본인의 email을 가져옵니다.
+            const myEmail = myProfile ? myProfile.email : null; // myId 대신 myEmail 사용
+
+            members.forEach(m => {
+                console.log("m!!!!!!!!", m);
+
+                // 1. 표시할 이름 결정: nickName이 있으면 사용, 없으면 email 사용
+                const displayName = m.nickName || m.email;
+
+                // 2. 아바타에 표시할 글자 결정 (displayName의 첫 글자)
+                const avatarChar = displayName ? displayName[0] : '?';
+
+                // 3. 참여자 목록 아이템 생성 및 데이터 설정
+                const item = document.createElement('div');
+                item.className = 'friend-item';
+                item.dataset.id = m.email; // 데이터 id는 email 사용
+                item.dataset.name = displayName; // 데이터 name은 표시 이름 사용
+
+                // 4. 역할 텍스트 결정
+                let roleText = '참여자';
+
+                // m.email과 myEmail을 비교하여 본인인지 확인
+                if (myEmail && m.email === myEmail) {
+                    roleText = '나'; // 로그인 사용자 본인인 경우
+                }
+
+                // 5. HTML 구조 생성
+                item.innerHTML = `
+                     <div class="avatar">${avatarChar}</div>
+                        <div class="member-text">
+                            <div class="member-name">${displayName}</div>
+                            <div class="member-role">${roleText}</div>
+                    </div>
+                `;
+
+                memberList.appendChild(item);
+            });
+        }
+
+        // --- activateTab 함수 (renderChatArea 대신 히스토리/멤버 목록만 갱신) ---
+        function activateTab(tabId) {
+            activeTabId = tabId;
+            const tabInfo = openTabs[tabId];
+            currentRoomId = tabInfo ? tabInfo.roomId : null;
+
+            tabBar.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            chatAreaWrapper.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+            const activeTabEl = tabBar.querySelector(`.tab[data-tab-id="${tabId}"]`);
+            const activeContentEl = document.getElementById(`tab-content-${tabId}`);
+
+            if (activeTabEl && activeContentEl) {
+                activeTabEl.classList.add('active');
+                activeContentEl.classList.add('active');
+
+                // 탭 활성화 시 메시지 및 멤버 목록 갱신
+                renderMemberList(tabId, currentRoomId);
+
+                // 탭 활성화 시 메시지 목록을 다시 렌더링하고 스크롤
+                const history = chatHistories[tabId] || [];
+                const messagesHTML = history.map(msg => createChatMessageHTML(msg)).join('');
+                const messageListEl = activeContentEl.querySelector(`#chat-messages-${tabId}`);
+                if (messageListEl) {
+                     messageListEl.innerHTML = messagesHTML;
+                     scrollToBottom(tabId);
+                     initializeChatLightbox();
+                }
+
+                // 파일 매니저 상태 업데이트
+                if (fileListManagers[tabId]) {
+                    fileListManagers[tabId].updateSendButtonState();
+                }
+
+                activeTabEl.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+            }
+        } // End activateTab
+
+        function closeTab(tabId) {
+            if (subscriptions[tabId]) {
+                subscriptions[tabId].unsubscribe();
+                delete subscriptions[tabId];
+                console.log(`STOMP Unsubscribed from: ${tabId}`);
+            }
+
+            const tabEl = tabBar.querySelector(`.tab[data-tab-id="${tabId}"]`);
+            const contentEl = document.getElementById(`tab-content-${tabId}`);
+            if (tabEl) tabEl.remove();
+            if (contentEl) contentEl.remove();
+            delete openTabs[tabId];
+
+            if (activeTabId === tabId) {
+                const ids = Object.keys(openTabs);
+                if (ids.length) {
+                    activateTab(ids[ids.length - 1]);
+                }
+                else {
+                    activeTabId = null;
+                    currentRoomId = null;
+                    memberList.innerHTML = '<div class="empty-member">채팅방을 선택하면 참여자가 표시됩니다.</div>';
+                    emptyState.style.display = 'flex';
+                }
+            }
+            // 파일 매니저 제거
+            if (fileListManagers[tabId]) {
+                delete fileListManagers[tabId];
+            }
+        }
+
+        tabBar.addEventListener('wheel', (e) => {
+            if (e.deltaY !== 0) {
+                e.preventDefault();
+                tabBar.scrollLeft += e.deltaY;
+            }
+        });
+
+        // renderTabContent 함수 (renderChatArea로 대체되었으므로 삭제)
+        // function renderTabContent(tabId) { ... }
+
+
+        // ---  updateLastReadTime (채팅 목록 갱신) ---
+        function updateLastReadTime(roomId) {
+            if (!roomId) return Promise.resolve();
+
+            // Authorization 헤더를 제거하고 요청을 보냅니다.
+            return fetch(`/api/chat/room/${roomId}/read`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(async response => {
+                if (response.ok) {
+                    console.log(`LastReadTime 갱신 성공: Room ${roomId}`);
+
+                    // 💡 [수정] 갱신 성공 후, 채팅 목록을 다시 불러와서 unread badge 제거
+                    if (window.loadAndRenderRooms) {
+                         window.loadAndRenderRooms();
+                    }
+                } else {
+                    let errorBody;
+                    try {
+                        const contentType = response.headers.get("content-type");
+                        if (contentType && contentType.includes("application/json")) {
+                            errorBody = await response.json();
+                        } else {
+                            errorBody = await response.text();
+                        }
+                    } catch (e) {
+                        errorBody = `Response status ${response.status} but failed to parse body.`;
+                    }
+
+                    console.error(`LastReadTime 갱신 실패: Room ${roomId}, Status: ${response.status}, Body:`, errorBody);
+
+                    throw new Error(`API call failed with status ${response.status}: ${JSON.stringify(errorBody)}`);
+                }
+
+                return Promise.resolve();
+            })
+            .catch(error => {
+                console.error('LastReadTime 갱신 오류:', error);
+                throw error;
+            });
+        }
+
+        /**
+         * WebSocket 메시지 DTO를 받아 HTML 요소로 변환하는 함수
+         * 서버 DTO 필드 사용: senderName, senderInitial, fileUrl, metadata, messageType, text
+         */
+        function createChatMessageHTML(message) {
+
+            // 🔑 [핵심 수정] isMine 판별 로직을 서버 DTO sender와 myProfile.email 비교로 변경
+            // 서버가 브로드캐스팅하는 message.sender (이메일)과 내 이메일을 비교합니다.
+            const isMine = message.sender === myProfile.email;
+
+            // 이하는 이전 수정 내용 유지
+            const isSystem = message.messageType === 'ENTER' || message.messageType === 'QUIT';
+
+            // DTO에서 값이 null/빈 문자열로 오더라도 '?'로 표시되도록 안전하게 처리
+            const displayInitial = message.senderInitial && message.senderInitial.trim() !== '' ? message.senderInitial : '?';
+            const displayName = message.senderName && message.senderName.trim() !== '' ? message.senderName : '?';
+
+            // 아바타 표시 조건: 내 메시지가 아니고, 시스템 메시지가 아닐 때
+            const showAvatar = !isMine && !isSystem;
+
+            // 1. 메시지 내용 (content) 결정
+            let contentHTML = '';
+
+            if (isSystem) {
+                contentHTML = `<p class="system-message">${message.text}</p>`;
+            } else {
+                // 유니크 ID 생성 (버튼 제어용)
+                const btnId = `dl-btn-${message.time.replace(/:/g,'')}-${Math.floor(Math.random()*1000)}`;
+
+                // (A) IMAGE 타입
+                if (message.messageType === 'IMAGE' && message.fileUrl) {
+                    // [ GLightbox 적용]
+                    contentHTML = `
+                        <div class="image-bubble">
+                            <a href="${message.fileUrl}" class="glightbox" data-gallery="chat-photos">
+                                <img src="${message.fileUrl}" class="image-preview">
+                            </a>
+
+                            <button id="${btnId}" class="btn-download-action"
+                                    onclick="downloadWithProgress('${message.fileUrl}', '', '${btnId}')">
+                                ${iconDownload}
+                                ${progressRingHTML}
+                            </button>
+                        </div>
+                        ${message.text ? `<p class="caption">${message.text}</p>` : ''}
+                    `;
+                }
+                // (B) FILE 타입
+                else if (message.messageType === 'FILE' && message.fileUrl) {
+                    let fileName = '알 수 없는 파일';
+                    let fileSize = '';
+
+                    if (message.metadata) {
+                         try {
+                             const meta = typeof message.metadata === 'string' ? JSON.parse(message.metadata) : message.metadata;
+                             fileName = meta.fileName || fileName;
+                             if(meta.fileSize) fileSize = formatBytes(meta.fileSize); // 용량 포맷팅 함수 필요
+                         } catch (e) {}
+                    }
+
+                    contentHTML = `
+                        <div class="media-bubble">
+                            <div class="file-icon-box">📄</div>
+                            <div class="file-info-wrapper">
+                                <span class="file-name">${fileName}</span>
+                                <span class="file-size">${fileSize}</span>
+                            </div>
+                            <button id="${btnId}" class="btn-download-action" title="다운로드"
+                                    onclick="downloadWithProgress('${message.fileUrl}', '${fileName}', '${btnId}')">
+                                ${iconDownload}
+                                ${progressRingHTML}
+                            </button>
+                        </div>
+                         ${message.text ? `<p class="caption">${message.text}</p>` : ''}
+                    `;
+                }
+                // (C) TALK 타입
+                else {
+                    contentHTML = `<div class="bubble">${message.text}</div>`;
+                }
+            }
+
+            // 2. 최종 메시지 구조
+            return `
+                <li class="chat-message ${isMine ? 'mine' : 'other'} ${isSystem ? 'system' : ''}">
+
+                    ${showAvatar ? `<div class="avatar">${displayInitial}</div>` : ''}
+
+                    <div class="message-body">
+
+                        ${showAvatar ? `<div class="sender-name">${displayName}</div>` : ''}
+
+                        <div class="content-box">
+                            ${contentHTML}
+                            <div class="message-time">${message.time}</div>
+                        </div>
+
+                        </div>
+                </li>
+            `;
+        }
+
+        function scrollToBottom(tabId) {
+        if (chatLightboxInstance) {
+                // console.log("WARN: GLightbox가 열려 있어 스크롤을 막습니다.");
+                return;
+            }
+            const box = document.getElementById(`chat-messages-${tabId}`);
+            if (box) box.scrollTop = box.scrollHeight;
+        }
+
+        // STOMP 메시지 전송 함수
+        function sendStompMessage(tabId, roomId, text) {
+            if (!stompClient || !stompClient.connected) {
+                console.error('STOMP connection is not established.');
+                alert('서버와 연결되지 않았습니다.');
+                return;
+            }
+
+            const tabInfo = openTabs[tabId];
+            // [주의] 서버 Enum(GROUP, FRIEND)과 대소문자가 정확히 일치해야 함
+            const roomChatType = tabInfo.type.toUpperCase();
+
+            const chatMessage = {
+                chatType: roomChatType,
+                roomId: roomId,
+                sender: myProfile.email,
+                message: text,
+                type: 'TALK',
+                senderName: myProfile.nickName,
+                senderInitial: myProfile.initial
+                // createdAt 필드는 절대 보내지 마세요!
+            };
+
+            // [중요] JWT 헤더 추가
+            const jwtToken = getCookie('access-token');
+            const headers = { 'Authorization': 'Bearer ' + jwtToken };
+
+            console.log("🚀 클라이언트 전송 시도:", chatMessage); // 이 로그가 브라우저 콘솔에 떠야 함
+
+            stompClient.send(`/pub/chat/message`, headers, JSON.stringify(chatMessage));
+        }
+
+        // --- displayReceivedMessage (알림 및 DTO 확장 반영) ---
+        function displayReceivedMessage(tabId, message, isMine = false) {
+            const type = (message.sender === myProfile.email || isMine) ? 'mine' : 'other';
+            const senderName = message.senderName || message.sender;
+            const senderInitial = senderName[0];
+            const messageType = message.type; // TALK, IMAGE, FILE 등
+
+            const newMessage = {
+                type: type,
+                text: message.message,
+                time: new Date(message.createdAt).toLocaleTimeString('ko-KR', { hour: 'numeric', minute: '2-digit', hour12: true }),
+                senderInitial: senderInitial,
+                senderName: senderName,
+
+                messageType: messageType,
+                fileUrl: message.fileUrl,
+                metadata: message.metadata
+            };
+
+            if (!chatHistories[tabId]) chatHistories[tabId] = [];
+            chatHistories[tabId].push(newMessage);
+
+            const list = document.getElementById(`chat-messages-${tabId}`);
+            if (list) {
+                const nearBottom = (list.scrollHeight - list.scrollTop - list.clientHeight) < 40;
+                list.insertAdjacentHTML('beforeend', createChatMessageHTML(newMessage));
+
+                // 이미지 메시지일 때만 GLightbox 재실행
+                if (newMessage.messageType === 'IMAGE') {
+                    setTimeout(initializeChatLightbox, 200);
+                }
+
+                if (nearBottom) scrollToBottom(tabId);
+            }
+
+            // WebSocket 알림 버그 수정: 현재 활성화된 방이 아닐 때만 알림 발생
+            if (tabId !== activeTabId && !isMine) {
+                 const tabInfo = openTabs[tabId];
+                 showNotification(senderName, newMessage.text, tabId);
+                 // 목록 업데이트: 안 읽은 메시지 수 증가 반영을 위해
+                 if (window.loadAndRenderRooms) window.loadAndRenderRooms();
+            } else if (tabId === activeTabId && !isMine && openTabs[tabId].roomId) {
+                 // 현재 보고 있는 방이면 읽음 처리 갱신
+                 updateLastReadTime(openTabs[tabId].roomId);
+            }
+            initializeChatLightbox();
+        } // End displayReceivedMessage
+
+        function showNotification(senderName, messageText, tabId) {
+            const area = document.getElementById(NOTIFICATION_AREA_ID);
+            if (!area) {
+                console.warn('알림 영역 (ID: notification-area)이 HTML에 없습니다.');
+                return;
+            }
+
+            const tabInfo = openTabs[tabId];
+            const displayRoomName = tabInfo?.name || '알 수 없는 방';
+
+            // 알림 요소 생성
+            const notification = document.createElement('div');
+            notification.className = 'chat-notification-popup';
+            notification.innerHTML = `
+                <strong>[${displayRoomName}] ${senderName}</strong>
+                <p>${messageText.length > 50 ? messageText.substring(0, 50) + '...' : messageText}</p>
+            `;
+            notification.dataset.tabId = tabId;
+
+            // 클릭 시 해당 방으로 이동 (openTab 함수를 사용한다고 가정)
+            notification.onclick = () => {
+                activateTab(tabId);
+                notification.remove();
+            };
+
+            area.appendChild(notification);
+
+            // 5초 후 자동 제거
+            setTimeout(() => {
+                notification.classList.add('fading-out');
+                setTimeout(() => notification.remove(), 500); // CSS transition 시간을 고려하여 제거
+            }, 5000);
+        }
+
+        // getCurrentActiveRoomId는 activeTabId와 currentRoomId로 대체 가능
+
+        function openInviteMemberModal() {
+            if (!inviteFriendList || !friendList || !memberList || !currentRoomId) {
+                alert('채팅방을 선택해야 멤버를 초대할 수 있습니다.');
+                return;
+            }
+
+            const friendItems = Array.from(friendList.querySelectorAll('.friend-item'));
+            const memberItems = Array.from(memberList.querySelectorAll('.friend-item'));
+
+            const memberIds = new Set(
+                memberItems
+                    .map(m => m.dataset.id)
+                    .filter(Boolean)
+            );
+
+            inviteFriendList.innerHTML = '';
+
+            const availableFriends = friendItems.filter(f => !memberIds.has(f.dataset.id));
+
+            if (availableFriends.length === 0) {
+                const li = document.createElement('li');
+                li.textContent = '초대 가능한 친구가 없습니다.';
+                li.className = 'invite-empty';
+                inviteFriendList.appendChild(li);
+            } else {
+                availableFriends.forEach(f => {
+                    const li = document.createElement('li');
+                    li.className = 'invite-item';
+                    li.dataset.id = f.dataset.id;
+                    li.dataset.name = f.dataset.name;
+                    li.textContent = `${f.dataset.name} (${f.dataset.status || ''})`.trim();
+
+                    li.addEventListener('click', () => {
+                        addMemberFromFriend(li.dataset.id, li.dataset.name);
+                        inviteMemberModal.classList.remove('open');
+                    });
+
+                    inviteFriendList.appendChild(li);
+                });
+            }
+
+            inviteMemberModal.classList.add('open');
+        }
+        // --- C. 친구 요청 및 수락 로직 ---
+        function sendFriendRequest(receiverEmail, buttonElement) {
+            buttonElement.disabled = true;
+            buttonElement.textContent = '전송 중...';
+
+            fetch('/api/friends/request', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ receiverEmail: receiverEmail })
+            })
+            .then(response => {
+                if (response.ok) {
+                    buttonElement.textContent = '요청 완료';
+                    buttonElement.classList.add('sent');
+                    // 버튼은 요청 완료 상태로 유지
+                    return;
+                }
+                // 에러 메시지를 텍스트로 읽어서 Error에 포함
+                return response.text().then(text => { throw new Error(text || '요청 실패'); });
+            })
+            .catch(error => {
+                console.error('친구 요청 실패:', error);
+                // alert('친구 요청 실패: ' + (error.message || '서버 오류')); // alert 대신 console 사용
+                buttonElement.textContent = '요청';
+                buttonElement.disabled = false;
+            });
+        }
+
+        function loadReceivedRequests() {
+            if (!receivedRequestsList) return;
+            receivedRequestsList.innerHTML = `<div class="loading-message">받은 요청 로드 중...</div>`;
+
+            fetch('/api/friends/requests/received', {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('요청 목록 로드 실패');
+                return response.json();
+            })
+            .then(requests => {
+                if (requests.length === 0) {
+                    receivedRequestsList.innerHTML = `<div class="empty-list">받은 요청이 없습니다.</div>`;
+                    return;
+                }
+
+                receivedRequestsList.innerHTML = requests.map(user => {
+                    // user.userName 사용
+                    const initial = user.userName ? user.userName[0] : '?';
+                    return `
+                        <div class="request-item" data-email="${user.email}">
+                            <div class="avatar">${initial}</div>
+                            <div class="name">${user.userName} (${user.email})</div>
+                            <button class="btn-accept" data-email="${user.email}">수락</button>
+                        </div>`;
+                }).join('');
+
+                receivedRequestsList.querySelectorAll('.btn-accept').forEach(btn => {
+                    btn.onclick = (e) => acceptFriendRequest(e.target.dataset.email, e.target);
+                });
+            })
+            .catch(error => {
+                console.error('받은 요청 로드 실패:', error);
+                receivedRequestsList.innerHTML = `<div class="empty-list error">요청 목록 로드 오류</div>`;
+            });
+        }
+
+
+        function acceptFriendRequest(senderEmail, buttonElement) {
+            buttonElement.disabled = true;
+            buttonElement.textContent = '수락 중...';
+
+            fetch(`/api/friends/accept/${senderEmail}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(response => {
+                if (response.ok) {
+                    console.log('친구 수락 성공!');
+                    // 목록 갱신 (친구가 되었으므로 친구 목록 갱신 + 요청 목록에서 제거)
+                    loadFriendList();
+                    loadReceivedRequests();
+                    return;
+                }
+                return response.text().then(text => { throw new Error(text || '수락 실패'); });
+            })
+            .catch(error => {
+                console.error('친구 수락 실패:', error);
+                // alert('수락 실패: ' + (error.message || '서버 오류')); // alert 대신 console 사용
+                buttonElement.textContent = '수락';
+                buttonElement.disabled = false;
+            });
+        }
+
+        //헬퍼추가
+        async function fetchCurrentMembersEmails(roomId) {
+            try {
+                const response = await fetch(`/api/chat/room/${roomId}/members/emails`);
+                if (!response.ok) throw new Error('채팅방 멤버 이메일 로드 실패');
+                return await response.json(); // List<String> of emails
+            } catch (error) {
+                console.error("현재 채팅방 멤버 로드 오류:", error);
+                return [];
+            }
+        }
+
+        function addMemberFromFriend(friendId, friendName) {
+            if (!memberList || !activeTabId || !currentRoomId) return;
+
+            const exists = memberList.querySelector(`.friend-item[data-id="${friendId}"]`);
+            if (exists) return;
+
+            // 실제로는 서버에 멤버 추가 요청 필요
+            console.log(`[SERVER REQUEST] Added Member: Room=${currentRoomId}, Friend=${friendName}`);
+
+            const firstChar = (friendName && friendName[0]) || '?';
+
+            const item = document.createElement('div');
+            item.className = 'friend-item';
+            item.dataset.id = friendId;
+            item.dataset.name = friendName;
+
+            item.innerHTML = `
+                <div class="avatar">${firstChar}</div>
+                <div class="member-text">
+                    <div class="member-name">${friendName}</div>
+                    <div class="member-role">초대된 멤버</div>
+                </div>
+            `;
+            memberList.appendChild(item);
+
+            // 로컬 참여자 목록에도 추가
+            if (chatParticipants[activeTabId]) {
+                chatParticipants[activeTabId].push({ email: friendId, nickName: friendName, userId: 'user_' + friendId });
+            }
+
+            // 우측 친구 패널 수정: 친구 목록/요청 로드 추가
+            openFriendPanelBtn.addEventListener('click', () => {
+                friendPanel.classList.toggle('open');
+                if (friendPanel.classList.contains('open')) {
+                    loadFriendList();
+                    loadReceivedRequests();
+                }
+            });
+            // 멤버추가
+            addFriendBtn.addEventListener('click', () => {
+                // 1. 현재 활성화된 탭 ID 확인
+                if (!activeTabId) {
+                     alert('먼저 그룹 채팅방을 열어주세요.');
+                     return;
+                }
+
+                const tabInfo = openTabs[activeTabId];
+
+                // 2. 그룹 채팅방인지 확인
+                if (tabInfo.type !== 'group') {
+                     alert('그룹 채팅방에서만 멤버를 추가할 수 있습니다.');
+                     return;
+                }
+
+                // 3. 팝업 열기 함수 호출 (아래 섹션에 새로 정의해야 함)
+                showAddMemberModal(activeTabId);
+            });
+        }
+
+        document.addEventListener('click', function(e) {
+            // 클릭된 요소가 .remove-file-btn이거나 그 내부 요소인지 확인
+            const removeBtn = e.target.closest('.remove-file-btn');
+            if (removeBtn) {
+                // 1. data- 속성에서 정보 추출
+                const tabId = removeBtn.dataset.tabId;
+                const fileName = removeBtn.dataset.fileName;
+
+                // 2. 파일 관리 인스턴스가 존재하는지 안전하게 확인 (window.fileListManagers 사용)
+                const manager = window.fileListManagers[tabId];
+
+                if (manager) {
+                    // 3. FileAreaManager 인스턴스의 removeFile 호출 (내부적으로 updateUI도 호출됨)
+                    manager.removeFile(fileName);
+                } else {
+                    console.warn('WARN: 닫힌 탭의 잔여 파일 버튼 클릭됨. DOM에서 제거.');
+                    // 인스턴스가 없는 경우, 시각적으로만 제거
+                    removeBtn.closest('.file-summary-item')?.remove();
+                }
+            }
+        });
+    setTimeout(initializeChatLightbox, 200);
+    });
+</script>
+
+</html>

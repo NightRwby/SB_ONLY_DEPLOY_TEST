@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/exodia}">
+
+<div layout:fragment="content">
+    <section class="office-box">
+        <div class="office-title">
+            <label class="office-text">소개글</label>
+        </div>
+        <div class="slide-box">
+            <div class="side_box_top">
+                <div class="top-text">
+                    <h1><span class="accent-text">Blah Blah</span> COMMUNITY</h1>
+                    <p class="top-sub">지금 실시간으로 뜨거운 이슈와 자유로운 이야기를 만나보세요.</p>
+                </div>
+            </div>
+            <section class="slide_box_section">
+                    <strong>4명의 열정이 모여 만든 소통의 중심, 블라블라입니다.</strong>
+                    <span>단순한 채팅을 넘어, 서로의 지식과 일상을 공유하는 커뮤니티 플랫폼을 지향합니다.</span>
+                    <span>끊임없는 소통과 피드백을 통해 더 나은 서비스를 만들어 가겠습니다.</span>
+                    <span>지금 바로 가입하여 블라블라의 새로운 멤버가 되어주세요!</span>
+                    <span>왼쪽의 게시판 목록을 통해 서로를 칭찬하고 격려하는 따뜻한 커뮤니티를 이용해 보세요.</span>
+                    <span>- made by 김홍섭 남규민 정지원 정재민-</span>
+
+            </section>
+            <section class="slide_box_bottom">
+                <div class="logoarea">
+                    <img class="company_logo" th:src="@{/img/logo.png}" alt="기업 이미지">
+                </div>
+            </section>
+
+        </div>
+    </section>
+</div>
+
+<th:block layout:fragment="script">
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            console.log("Community Page Loaded - Init Sidebars"); // 확인용 로그
+
+            // 함수가 로드되었는지 확실히 체크하고 실행
+            if(typeof initAsideL === 'function') {
+                initAsideL();
+            } else {
+                console.error("initAsideL 함수를 찾을 수 없습니다.");
+            }
+
+            if(typeof initAsideR === 'function') {
+                initAsideR();
+            } else {
+                console.error("initAsideR 함수를 찾을 수 없습니다.");
+            }
+        });
+    </script>
+</th:block>
+</html>

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/exodia}">
+<head>
+    <link rel="stylesheet" th:href="@{/css/cover_letter.css}">
+</head>
+<div layout:fragment="content">
+    <section class="board_card">
+        <div class="c_side_box_top">
+            <div class="c_top-text">
+                <span class="c_accent-text">Blah Blah</span>
+                <h1 class="c_accent_h1">COVER LETTER</h1>
+            </div>
+            <div class="commu_title">
+                <h1>자기소개서 게시판</h1>
+            </div>
+        </div>
+    </section>
+
+    <form id="c_toolbarForm" class="toolbar_form" onsubmit="return false;">
+        <section class="board_card" aria-label="검색 및 필터">
+            <div class="c_toolbar">
+                <div class="c_tool_form_wrap">
+
+                    <div class="c_toolform1">
+                        <label for="c_q" class="c_form_label">검색</label>
+                        <input type="text" id="c_q" class="c_tool-input" placeholder="제목·내용·태그 검색" />
+                    </div>
+
+                    <div class="c_toolform2">
+                        <div class="c_tool_select_form1">
+                            <label for="c_cat" class="c_form_label">카테고리</label>
+                            <select id="c_cat" class="c_tool-select">
+                                <option value="">전체</option>
+                                <option value="합격후기">합격후기</option>
+                                <option value="불합격피드백">불합격피드백</option>
+                                <option value="자소서템플릿">자소서템플릿</option>
+                                <option value="문항별예시">문항별예시</option>
+                                <option value="경력기술서">경력기술서</option>
+                            </select>
+                        </div>
+
+                        <div class="c_tool_select_form2">
+                            <label for="c_sort" class="c_form_label">정렬</label>
+                            <select id="c_sort" class="c_tool-select">
+                                <option value="latest">최신순</option>
+                                <option value="views">조회수순</option>
+                                <option value="likes">추천순</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="c_toolform3">
+                        <ul class="c_chips" aria-label="빠른 필터">
+                            <li><button type="button" class="c_chip" data-chip="합격후기"># 합격후기</button></li>
+                            <li><button type="button" class="c_chip" data-chip="불합격피드백"># 불합격피드백</button></li>
+                            <li><button type="button" class="c_chip" data-chip="자소서템플릿"># 자소서템플릿</button></li>
+                            <li><button type="button" class="c_chip" data-chip="문항별예시"># 문항별예시</button></li>
+                            <li><button type="button" class="c_chip" data-chip="경력기술서"># 경력기술서</button></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="c_tool_btn_wrap">
+                    <div class="c_tool_btn_group1">
+                        <label class="c_form_label" for="c_resetBtn">reset</label>
+                        <button id="c_resetBtn" class="c_tool_btn" type="button">초기화</button>
+                    </div>
+
+                    <div class="c_tool_btn_group2">
+                        <label class="c_form_label">search</label>
+                        <button id="c_searchBtn" class="c_tool_btn" type="button" onclick="document.getElementById('c_q').focus()">검색하기</button>
+                    </div>
+
+                    <div class="c_tool_btn_group3">
+                        <label class="c_form_label" for="c_writeBtn">write</label>
+                        <button id="c_writeBtn" class="c_tool_btn" type="button">글쓰기</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </form>
+
+    <section class="board_card" aria-label="게시글 목록">
+        <div style="width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;">
+            <table id="c_boardTable" style="width: 100%; min-width: 600px;">
+                <colgroup>
+                    <col style="width: 8%">
+                    <col style="width: auto">
+                    <col style="width: 10%">
+                    <col style="width: 12%">
+                    <col style="width: 12%">
+                    <col style="width: 8%">
+                    <col style="width: 8%">
+                    <col style="width: 10%">
+                </colgroup>
+                <thead>
+                <tr>
+                    <th class="c_tbl_num">번호</th>
+                    <th class="c_tbl_title">제목</th>
+                    <th class="c_tbl_cart">카테고리</th>
+                    <th class="c_tbl_writer">작성자</th>
+                    <th class="c_tbl_date">날짜</th>
+                    <th class="c_tbl_visit">조회</th>
+                    <th class="c_tbl_like">추천</th>
+                    <th class="c_tbl_state">관리</th>
+                </tr>
+                </thead>
+                <tbody id="c_tbody">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="c_pagenav">
+            <div id="c_pagination"></div>
+        </div>
+    </section>
+</div>
+
+<th:block layout:fragment="script">
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            console.log("Cover Letter Page Loaded (Prefix: c_)");
+            if(typeof initAsideL === 'function') initAsideL();
+            if(typeof initAsideR === 'function') initAsideR();
+            if(typeof init_cover_letter === 'function') init_cover_letter();
+        });
+    </script>
+</th:block>
+</html>

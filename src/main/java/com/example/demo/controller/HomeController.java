@@ -11,6 +11,11 @@ public class HomeController {
     @GetMapping("/")
     public String home(){
         log.info("GET /...");
-        return "index"; //resources/templates
+        return "/main"; //resources/templates
+    }
+    @GetMapping("/main")
+    public String main() {
+        log.info("GET /main...");
+        return "/main"; // src/main/resources/templates/main.html 파일을 찾아서 렌더링
     }
 }

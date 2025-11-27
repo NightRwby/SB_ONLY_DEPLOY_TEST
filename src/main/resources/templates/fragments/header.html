@@ -1,0 +1,30 @@
+<header id="header" th:fragment="headerFragment">
+    <div class="top-header">
+        <div class="logoarea">
+            <a class="logo-a" href="/main"><img class="logo" src="/img/logo.png" alt="logo"></a>
+        </div>
+        <div class="navarea">
+            <ul class="nav">
+                <li class="nav-li" sec:authorize="isAnonymous()">
+                    <a href="/login" class="nav-item">로그인</a>
+                </li>
+                <li class="nav-li" sec:authorize="isAnonymous()">
+                    <a href="/join" class="nav-item">회원가입</a>
+                </li>
+
+                <li class="nav-li" sec:authorize="isAuthenticated()">
+                    <form th:action="@{/logout}" method="post" style="display:inline;">
+                        <button type="submit" class="nav-item" style="border: none; cursor: pointer; padding: 0;">로그아웃</button>
+                    </form>
+                </li>
+                <li class="nav-li" sec:authorize="isAuthenticated()">
+                    <a href="/myPage" class="nav-item">내 정보</a>
+                </li>
+
+                <li class="nav-li"><a href="/noticepage" class="nav-item">공지사항</a></li>
+                <li class="nav-li"><a href="/inquiry_center" class="nav-item">고객센터</a></li>
+            </ul>
+        </div>
+    </div>
+    <nav class="tab-bar" id="tab-bar"></nav>
+</header>

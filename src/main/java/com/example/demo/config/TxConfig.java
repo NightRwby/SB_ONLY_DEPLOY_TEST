@@ -1,6 +1,5 @@
 package com.example.demo.config;
 
-
 import jakarta.persistence.EntityManagerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -17,13 +16,6 @@ public class TxConfig {
 
     @Autowired
     private DataSource dataSource;
-
-//    // 기본 Tx(Mybatis 용)
-//    @Bean(name = "dataSourceTransactionManager")
-//    public DataSourceTransactionManager transactionManager() {
-//        return new DataSourceTransactionManager(dataSource);
-//    }
-
 
     // JPA Tx
     @Bean(name="jpaTransactionManager")

@@ -1,0 +1,152 @@
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+        }
+        .wrapper {
+            /* border:1px solid; */
+            width:100%;
+            height:945px;
+            display: flex;
+            justify-content: center;
+        }
+        .imagebox{
+            /* border:1px solid; */
+            width:600px;
+            position:relative;
+            /* margin:0 auto; */
+        }
+        .formbox {
+            /* border:1px solid; */
+            width:400px;
+            /* margin:0 auto; */
+            margin-top:70px;
+        }
+        .imagebox>img {
+            text-align: center;
+            width:600px;
+            height: 600px;
+            position:absolute;
+            top:200px;
+        }
+        .logobox {
+            /* border:1px solid; */
+            width:100%;
+            height:210px;
+            text-align: center;
+            padding:100px;
+        }
+        .logobox>img{
+            height:150px;
+        }
+        .inputbox {
+            /* border:1px solid; */
+            height:380px;
+            align-content: center;
+            text-align: center;
+            padding:50px;
+        }
+        input {
+            display: block;
+            height:40px;
+            width:100%;
+            margin-top: 5px;
+            border-radius: 10px;
+            border:1px solid rgba(128,128,128,.2);
+
+
+        }
+        .inputbox .go {
+            background-color: #3ee9b9;
+            width:100%;
+            height:40px;
+            border:none;
+            padding:10px;
+            margin-top: 20px;
+            border-radius: 10px;
+            cursor:pointer;
+            font-weight: bold;
+            color:darkslategray;
+        }
+
+        .inputbox .kakao {
+            display: block;
+            background-color: yellow;
+            width:100%;
+            height:40px;
+            border:none;
+            padding:10px;
+            margin-top: 20px;
+            border-radius: 10px;
+            cursor:pointer;
+            font-weight:900;
+            color:darkslategray;
+        }
+
+        .inputbox .naver {
+            display: block;
+            background-color: #03A94D;
+            width:100%;
+            height:40px;
+            border:none;
+            padding:10px;
+            margin-top: 20px;
+            border-radius: 10px;
+            cursor:pointer;
+            font-weight: 900;
+            color:darkslategray;
+        }
+
+
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap:12px;
+            margin:14px 0;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: #444;
+        }
+        .find-pw{
+            width:100%;
+            /* background-color: aqua; */
+            padding:15px;
+            margin-top:30px;
+            text-align: center;
+        }
+        .find-pw>a{
+            text-decoration: none;
+            color:#444;
+            font-weight: bold;
+        }
+        .find-pw>a:hover {
+            text-decoration: underline;
+        }
+        .joinus{
+            width:100%;
+            /* background-color: aqua; */
+            padding:15px;
+            margin-top:30px;
+            text-align: center;
+        }
+        .joinus>a {
+            text-decoration: none;
+            font-weight: bold;
+            color:darkblue;
+        }
+        @media (max-width:900px){
+        .imagebox{
+            display: none;
+        }    
+        }
+        

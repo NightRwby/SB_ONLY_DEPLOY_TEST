@@ -1,0 +1,1385 @@
+<!DOCTYPE html>
+<html lang="ko"        xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <link rel="stylesheet" th:href="@{/css/common.css}" />
+    <link rel="stylesheet" th:href="@{/css/free_community.css}" />
+
+</head>
+
+<body>
+<div id="wrapper">
+    <!-- 헤더 -->
+    <div th:replace="~{fragments/header :: headerFragment}"></div>
+
+    <div id="mainwrap">
+        <aside id="aside-l">
+            <div class="side-nav">
+                <div class="slt_wrap">
+                    <h4 class="side-nav-title">게시판 목록</h4>
+                </div>
+                <div id="followscr">
+                    <ul>
+                        <a href="#" class="side-item si_free">자유게시판</a>
+                        <a href="/noticepage" class="side-item si_notice">공지사항</a>
+                        <a href="javascript:void(0)" class="side-item si_CL">자소서 게시판</a>
+                        <a href="javascript:void(0)" class="side-item si_QA">Q&amp;A 게시판</a>
+                    </ul>
+                    <div class="side-note">
+                        자유롭게 일상, 질문, 정보, 후기 등을 올려주세요.<br>
+                        기본 예절만 지켜주시면 됩니다
+                    </div>
+                </div>
+        </aside>
+
+        <main id="main">
+            <section class="cart_board">
+                <div class="cart_title">
+                    <h1>자유 게시판</h1>
+                </div>
+            </section>
+
+            <!-- 툴바 -->
+            <section class="board-card" aria-label="검색 및 필터">
+                <div class="toolbar">
+                    <div class="tool_group1">
+                        <form action="" class="toolform">
+                            <div class="tool_search">
+                                <label for="tool-input" class="form_label">검색</label>
+                                <input id="tool-input" class="tool-input" placeholder="제목·내용·태그 검색" />
+                            </div>
+                            <div class="tool_select_form">
+                                <div class="tool_cartwrap">
+                                    <label for="tool-select" class="form_label">카테고리</label>
+                                    <select id="tool-select" class="tool-select">
+                                        <option value="">전체</option>
+                                        <option value="일상">일상</option>
+                                        <option value="질문">질문</option>
+                                        <option value="정보공유">정보공유</option>
+                                        <option value="후기/리뷰">후기</option>
+                                        <option value="후기/리뷰">리뷰</option>
+                                        <option value="유머/밈">유머</option>
+                                        <option value="유머/밈">밈</option>
+                                        <option value="공지">공지</option>
+                                    </select>
+                                </div>
+                                <div class="tool_sortwrap">
+                                    <label for="tool-select2" class="form_label">정렬</label>
+                                    <select id="tool-select2" class="tool-select">
+                                        <option value="latest">최신순</option>
+                                        <option value="views">조회수순</option>
+                                        <option value="likes">추천순</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </form>
+                        <div class="tool_btn">
+                            <div class="tool_btn_group">
+                                <label class="form_label" for="resetBtn">액션</label>
+                                <button id="resetBtn" class="btn ghost" type="button">초기화</button>
+                            </div>
+                            <div class="tool_btn_group">
+                                <label class="form_label" for="writeBtn">액션</label>
+                                <button id="writeBtn" class="btn" type="button">글쓰기</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <ul class="chips" aria-label="빠른 필터">
+                    <li><button class="chip"># 일상</button></li>
+                    <li><button class="chip"># 정보</button></li>
+                    <li><button class="chip"># 후기</button></li>
+                    <li><button class="chip"># 리뷰</button></li>
+                    <li><button class="chip"># 유머</button></li>
+                    <li><button class="chip"># 밈</button></li>
+                    <li><button class="chip"># 공지</button></li>
+                    <li><button class="chip"># 힘들다</button></li>
+                    <li><button class="chip"># ..</button></li>
+                </ul>
+            </section>
+            <!-- 목록 -->
+            <section class="table_wrap" aria-label="게시글 목록">
+                <table id="boardTable">
+                    <thead>
+                    <tr>
+                        <th class="tbl_num">번호</th>
+                        <th class="tbl_title">제목</th>
+                        <th class="tbl_cart">카테고리</th>
+                        <th class="tbl_writer">작성자</th>
+                        <th class="tbl_date">날짜</th>
+                        <th class="tbl_visit">조회</th>
+                        <th class="tbl_like">추천</th>
+                        <th class="tbl_state">관리</th>
+                    </tr>
+                    </thead>
+                    <tbody id="tbody">
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글1</a></td>
+                        <td class="user_tbl_cart">일상</td>
+                        <td class="user_tbl_writer">김홍섭</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,234</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글2</a></td>
+                        <td class="user_tbl_cart">질문</td>
+                        <td class="user_tbl_writer">남규민</td>
+                        <td class="user_tbl_date">2025-11-19</td>
+                        <td class="user_tbl_visit">5,678</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글3</a></td>
+                        <td class="user_tbl_cart">후기</td>
+                        <td class="user_tbl_writer">정지원</td>
+                        <td class="user_tbl_date">2025-11-17</td>
+                        <td class="user_tbl_visit">9,101</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글4</a></td>
+                        <td class="user_tbl_cart">공지</td>
+                        <td class="user_tbl_writer">정재민</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,213</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글1</a></td>
+                        <td class="user_tbl_cart">일상</td>
+                        <td class="user_tbl_writer">김홍섭</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,234</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글2</a></td>
+                        <td class="user_tbl_cart">질문</td>
+                        <td class="user_tbl_writer">남규민</td>
+                        <td class="user_tbl_date">2025-11-19</td>
+                        <td class="user_tbl_visit">5,678</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글3</a></td>
+                        <td class="user_tbl_cart">후기</td>
+                        <td class="user_tbl_writer">정지원</td>
+                        <td class="user_tbl_date">2025-11-17</td>
+                        <td class="user_tbl_visit">9,101</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글4</a></td>
+                        <td class="user_tbl_cart">공지</td>
+                        <td class="user_tbl_writer">정재민</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,213</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글1</a></td>
+                        <td class="user_tbl_cart">일상</td>
+                        <td class="user_tbl_writer">김홍섭</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,234</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글2</a></td>
+                        <td class="user_tbl_cart">질문</td>
+                        <td class="user_tbl_writer">남규민</td>
+                        <td class="user_tbl_date">2025-11-19</td>
+                        <td class="user_tbl_visit">5,678</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글3</a></td>
+                        <td class="user_tbl_cart">후기</td>
+                        <td class="user_tbl_writer">정지원</td>
+                        <td class="user_tbl_date">2025-11-17</td>
+                        <td class="user_tbl_visit">9,101</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글4</a></td>
+                        <td class="user_tbl_cart">공지</td>
+                        <td class="user_tbl_writer">정재민</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,213</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글1</a></td>
+                        <td class="user_tbl_cart">일상</td>
+                        <td class="user_tbl_writer">김홍섭</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,234</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글2</a></td>
+                        <td class="user_tbl_cart">질문</td>
+                        <td class="user_tbl_writer">남규민</td>
+                        <td class="user_tbl_date">2025-11-19</td>
+                        <td class="user_tbl_visit">5,678</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글3</a></td>
+                        <td class="user_tbl_cart">후기</td>
+                        <td class="user_tbl_writer">정지원</td>
+                        <td class="user_tbl_date">2025-11-17</td>
+                        <td class="user_tbl_visit">9,101</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글4</a></td>
+                        <td class="user_tbl_cart">공지</td>
+                        <td class="user_tbl_writer">정재민</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,213</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글1</a></td>
+                        <td class="user_tbl_cart">일상</td>
+                        <td class="user_tbl_writer">김홍섭</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,234</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글2</a></td>
+                        <td class="user_tbl_cart">질문</td>
+                        <td class="user_tbl_writer">남규민</td>
+                        <td class="user_tbl_date">2025-11-19</td>
+                        <td class="user_tbl_visit">5,678</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글3</a></td>
+                        <td class="user_tbl_cart">후기</td>
+                        <td class="user_tbl_writer">정지원</td>
+                        <td class="user_tbl_date">2025-11-17</td>
+                        <td class="user_tbl_visit">9,101</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글4</a></td>
+                        <td class="user_tbl_cart">공지</td>
+                        <td class="user_tbl_writer">정재민</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,213</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글1</a></td>
+                        <td class="user_tbl_cart">일상</td>
+                        <td class="user_tbl_writer">김홍섭</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,234</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글2</a></td>
+                        <td class="user_tbl_cart">질문</td>
+                        <td class="user_tbl_writer">남규민</td>
+                        <td class="user_tbl_date">2025-11-19</td>
+                        <td class="user_tbl_visit">5,678</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글3</a></td>
+                        <td class="user_tbl_cart">후기</td>
+                        <td class="user_tbl_writer">정지원</td>
+                        <td class="user_tbl_date">2025-11-17</td>
+                        <td class="user_tbl_visit">9,101</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글4</a></td>
+                        <td class="user_tbl_cart">공지</td>
+                        <td class="user_tbl_writer">정재민</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,213</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글1</a></td>
+                        <td class="user_tbl_cart">일상</td>
+                        <td class="user_tbl_writer">김홍섭</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,234</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글2</a></td>
+                        <td class="user_tbl_cart">질문</td>
+                        <td class="user_tbl_writer">남규민</td>
+                        <td class="user_tbl_date">2025-11-19</td>
+                        <td class="user_tbl_visit">5,678</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글3</a></td>
+                        <td class="user_tbl_cart">후기</td>
+                        <td class="user_tbl_writer">정지원</td>
+                        <td class="user_tbl_date">2025-11-17</td>
+                        <td class="user_tbl_visit">9,101</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글4</a></td>
+                        <td class="user_tbl_cart">공지</td>
+                        <td class="user_tbl_writer">정재민</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,213</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글1</a></td>
+                        <td class="user_tbl_cart">일상</td>
+                        <td class="user_tbl_writer">김홍섭</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,234</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글2</a></td>
+                        <td class="user_tbl_cart">질문</td>
+                        <td class="user_tbl_writer">남규민</td>
+                        <td class="user_tbl_date">2025-11-19</td>
+                        <td class="user_tbl_visit">5,678</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글3</a></td>
+                        <td class="user_tbl_cart">후기</td>
+                        <td class="user_tbl_writer">정지원</td>
+                        <td class="user_tbl_date">2025-11-17</td>
+                        <td class="user_tbl_visit">9,101</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글4</a></td>
+                        <td class="user_tbl_cart">공지</td>
+                        <td class="user_tbl_writer">정재민</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,213</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글1</a></td>
+                        <td class="user_tbl_cart">일상</td>
+                        <td class="user_tbl_writer">김홍섭</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,234</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글2</a></td>
+                        <td class="user_tbl_cart">질문</td>
+                        <td class="user_tbl_writer">남규민</td>
+                        <td class="user_tbl_date">2025-11-19</td>
+                        <td class="user_tbl_visit">5,678</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글3</a></td>
+                        <td class="user_tbl_cart">후기</td>
+                        <td class="user_tbl_writer">정지원</td>
+                        <td class="user_tbl_date">2025-11-17</td>
+                        <td class="user_tbl_visit">9,101</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글4</a></td>
+                        <td class="user_tbl_cart">공지</td>
+                        <td class="user_tbl_writer">정재민</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,213</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글1</a></td>
+                        <td class="user_tbl_cart">일상</td>
+                        <td class="user_tbl_writer">김홍섭</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,234</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글2</a></td>
+                        <td class="user_tbl_cart">질문</td>
+                        <td class="user_tbl_writer">남규민</td>
+                        <td class="user_tbl_date">2025-11-19</td>
+                        <td class="user_tbl_visit">5,678</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글3</a></td>
+                        <td class="user_tbl_cart">후기</td>
+                        <td class="user_tbl_writer">정지원</td>
+                        <td class="user_tbl_date">2025-11-17</td>
+                        <td class="user_tbl_visit">9,101</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글4</a></td>
+                        <td class="user_tbl_cart">공지</td>
+                        <td class="user_tbl_writer">정재민</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,213</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글1</a></td>
+                        <td class="user_tbl_cart">일상</td>
+                        <td class="user_tbl_writer">김홍섭</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,234</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글2</a></td>
+                        <td class="user_tbl_cart">질문</td>
+                        <td class="user_tbl_writer">남규민</td>
+                        <td class="user_tbl_date">2025-11-19</td>
+                        <td class="user_tbl_visit">5,678</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글3</a></td>
+                        <td class="user_tbl_cart">후기</td>
+                        <td class="user_tbl_writer">정지원</td>
+                        <td class="user_tbl_date">2025-11-17</td>
+                        <td class="user_tbl_visit">9,101</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글4</a></td>
+                        <td class="user_tbl_cart">공지</td>
+                        <td class="user_tbl_writer">정재민</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,213</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글1</a></td>
+                        <td class="user_tbl_cart">일상</td>
+                        <td class="user_tbl_writer">김홍섭</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,234</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글2</a></td>
+                        <td class="user_tbl_cart">질문</td>
+                        <td class="user_tbl_writer">남규민</td>
+                        <td class="user_tbl_date">2025-11-19</td>
+                        <td class="user_tbl_visit">5,678</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글3</a></td>
+                        <td class="user_tbl_cart">후기</td>
+                        <td class="user_tbl_writer">정지원</td>
+                        <td class="user_tbl_date">2025-11-17</td>
+                        <td class="user_tbl_visit">9,101</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글4</a></td>
+                        <td class="user_tbl_cart">공지</td>
+                        <td class="user_tbl_writer">정재민</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,213</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글1</a></td>
+                        <td class="user_tbl_cart">일상</td>
+                        <td class="user_tbl_writer">김홍섭</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,234</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글2</a></td>
+                        <td class="user_tbl_cart">질문</td>
+                        <td class="user_tbl_writer">남규민</td>
+                        <td class="user_tbl_date">2025-11-19</td>
+                        <td class="user_tbl_visit">5,678</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글3</a></td>
+                        <td class="user_tbl_cart">후기</td>
+                        <td class="user_tbl_writer">정지원</td>
+                        <td class="user_tbl_date">2025-11-17</td>
+                        <td class="user_tbl_visit">9,101</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글4</a></td>
+                        <td class="user_tbl_cart">공지</td>
+                        <td class="user_tbl_writer">정재민</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,213</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글1</a></td>
+                        <td class="user_tbl_cart">일상</td>
+                        <td class="user_tbl_writer">김홍섭</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,234</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글2</a></td>
+                        <td class="user_tbl_cart">질문</td>
+                        <td class="user_tbl_writer">남규민</td>
+                        <td class="user_tbl_date">2025-11-19</td>
+                        <td class="user_tbl_visit">5,678</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글3</a></td>
+                        <td class="user_tbl_cart">후기</td>
+                        <td class="user_tbl_writer">정지원</td>
+                        <td class="user_tbl_date">2025-11-17</td>
+                        <td class="user_tbl_visit">9,101</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글4</a></td>
+                        <td class="user_tbl_cart">공지</td>
+                        <td class="user_tbl_writer">정재민</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,213</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글1</a></td>
+                        <td class="user_tbl_cart">일상</td>
+                        <td class="user_tbl_writer">김홍섭</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,234</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글2</a></td>
+                        <td class="user_tbl_cart">질문</td>
+                        <td class="user_tbl_writer">남규민</td>
+                        <td class="user_tbl_date">2025-11-19</td>
+                        <td class="user_tbl_visit">5,678</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글3</a></td>
+                        <td class="user_tbl_cart">후기</td>
+                        <td class="user_tbl_writer">정지원</td>
+                        <td class="user_tbl_date">2025-11-17</td>
+                        <td class="user_tbl_visit">9,101</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글4</a></td>
+                        <td class="user_tbl_cart">공지</td>
+                        <td class="user_tbl_writer">정재민</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,213</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글1</a></td>
+                        <td class="user_tbl_cart">일상</td>
+                        <td class="user_tbl_writer">김홍섭</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,234</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글2</a></td>
+                        <td class="user_tbl_cart">질문</td>
+                        <td class="user_tbl_writer">남규민</td>
+                        <td class="user_tbl_date">2025-11-19</td>
+                        <td class="user_tbl_visit">5,678</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글3</a></td>
+                        <td class="user_tbl_cart">후기</td>
+                        <td class="user_tbl_writer">정지원</td>
+                        <td class="user_tbl_date">2025-11-17</td>
+                        <td class="user_tbl_visit">9,101</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글4</a></td>
+                        <td class="user_tbl_cart">공지</td>
+                        <td class="user_tbl_writer">정재민</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,213</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글1</a></td>
+                        <td class="user_tbl_cart">일상</td>
+                        <td class="user_tbl_writer">김홍섭</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,234</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글2</a></td>
+                        <td class="user_tbl_cart">질문</td>
+                        <td class="user_tbl_writer">남규민</td>
+                        <td class="user_tbl_date">2025-11-19</td>
+                        <td class="user_tbl_visit">5,678</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글3</a></td>
+                        <td class="user_tbl_cart">후기</td>
+                        <td class="user_tbl_writer">정지원</td>
+                        <td class="user_tbl_date">2025-11-17</td>
+                        <td class="user_tbl_visit">9,101</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글4</a></td>
+                        <td class="user_tbl_cart">공지</td>
+                        <td class="user_tbl_writer">정재민</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,213</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글1</a></td>
+                        <td class="user_tbl_cart">일상</td>
+                        <td class="user_tbl_writer">김홍섭</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,234</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글2</a></td>
+                        <td class="user_tbl_cart">질문</td>
+                        <td class="user_tbl_writer">남규민</td>
+                        <td class="user_tbl_date">2025-11-19</td>
+                        <td class="user_tbl_visit">5,678</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글3</a></td>
+                        <td class="user_tbl_cart">후기</td>
+                        <td class="user_tbl_writer">정지원</td>
+                        <td class="user_tbl_date">2025-11-17</td>
+                        <td class="user_tbl_visit">9,101</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글4</a></td>
+                        <td class="user_tbl_cart">공지</td>
+                        <td class="user_tbl_writer">정재민</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,213</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글1</a></td>
+                        <td class="user_tbl_cart">일상</td>
+                        <td class="user_tbl_writer">김홍섭</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,234</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글2</a></td>
+                        <td class="user_tbl_cart">질문</td>
+                        <td class="user_tbl_writer">남규민</td>
+                        <td class="user_tbl_date">2025-11-19</td>
+                        <td class="user_tbl_visit">5,678</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글3</a></td>
+                        <td class="user_tbl_cart">후기</td>
+                        <td class="user_tbl_writer">정지원</td>
+                        <td class="user_tbl_date">2025-11-17</td>
+                        <td class="user_tbl_visit">9,101</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글4</a></td>
+                        <td class="user_tbl_cart">공지</td>
+                        <td class="user_tbl_writer">정재민</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,213</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글1</a></td>
+                        <td class="user_tbl_cart">일상</td>
+                        <td class="user_tbl_writer">김홍섭</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,234</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글2</a></td>
+                        <td class="user_tbl_cart">질문</td>
+                        <td class="user_tbl_writer">남규민</td>
+                        <td class="user_tbl_date">2025-11-19</td>
+                        <td class="user_tbl_visit">5,678</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글3</a></td>
+                        <td class="user_tbl_cart">후기</td>
+                        <td class="user_tbl_writer">정지원</td>
+                        <td class="user_tbl_date">2025-11-17</td>
+                        <td class="user_tbl_visit">9,101</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글4</a></td>
+                        <td class="user_tbl_cart">공지</td>
+                        <td class="user_tbl_writer">정재민</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,213</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글1</a></td>
+                        <td class="user_tbl_cart">일상</td>
+                        <td class="user_tbl_writer">김홍섭</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,234</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글2</a></td>
+                        <td class="user_tbl_cart">질문</td>
+                        <td class="user_tbl_writer">남규민</td>
+                        <td class="user_tbl_date">2025-11-19</td>
+                        <td class="user_tbl_visit">5,678</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글3</a></td>
+                        <td class="user_tbl_cart">후기</td>
+                        <td class="user_tbl_writer">정지원</td>
+                        <td class="user_tbl_date">2025-11-17</td>
+                        <td class="user_tbl_visit">9,101</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글4</a></td>
+                        <td class="user_tbl_cart">공지</td>
+                        <td class="user_tbl_writer">정재민</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,213</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글1</a></td>
+                        <td class="user_tbl_cart">일상</td>
+                        <td class="user_tbl_writer">김홍섭</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,234</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글2</a></td>
+                        <td class="user_tbl_cart">질문</td>
+                        <td class="user_tbl_writer">남규민</td>
+                        <td class="user_tbl_date">2025-11-19</td>
+                        <td class="user_tbl_visit">5,678</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글3</a></td>
+                        <td class="user_tbl_cart">후기</td>
+                        <td class="user_tbl_writer">정지원</td>
+                        <td class="user_tbl_date">2025-11-17</td>
+                        <td class="user_tbl_visit">9,101</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글4</a></td>
+                        <td class="user_tbl_cart">공지</td>
+                        <td class="user_tbl_writer">정재민</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,213</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글1</a></td>
+                        <td class="user_tbl_cart">일상</td>
+                        <td class="user_tbl_writer">김홍섭</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,234</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글2</a></td>
+                        <td class="user_tbl_cart">질문</td>
+                        <td class="user_tbl_writer">남규민</td>
+                        <td class="user_tbl_date">2025-11-19</td>
+                        <td class="user_tbl_visit">5,678</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글3</a></td>
+                        <td class="user_tbl_cart">후기</td>
+                        <td class="user_tbl_writer">정지원</td>
+                        <td class="user_tbl_date">2025-11-17</td>
+                        <td class="user_tbl_visit">9,101</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글4</a></td>
+                        <td class="user_tbl_cart">공지</td>
+                        <td class="user_tbl_writer">정재민</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,213</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글1</a></td>
+                        <td class="user_tbl_cart">일상</td>
+                        <td class="user_tbl_writer">김홍섭</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,234</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글2</a></td>
+                        <td class="user_tbl_cart">질문</td>
+                        <td class="user_tbl_writer">남규민</td>
+                        <td class="user_tbl_date">2025-11-19</td>
+                        <td class="user_tbl_visit">5,678</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글3</a></td>
+                        <td class="user_tbl_cart">후기</td>
+                        <td class="user_tbl_writer">정지원</td>
+                        <td class="user_tbl_date">2025-11-17</td>
+                        <td class="user_tbl_visit">9,101</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글4</a></td>
+                        <td class="user_tbl_cart">공지</td>
+                        <td class="user_tbl_writer">정재민</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,213</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글1</a></td>
+                        <td class="user_tbl_cart">일상</td>
+                        <td class="user_tbl_writer">김홍섭</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,234</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글2</a></td>
+                        <td class="user_tbl_cart">질문</td>
+                        <td class="user_tbl_writer">남규민</td>
+                        <td class="user_tbl_date">2025-11-19</td>
+                        <td class="user_tbl_visit">5,678</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글3</a></td>
+                        <td class="user_tbl_cart">후기</td>
+                        <td class="user_tbl_writer">정지원</td>
+                        <td class="user_tbl_date">2025-11-17</td>
+                        <td class="user_tbl_visit">9,101</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글4</a></td>
+                        <td class="user_tbl_cart">공지</td>
+                        <td class="user_tbl_writer">정재민</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,213</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글1</a></td>
+                        <td class="user_tbl_cart">일상</td>
+                        <td class="user_tbl_writer">김홍섭</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,234</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글2</a></td>
+                        <td class="user_tbl_cart">질문</td>
+                        <td class="user_tbl_writer">남규민</td>
+                        <td class="user_tbl_date">2025-11-19</td>
+                        <td class="user_tbl_visit">5,678</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글3</a></td>
+                        <td class="user_tbl_cart">후기</td>
+                        <td class="user_tbl_writer">정지원</td>
+                        <td class="user_tbl_date">2025-11-17</td>
+                        <td class="user_tbl_visit">9,101</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글4</a></td>
+                        <td class="user_tbl_cart">공지</td>
+                        <td class="user_tbl_writer">정재민</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,213</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글1</a></td>
+                        <td class="user_tbl_cart">일상</td>
+                        <td class="user_tbl_writer">김홍섭</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,234</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글2</a></td>
+                        <td class="user_tbl_cart">질문</td>
+                        <td class="user_tbl_writer">남규민</td>
+                        <td class="user_tbl_date">2025-11-19</td>
+                        <td class="user_tbl_visit">5,678</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글3</a></td>
+                        <td class="user_tbl_cart">후기</td>
+                        <td class="user_tbl_writer">정지원</td>
+                        <td class="user_tbl_date">2025-11-17</td>
+                        <td class="user_tbl_visit">9,101</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글4</a></td>
+                        <td class="user_tbl_cart">공지</td>
+                        <td class="user_tbl_writer">정재민</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,213</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글1</a></td>
+                        <td class="user_tbl_cart">일상</td>
+                        <td class="user_tbl_writer">김홍섭</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,234</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글2</a></td>
+                        <td class="user_tbl_cart">질문</td>
+                        <td class="user_tbl_writer">남규민</td>
+                        <td class="user_tbl_date">2025-11-19</td>
+                        <td class="user_tbl_visit">5,678</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글3</a></td>
+                        <td class="user_tbl_cart">후기</td>
+                        <td class="user_tbl_writer">정지원</td>
+                        <td class="user_tbl_date">2025-11-17</td>
+                        <td class="user_tbl_visit">9,101</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    <tr>
+                        <td class="user_tbl_num">0</td>
+                        <td class="user_tbl_title"><a href="javascript:void(0)">테스트용 게시글4</a></td>
+                        <td class="user_tbl_cart">공지</td>
+                        <td class="user_tbl_writer">정재민</td>
+                        <td class="user_tbl_date">2025-11-20</td>
+                        <td class="user_tbl_visit">1,213</td>
+                        <td class="user_tbl_like">100</td>
+                        <td class="user_tbl_state"></td>
+                    </tr>
+                    </tbody>
+                </table>
+                <div class="pagenav">
+                    <a href="javascript:void(0)" id="page_btn_L">&lt;</a>
+
+                    <ol class="pagination" id="pagination"></ol>
+
+                    <a href="javascript:void(0)" id="page_btn_R">&gt;</a>
+                </div>
+            </section>
+        </main>
+
+        <aside id="aside-r">
+            <div id="followscr2">
+                <section class="profile-card" aria-label="내 프로필">
+                    <div class="p-header">
+                        <div class="p_user">
+                            <div class="p_img" id="p_img" aria-label="프로필 이미지" role="img">NM</div>
+                            <div class="p-name">
+                                <span id="pName">남규민 &lt&lt어디감??</span>
+                                <span class="p-state-label">
+                                        <span id="pDot" class="p-status-dot online"></span>
+                                        <span id="pStateText">온라인</span>
+                                    </span>
+                            </div>
+                        </div>
+                        <p class="p-message" id="pMessage">
+                            “ 자유게시판에서 소통 중 ”<br />
+                            " 버섯 마을 모험 떠남.."
+                        </p>
+                    </div>
+                    <div class="p-actions">
+                        <button class="p-btn" id="editProfileOpen">프로필 편집</button>
+                        <div class="meta">※ 내가 쓴 글만 수정/삭제할 수 있습니다.</div>
+                    </div>
+                </section>
+            </div>
+        </aside>
+    </div>
+
+    <!-- 푸터 -->
+    <div th:replace="~{fragments/footer :: footerFragment}"></div>
+</div>
+
+<!-- 글쓰기 / 모달 -->
+
+<div class="modal_screen">
+    <div class="blackscreen">
+        <div class="modal_popup">
+            <div class="modal_header">
+                <div class="modal_title">
+                    <h2>게시글 작성</h2>
+                </div>
+                <div class="modal_btn">
+                    <div class="mbtn_L">
+                        <button id="modal_exit">닫기</button>
+                    </div>
+                    <div class="mbtn_R">
+                        <button type="submit" id="modal_accept">저장</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal_section">
+                <div class="modal_form">
+                    <div class="write_title">
+                        <label for="modal_input" class="modal_form_label">제목</label>
+                        <input id="modal_input" placeholder="제목을 입력하세요." />
+                    </div>
+                    <div class="selec_cart">
+                        <label for="modal_select" class="modal_form_label">카테고리</label>
+                        <select id="modal_select">
+                            <option value="">전체</option>
+                            <option value="일상">일상</option>
+                            <option value="질문">질문</option>
+                            <option value="정보공유">정보공유</option>
+                            <option value="후기/리뷰">후기</option>
+                            <option value="후기/리뷰">리뷰</option>
+                            <option value="유머/밈">유머</option>
+                            <option value="유머/밈">밈</option>
+                            <option value="공지">공지</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal_file">
+                    <div class="upload_wrap">
+                        <div class="upload_row">
+                            <label class="modal_form_label" for="wImages">이미지 업로드</label>
+                            <input id="wImages" type="file" accept="image/*" multiple />
+                        </div>
+                    </div>
+                    <button type="button" id="clearImages">전체 삭제</button>
+                </div>
+                <div class="modal_file_preview" id="modal_file_preview"></div>
+                <div class="modal_text">
+                    <label class="modal_form_label" for="modal_textarea">본문</label>
+                    <textarea id="modal_textarea" placeholder="내용을 작성하세요. 이미지가 있다면 설명도 함께 적어주세요."></textarea>
+                    <div class="modal_form_meta" id="charCount">0자</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 게시글 상세 모달 -->
+
+<div class="modal_detail_screen">
+    <div class="blackscreen">
+        <div class="modal_detail_popup">
+            <div class="modal_detail_header">
+                <div class="modal_detail_topheader">
+                    <div class="modal_detail_title">
+                        <h2>게시글 제목 들어갈 자리</h2>
+                    </div>
+                    <div class="modal_detail_btn">
+                        <div class="mdbtn_L">
+                            <button id="modal_detail_exit">닫기</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal_detail_info">
+                    <div class="info_text">
+                        <div class="detail_creater">작성자 {변수변수}</div>
+                        <div class="detail_date">날짜 {변변변수수수}</div>
+                        <div class="detail_cart">카테고리 {ㅂ}</div>
+                        <div class="detail_udbtn_wrap">
+                            <button class="detail_update">수정</button>
+                            <button class="detail_delete">삭제</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal_detail_section">
+                <div class="modal_detail_text">작성한 내용 본문이 들어갈 자리입니다</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script th:src="@{/js/free_community.js}"></script>
+
+</body>
+
+</html>

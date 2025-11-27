@@ -1,18 +1,27 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
+    <!-- Main CSS -->
+    <link rel="stylesheet" th:href="@{/css/notice.css}">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
 </head>
 <body>
-    <h1>USER PAGE..</h1>
+<!-- 헤더 -->
+<div th:replace="~{fragments/header :: headerFragment}"></div>
+<h1>USER PAGE.</h1>
 
-    auth_1 : <div th:text="${auth_1}"></div>
-    <hr/>
-    auth_1.getPrincipal() : <span th:text="${auth_1.getPrincipal()}"></span>
-    <hr/>
-    auth_1.getDetails() : <span th:text="${auth_1.getDetails()}"></span>
-    <hr/>
-    auth_1.isAuthenticated() : <span th:text="${auth_1.isAuthenticated()}"></span>
+auth_1 :
+<div th:text="${auth_1}"></div>
+<hr/>
+auth_1.getPrincipal() : <span th:text="${auth_1.getPrincipal()}"></span>
+<hr/>
+auth_1.getDetails() : <span th:text="${auth_1.getDetails()}"></span>
+<hr/>
+auth_1.isAuthenticated() : <span th:text="${auth_1.isAuthenticated()}"></span>
+<!-- 푸터 -->
+<div th:replace="~{fragments/footer :: footerFragment}"></div>
 </body>
 </html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>문의내역</title>
+
+    <!-- Main CSS -->
+    <link rel="stylesheet" th:href="@{/css/inquiry_list.css}">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+</head>
+
+<body>
+<!-- 헤더 -->
+<div th:replace="~{fragments/header :: headerFragment}"></div>
+
+<!-- 메인 -->
+<main id="main">
+    <div class="mainwrap">
+        <div class="title">
+            <h2>BlahBlah 사용자 문의내역입니다.</h2>
+        </div>
+        <div class="infowrap">
+            <div class="info">
+                <div class="infoitems">고객님의 소중한 의견을 문의 사항과 피드백으로 남겨주세요.</div>
+                <div class="infoitems">문의 사항을 입력하시면, 신속하게 답변해드리겠습니다.</div>
+            </div>
+            <div class="supdirect">
+                <div class="supdirecttext">새로운 도움이 필요하다면 <a href="./inquiry_center" class="supdirectlink">고객센터</a>를
+                    이용해주세요.
+                </div>
+            </div>
+        </div>
+        <div class="tbl-con">
+            <table class="list">
+                <thead class="listhead">
+                <tr class="listtitle">
+                    <th class="listitemt">문의 내역</th>
+                    <th class="listitemp">등록 시간</th>
+                    <th class="listitemp">수정 시간</th>
+                    <th class="listitem">상태</th>
+                    <th class="listitemd"></th>
+                </tr>
+                </thead>
+                <tbody id="listmain">
+                <tr class="lm" th:each="inquiry : ${inquiries}">
+                    <td class="listitemc">
+                        <a th:href="@{/inquiry/{id}(id=${inquiry.id})}" th:text="${inquiry.title}">문의 제목</a>
+                    </td>
+                    <td class="listitemcc" th:text="${#temporals.format(inquiry.createdAt, 'yy.MM.dd a HH:mm')}">
+                        25.10.10 AM 04:20</td>
+                    <td class="listitemcc" th:text="${#temporals.format(inquiry.updatedAt, 'yy.MM.dd a HH:mm')}">
+                        25.10.10 AM 04:20</td>
+                    <td class="listitemccc" th:text="${inquiry.status} ? '처리 완료' : '처리 대기'">처리 대기</td>
+                    <td class="listitemccc">
+                        <form th:action="@{/inquiry/{id}/delete(id=${inquiry.id})}" method="post"
+                              onsubmit="return confirm('해당 문의를 삭제하시겠습니까?');">
+                            <button type="submit" class="tbdbtn">삭제</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="btnarea">
+            <button id="supbtn" onclick="window.location.href='#'"
+                    th:onclick="|window.location.href='@{/inquiry/new}'|">
+                작성하기
+            </button>
+        </div>
+    </div>
+</main>
+</main>
+<!-- 푸터 -->
+<div th:replace="~{fragments/footer :: footerFragment}"></div>
+
+</body>
+</html>

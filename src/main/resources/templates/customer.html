@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <!-- 헤더,푸터,기본 css -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+
+    <!-- 아이콘 -->
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"/>
+    <!-- Main CSS -->
+    <link rel="stylesheet" th:href="@{/css/customer.css}">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+
+</head>
+
+<!-- body-------------------------------------------------------------------------------------------- -->
+
+<body>
+<div id="wrapper">
+    <!-- 헤더 -->
+    <div th:replace="~{fragments/header :: headerFragment}"></div>
+
+    <!-- 메인섹션1 ------------------------------------------------------------------->
+
+    <!-- 메인섹션1 ------------------------------------------------------------------->
+
+    <main class="main">
+        <div class="section-wrapper">
+            <div class="section1">
+                <div class="s1-h2">
+                    <h2>BlahBlah 고객센터입니다.<br>불편사항을 빠르게 해결해드릴게요!</h2>
+                </div>
+                <div class="search-box">
+                    <form action="">
+                        <input type="text" placeholder="도움이 필요한 키워드를 검색해보세요 !">
+                        <button type="submit">
+                            <span class="material-symbols-outlined">
+                                search
+                            </span>
+                        </button>
+                    </form>
+                </div>
+                <div class="keyword">
+                    <strong>추천 키워드</strong>
+                    <a href="#">아이디/비밀번호 변경</a>
+                    <a href="#">아이디/비밀번호 찾기</a>
+                    <a href="#">개인정보변경</a>
+                    <a href="#">채팅내용 삭제/복구</a>
+                    <a href="#">이용제한조치</a>
+                    <a href="#">뭐 여러가지가 있겠죵</a>
+                </div>
+            </div>
+
+            <!-- 섹션2 -------------------------------------------------------------- -->
+            <div class="section2">
+                <div class="sd-2">
+                    <div class="swiper mySwiper">
+                        <div class="swiper-wrapper">
+                            <div class="swiper-slide">
+                                <div class="sd-1-1"><span>공지</span></div>
+                                <a href="./notice-detail?id=101">개인정보 처리방침 개정 안내</a>
+                            </div>
+                            <div class="swiper-slide">
+                                <div class="sd-1-2"><span>업데이트</span></div>
+                                <a href="./notice-detail?id=102">이모티콘 신규팩 출시</a>
+                            </div>
+                            <div class="swiper-slide">
+                                <div class="sd-1-3"><span>점검</span></div>
+                                <a href="./notice-detail?id=103">8/12(월) 서비스 점검 안내</a>
+                            </div>
+                            <div class="swiper-slide">
+                                <div class="sd-1-1"><span>공지</span></div>
+                                <a href="./notice-detail?id=104">부정 이용 대응 강화 공지</a>
+                            </div>
+                            <div class="swiper-slide">
+                                <div class="sd-1-4"><span>이벤트</span></div>
+                                <a href="./notice-detail?id=105">신규 가입 환영 이벤트</a>
+                            </div>
+                            <div class="swiper-slide">
+                                <div class="sd-1-2"><span>업데이트</span></div>
+                                <a href="./notice-detail?id=106">파일 전송 용량 상향</a>
+                            </div>
+                            <div class="swiper-slide">
+                                <div class="sd-1-1"><span>공지</span></div>
+                                <a href="./notice-detail?id=107">서비스 약관 개정 사전 안내</a>
+                            </div>
+                            <div class="swiper-slide">
+                                <div class="sd-1-3"><span>점검</span></div>
+                                <a href="./notice-detail?id=108">야간 점검(7/10) 안내</a>
+                            </div>
+                            <div class="swiper-slide">
+                                <div class="sd-1-2"><span>업데이트</span></div>
+                                <a href="./notice-detail?id=109">채팅 안정성 개선</a>
+                            </div>
+                            <div class="swiper-slide">
+                                <div class="sd-1-4"><span>이벤트</span></div>
+                                <a href="./notice-detail?id=110">여름 한정 이모티콘 증정</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="sd-3">
+                    <a href="./notice-page">공지 전체보기</a>
+                </div>
+            </div>
+
+            <!-- 섹션3 -------------------------------------------------------------- -->
+            <hr/>
+            <div class="section3">
+                <div class="s3-h2">
+                    <h2>자주 찾는 질문</h2>
+                </div>
+                <div class="card-area">
+                    <div class="Q-card">
+                        <div class="card-title">
+                            <span class="q">Q</span>
+                            <span class="q-content">어쩌고저쩌고 문의하는 방법1</span>
+                        </div>
+                        <span class="card_tag"># 서비스명</span>
+                    </div>
+                    <div class="Q-card">
+                        <div class="card-title">
+                            <span class="q">Q</span>
+                            <span class="q-content">어쩌고저쩌고 뭐 어쩌구 하는 방법2</span>
+                        </div>
+                        <span class="card_tag"># 서비스명</span>
+                    </div>
+                    <div class="Q-card">
+                        <div class="card-title">
+                            <span class="q">Q</span>
+                            <span class="q-content">어쩌고저쩌고3 이렇게 저렇게 하는법</span>
+                        </div>
+                        <span class="card_tag"># 서비스명</span>
+                    </div>
+                    <div class="Q-card">
+                        <div class="card-title">
+                            <span class="q">Q</span>
+                            <span class="q-content">어쩌고저쩌고4 여러가지 가지가지</span>
+                        </div>
+                        <span class="card_tag"># 서비스명</span>
+                    </div>
+                    <div class="Q-card">
+                        <div class="card-title">
+                            <span class="q">Q</span>
+                            <span class="q-content">어쩌고저쩌고5 가지는 색깔도 여러가지</span>
+                        </div>
+                        <span class="card_tag"># 서비스명</span>
+                    </div>
+                    <div class="Q-card">
+                        <div class="card-title">
+                            <span class="q">Q</span>
+                            <span class="q-content">어쩌고저쩌고6</span>
+                        </div>
+                        <span class="card_tag"># 서비스명</span>
+                    </div>
+                    <div class="Q-card">
+                        <div class="card-title">
+                            <span class="q">Q</span>
+                            <span class="q-content">어쩌고저쩌고7</span>
+                        </div>
+                        <span class="card_tag"># 서비스명</span>
+                    </div>
+                    <div class="Q-card">
+                        <div class="card-title">
+                            <span class="q">Q</span>
+                            <span class="q-content">어쩌고저쩌고8</span>
+                        </div>
+                        <span class="card_tag"># 서비스명</span>
+                    </div>
+                    <div class="Q-card hidden">
+                        <div class="card-title">
+                            <span class="q">Q</span>
+                            <span class="q-content">어쩌고저쩌고 문의하는 방법1</span>
+                        </div>
+                        <span class="card_tag"># 서비스명</span>
+                    </div>
+                    <div class="Q-card hidden">
+                        <div class="card-title">
+                            <span class="q">Q</span>
+                            <span class="q-content">어쩌고저쩌고 뭐 어쩌구 하는 방법2</span>
+                        </div>
+                        <span class="card_tag"># 서비스명</span>
+                    </div>
+                    <div class="Q-card hidden">
+                        <div class="card-title">
+                            <span class="q">Q</span>
+                            <span class="q-content">어쩌고저쩌고3 이렇게 저렇게 하는법</span>
+                        </div>
+                        <span class="card_tag"># 서비스명</span>
+                    </div>
+                    <div class="Q-card hidden">
+                        <div class="card-title">
+                            <span class="q">Q</span>
+                            <span class="q-content">어쩌고저쩌고4 여러가지 가지가지</span>
+                        </div>
+                        <span class="card_tag"># 서비스명</span>
+                    </div>
+                    <div class="Q-card hidden">
+                        <div class="card-title">
+                            <span class="q">Q</span>
+                            <span class="q-content">어쩌고저쩌고5 가지는 색깔도 여러가지</span>
+                        </div>
+                        <span class="card_tag"># 서비스명</span>
+                    </div>
+                    <div class="Q-card hidden">
+                        <div class="card-title">
+                            <span class="q">Q</span>
+                            <span class="q-content">어쩌고저쩌고6</span>
+                        </div>
+                        <span class="card_tag"># 서비스명</span>
+                    </div>
+                    <div class="Q-card hidden">
+                        <div class="card-title">
+                            <span class="q">Q</span>
+                            <span class="q-content">어쩌고저쩌고7</span>
+                        </div>
+                        <span class="card_tag"># 서비스명</span>
+                    </div>
+                    <div class="Q-card hidden">
+                        <div class="card-title">
+                            <span class="q">Q</span>
+                            <span class="q-content">어쩌고저쩌고8</span>
+                        </div>
+                        <span class="card_tag"># 서비스명</span>
+                    </div>
+                </div>
+                <div class="btn-parent">
+                    <button class="loadMoreBtn">+ 도움말 더보기</button>
+                </div>
+            </div>
+
+
+            <!-- 섹션4 -------------------------------------------------------------- -->
+            <!-- <hr/> -->
+            <div class="section4">
+                <div class="s4-h2">
+                    <h2>각 서비스별 고객센터를 통해 궁금증을 해결하세요 !<br>근데 우린 아직 서비스가 하나뿐이잖아..?</h2>
+                </div>
+                <br/>
+                <div class="mush-wrap">
+                    <div class="mush-con">
+                        <a href="./main">
+                            <div>
+                                <img src="./img/버섯미아.png" alt="서비스관련이미지">
+                                <div class="mush-con-text">블라블라</div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="mush-con">
+                        <a href="#">
+                            <div>
+                                <img src="./img/버섯미아.png" alt="서비스관련이미지">
+                                <div class="mush-con-text">회원정보</div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="mush-con">
+                        <a href="#">
+                            <div>
+                                <img src="./img/버섯미아.png" alt="서비스관련이미지">
+                                <div class="mush-con-text">이메일</div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="mush-con">
+                        <a href="#">
+                            <div>
+                                <img src="./img/버섯미아.png" alt="서비스관련이미지">
+                                <div class="mush-con-text">컨텐츠별고객센터</div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="mush-con">
+                        <a href="#">
+                            <div>
+                                <img src="./img/버섯미아.png" alt="서비스관련이미지">
+                                <div class="mush-con-text">컨텐츠별고객센터</div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="mush-con">
+                        <a href="#">
+                            <div>
+                                <img src="./img/버섯미아.png" alt="서비스관련이미지">
+                                <div class="mush-con-text">컨텐츠별고객센터</div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="mush-con">
+                        <a href="#">
+                            <div>
+                                <img src="./img/버섯미아.png" alt="서비스관련이미지">
+                                <div class="mush-con-text">컨텐츠별고객센터</div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="mush-con">
+                        <a href="#">
+                            <div>
+                                <img src="./img/버섯미아.png" alt="서비스관련이미지">
+                                <div class="mush-con-text">컨텐츠별고객센터</div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="mush-con">
+                        <a href="#">
+                            <div>
+                                <img src="./img/버섯미아.png" alt="서비스관련이미지">
+                                <div class="mush-con-text">컨텐츠별고객센터</div>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="mush-con">
+                        <a href="#">
+                            <div>
+                                <img src="./img/버섯미아.png" alt="서비스관련이미지">
+                                <div class="mush-con-text">다른고객센터</div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- 섹션5 -------------------------------------------------------------- -->
+            <hr/>
+            <div class="section5">
+                <div class="s5-h2">
+                    <h2>다른 도움이 필요하신가요??</h2>
+                    <span style="color:red">1:1 문의하기 페이지 구현했어요</span>
+                </div>
+                <div class="s5-cardwrap">
+                    <a class="directing_inquiry" href="./inquiry_list">
+                        <div class="s5-card-title">
+                            <span class="material-symbols-outlined">
+                                support_agent
+                            </span>
+                            <strong>1:1 문의 바로가기</strong>
+                        </div>
+                        <div class="s5-card-info">
+                            <p>필요한 답을 찾지 못하셨나요?<br>상담요청이 가능한 시간대에는 1:1 채팅을 통해 문의사항을 빠르게 안내드릴게요!</p>
+                        </div>
+                    </a>
+                    <a href="">
+                        <div class="s5-card-title">
+                            <span class="material-symbols-outlined">
+                                stacked_email
+                            </span>
+                            <strong>이메일 문의하기</strong>
+                        </div>
+                        <div class="s5-card-info">
+                            <p>상담요청 시간대가 아니라면?<br>이메일을 통해 문의를 남겨주시면, 담당자가 확인후 답변해 드려요.<br>언제든 이메일을 통해 궁금한 사항을 물어보세요!</p>
+                        </div>
+                    </a>
+                    <a href="">
+                        <div class="s5-card-title">
+                            <span class="material-symbols-outlined">
+                                siren_question
+                            </span>
+                            <strong>사용자/콘텐츠 신고하기</strong>
+                        </div>
+                        <div class="s5-card-info">
+                            <p>이용 중 불편한 콘텐츠를 보셨나요?<br>저희는 깨끗하고 안전한 서비스를 만들기 위해 노력하고 있습니다.<br>
+                                불법 촬영물, 권리 침해, 유해 정보 등이 보이면 신고센터를 통해 신고해 주세요!</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 푸터 -->
+    <div th:replace="~{fragments/footer :: footerFragment}"></div>
+
+
+</div>
+</body>
+
+</html>
+
+
+<!-- JS ---------------------------------------------------------------- -->
+
+<!-- Swiper JS -->
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script>
+    new Swiper(".mySwiper", {
+        direction: "vertical",   // 세로 모드
+        loop: true,              // 무한 루프
+        autoplay: {
+            delay: 3000,           // 3초마다 변경
+        },
+        allowTouchMove: false    // 마우스로는 넘기지 못하게
+    });
+</script>
+
+
+<!-- q카드 숨김버튼 -->
+<script>
+    document.querySelector(".loadMoreBtn").addEventListener("click", function () {
+        const hiddenCards = document.querySelectorAll(".Q-card.hidden");
+        hiddenCards.forEach(card => card.style.display = "block");
+        this.style.display = "none"; // 버튼 숨기기
+    });
+</script>
+
+
+<script>
+
+
+</script>

@@ -5,9 +5,12 @@ import com.example.demo.config.auth.exceptionHandler.CustomAuthenticationEntryPo
 import com.example.demo.config.auth.jwt.JWTAuthorizationFilter;
 import com.example.demo.config.auth.loginHandler.CustomFailureHandler;
 import com.example.demo.config.auth.loginHandler.CustomSuccessHandler;
+import com.example.demo.config.auth.loginHandler.OAuth2LoginSuccessHandler;
 import com.example.demo.config.auth.logoutHandler.CustomLogoutHandler;
 import com.example.demo.config.auth.logoutHandler.CustomLogoutSuccessHandler;
+import com.example.demo.config.auth.oauth2.CookieOAuth2AuthorizationRequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -16,12 +19,12 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.logout.LogoutFilter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.filter.HiddenHttpMethodFilter;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig  {
-
     @Autowired
     CustomLogoutSuccessHandler customLogoutSuccessHandler;
     @Autowired
@@ -34,93 +37,108 @@ public class SecurityConfig  {
     CustomSuccessHandler customSuccessHandler;
     @Autowired
     CustomLogoutHandler customLogoutHandler;
-
     @Autowired
     JWTAuthorizationFilter jwtAuthorizationFilter;
 
+    @Autowired
+    OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
+
+    @Autowired
+    CookieOAuth2AuthorizationRequestRepository cookieOAuth2AuthorizationRequestRepository;
 
     @Bean
     protected SecurityFilterChain configure(HttpSecurity http) throws Exception {
 
-
-        //csrf 비활성화(비활성화하지 않으면 logout 요청은 기본적으로 POST방식을 따른다)
+        // csrf 비활성화(JWT 사용 시 필수)
         http.csrf((config)->{config.disable();});
 
-        //권한처리
-        http.authorizeHttpRequests((auth)->{
-
-            auth.requestMatchers("/","/join","/login").permitAll();
-
-            auth.requestMatchers("/user").hasAnyRole("USER"); //
-            auth.requestMatchers("/manager").hasAnyRole("MANAGER"); //
-            auth.requestMatchers("/admin").hasAnyRole("ADMIN"); //
-
-            auth.anyRequest().authenticated();
-
-        });
-
-        //로그인
-        http.formLogin( (login)->{
-            login.permitAll();
-            login.loginPage("/login");
-            login.successHandler(customSuccessHandler);     //로그인 성공시 동작하는 핸들러
-            login.failureHandler(customFailureHandler);     //로그인 실패시(ID 미존재 , PW 불일치)
-        });
-
-        //로그아웃(설정시 POST처리)
-        http.logout( (logout)->{
-            logout.permitAll();
-            logout.addLogoutHandler(customLogoutHandler);      //로그아웃 처리 핸들러
-            logout.logoutSuccessHandler(customLogoutSuccessHandler);
-        } );
-
-        //예외처리
-        http.exceptionHandling((ex)->{
-            ex.authenticationEntryPoint(customAuthenticationEntryPoint);//미인증된 상태 + 권한이 필요한 Endpoint 접근시 예외처리
-            ex.accessDeniedHandler(customAccessDeniedHandler); //인증이후 권한이 부족할때
-        });
-        
-        //Oauth2-Client 활성화
-        http.oauth2Login((oauth2)->{
-            oauth2.loginPage("/login");
-
-        });
-        //SESSION 비활성화
+        // ----------------------------------------------------
+        // ✅ 1. 세션 관리 설정: STATELESS로 무상태 설정 (세션 생성 비활성화)
+        // ----------------------------------------------------
         http.sessionManagement((sessionConfig)->{
             sessionConfig.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
         });
 
-        //TokenFilter 추가
-        http.addFilterBefore(jwtAuthorizationFilter, LogoutFilter.class );
+        // 권한 처리
+        http.authorizeHttpRequests((auth)->{
+            auth.requestMatchers("/api/chat/**").authenticated();
+            auth.requestMatchers(
+                    "/",
+                    "/main",
+                    "/login",
+                    "/join",
+                    "/oauth2/**",
+                    "/login/oauth2/code/**",
+                    "/oauth2/authorization/naver",
+                    "/login/oauth2/code/naver",
+                    "/error",
+                    "/css/**",
+                    "/video/**",
+                    "/js/**",
+                    "/img/**",
+                    "/*.html",
+                    "/swagger-ui/index.html"
+            ).permitAll();
+            auth.requestMatchers("/user").hasAnyRole("USER");
+            auth.requestMatchers("/manager").hasAnyRole("MANAGER");
+            auth.requestMatchers("/admin").hasAnyRole("ADMIN");
+            auth.requestMatchers("/my-account").permitAll();
+            auth.anyRequest().authenticated();
+        });
 
-        //Etc..
+        // 로컬 로그인 설정
+        // 폼 로그인 설정은 유지하되, 세션은 사용하지 않습니다.
+        http.formLogin( (login)->{
+            login.permitAll();
+            login.loginPage("/login");
+            login.usernameParameter("email");
+            login.successHandler(customSuccessHandler);
+            login.failureHandler(customFailureHandler);
+        });
+
+        // 로그아웃 설정 (JWT 사용 환경에서는 토큰 무효화 로직이 중요)
+        http.logout( (logout)->{
+            logout.permitAll();
+            logout.addLogoutHandler(customLogoutHandler);
+            logout.logoutSuccessHandler(customLogoutSuccessHandler);
+        } );
+
+        // 예외 처리
+        http.exceptionHandling((ex)->{
+            ex.authenticationEntryPoint(customAuthenticationEntryPoint);
+            ex.accessDeniedHandler(customAccessDeniedHandler);
+        });
+
+        // Oauth2-Client 활성화
+        http.oauth2Login((oauth2)->{
+            oauth2.loginPage("/login");
+            oauth2.successHandler(oAuth2LoginSuccessHandler);
+            // OAuth2의 Authorization Request 저장을 세션이 아닌 쿠키로 대체
+            oauth2.authorizationEndpoint(authEndpoint ->
+                    authEndpoint.authorizationRequestRepository(cookieOAuth2AuthorizationRequestRepository)
+            );
+        });
+
+        // ----------------------------------------------------
+        // ✅ 2. TokenFilter 추가 (JWT가 세션을 대신하여 인증을 담당)
+        // ----------------------------------------------------
+        // UsernamePasswordAuthenticationFilter 이전에 JWT 필터를 추가하여 토큰 검증을 먼저 수행합니다.
+        http.addFilterBefore(jwtAuthorizationFilter, UsernamePasswordAuthenticationFilter.class );
+
+        // Etc..
         return http.build();
     }
-    //임시계정생성
-//    @Bean
-//    UserDetailsService users() {
-//        UserDetails user = User.withUsername("user")
-//                .password("{noop}1234")   // 비밀번호 인코딩 없음 (실습용)
-//                .roles("USER")            // ROLE_USER
-//                .build();
-//
-//        UserDetails manager = User.withUsername("manager")
-//                .password("{noop}1234")
-//                .roles("MANAGER")         // ROLE_MANAGER
-//                .build();
-//
-//        UserDetails admin = User.withUsername("admin")
-//                .password("{noop}1234")
-//                .roles("ADMIN")           // ROLE_ADMIN
-//                .build();
-//
-//        return new InMemoryUserDetailsManager(user, manager, admin);
-//    }
 
-    // 패스워드 암호화작업(해시값생성)에 사용되는 Bean
     @Bean
-    public PasswordEncoder passwordEncoder(){
+    public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    @Bean
+    public FilterRegistrationBean<HiddenHttpMethodFilter> hiddenHttpMethodFilter() {
+        FilterRegistrationBean<HiddenHttpMethodFilter> filterRegistrationBean = new FilterRegistrationBean<>(new HiddenHttpMethodFilter());
+
+        filterRegistrationBean.setOrder(100);
+        return filterRegistrationBean;
+    }
 }

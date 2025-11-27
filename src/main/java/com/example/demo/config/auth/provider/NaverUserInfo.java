@@ -14,10 +14,10 @@ import java.util.Map;
 @AllArgsConstructor
 @Builder
 public class NaverUserInfo implements OAuth2UserInfo {
-//    private String id;
-//    private String profile_image;
-//    private String email;
-//    private String name;
+    private String id;
+    private String profile_image;
+    private String email;
+    private String name;
 
     private Map<String,Object> response;
 

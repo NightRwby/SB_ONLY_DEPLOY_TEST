@@ -1,17 +1,13 @@
 package com.example.demo.config.auth;
 
-import com.example.demo.domain.dtos.UserDto;
-import com.example.demo.domain.entity.User;
+import com.example.demo.domain.dto.UserDto;
+import com.example.demo.domain.entity.user.User;
 import com.example.demo.domain.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
-import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
-import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -25,21 +21,30 @@ public class PrincipalDetailsService implements UserDetailsService {
 
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        System.out.println("PrincipalDetailsService's loadUserByUsername : " + username);
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        System.out.println("PrincipalDetailsService's loadUserByUsername : " + email);
 
         Optional<User> userOptional =
-            userRepository.findById(username);
+                userRepository.findByEmail(email);
         if(userOptional.isEmpty())
-            throw new UsernameNotFoundException(username+" 계정이 존재하지 않습니다");
+            throw new UsernameNotFoundException(email+" 계정이 존재하지 않습니다");
 
         //ENTITY -> DTO
         User user = userOptional.get();
         UserDto dto = new UserDto();
-        dto.setUsername(user.getUsername());
-        dto.setPassword(user.getPassword());
+        dto.setUserName(user.getUserName());
+        dto.setPassWord(user.getPassword());
         dto.setRole(user.getRole());
+        dto.setPhoneNumber(user.getPhoneNumber());
+        dto.setEmail(user.getEmail());
+
+        PrincipalDetails principalDetails = new PrincipalDetails(dto);
+
+
+        System.out.println("PrincipalDetails Info: " + principalDetails);
 
         return new PrincipalDetails(dto);
+
+
     }
 }

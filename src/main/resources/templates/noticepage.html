@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>공지사항 - BlahBlah</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Main CSS -->
+    <link rel="stylesheet" th:href="@{/css/notice.css}">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+
+</head>
+
+<body>
+
+<!-- 헤더 -->
+<div th:replace="~{fragments/header :: headerFragment}"></div>
+
+<!-- Hero (간단 타이틀) -->
+<section class="container notice-hero">
+    <div class="py-4 text-center">
+        <h1 class="fw-bold mb-1">공지사항</h1>
+        <p class="text-muted mb-0">BlahBlah 서비스 업데이트와 안내를 확인하세요.</p>
+    </div>
+</section>
+
+<!-- 필터 바 -->
+<section class="container">
+    <div class="notice-toolbar d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-2 gap-lg-3">
+        <div class="flex-grow-1">
+            <label for="searchInput" class="visually-hidden">검색</label>
+            <input id="searchInput" type="search" class="form-control" placeholder="제목 또는 내용 검색"/>
+        </div>
+        <div class="d-flex gap-2">
+            <label class="visually-hidden" for="categorySelect">카테고리</label>
+            <select id="categorySelect" class="form-select">
+                <option value="">전체 카테고리&emsp;</option>
+                <option value="공지">공지&emsp;</option>
+                <option value="업데이트">업데이트&emsp;</option>
+                <option value="점검">점검&emsp;</option>
+                <option value="이벤트">이벤트&emsp;</option>
+            </select>
+
+            <label class="visually-hidden" for="sortSelect">정렬</label>
+            <select id="sortSelect" class="form-select">
+                <option value="new">최신순&emsp;</option>
+                <option value="old">오래된순&emsp;</option>
+            </select>
+        </div>
+    </div>
+</section>
+
+<!-- 목록 (모바일: 카드/데스크탑: 테이블) -->
+<section class="container my-4">
+    <!-- 테이블 (md 이상) -->
+    <div class="table-responsive d-none d-md-block">
+        <table class="table align-middle notice-table">
+            <colgroup>
+                <col style="width:8rem"/>
+                <col/>
+                <col style="width:10rem"/>
+                <col style="width:6rem"/>
+            </colgroup>
+            <thead>
+            <tr>
+                <th scope="col">카테고리</th>
+                <th scope="col">제목</th>
+                <th scope="col">등록일</th>
+                <th scope="col" class="text-center">조회</th>
+            </tr>
+            </thead>
+            <tbody id="noticeTableBody">
+            <!-- JS로 렌더 -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 카드 리스트 (sm 이하) -->
+    <div class="d-grid gap-3 d-md-none" id="noticeCardList">
+        <!-- JS로 렌더 -->
+    </div>
+
+    <!-- 페이지네이션 -->
+    <nav class="d-flex justify-content-center mt-4">
+        <ul class="pagination pagination-sm notice-pagination" id="pagination">
+            <!-- JS로 렌더 -->
+        </ul>
+    </nav>
+</section>
+
+<!-- 푸터 -->
+<div th:replace="~{fragments/footer :: footerFragment}"></div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Notice List JS -->
+<script>
+    // 더미 데이터  (실서비스 연결 전까지 사용해야됌)
+    const notices = [
+      { id: 101, category: "공지", title: "개인정보 처리방침 개정 안내", date: "2025-08-10", views: 1280 },
+      { id: 102, category: "업데이트", title: "이모티콘 신규 팩 출시", date: "2025-08-08", views: 734 },
+      { id: 103, category: "점검", title: "8/12(월) 서비스 점검 안내", date: "2025-08-05", views: 542 },
+      { id: 104, category: "공지", title: "부정 이용 대응 강화 공지", date: "2025-08-01", views: 982 },
+      { id: 105, category: "이벤트", title: "신규 가입 환영 이벤트", date: "2025-07-28", views: 2110 },
+      { id: 106, category: "업데이트", title: "파일 전송 용량 상향", date: "2025-07-21", views: 455 },
+      { id: 107, category: "공지", title: "서비스 약관 개정 사전 안내", date: "2025-07-15", views: 667 },
+      { id: 108, category: "점검", title: "야간 점검(7/10) 안내", date: "2025-07-09", views: 301 },
+      { id: 109, category: "업데이트", title: "채팅 안정성 개선", date: "2025-07-01", views: 889 },
+      { id: 110, category: "이벤트", title: "여름 한정 이모티콘 증정", date: "2025-06-25", views: 1544 },
+      // 필요시 더 추가
+    ];
+
+    // 상태
+    let state = {
+      page: 1,
+      perPage: 8,
+      q: "",
+      category: "",
+      sort: "new",
+    };
+
+    const $tableBody = document.getElementById("noticeTableBody");
+    const $cardList = document.getElementById("noticeCardList");
+    const $pagination = document.getElementById("pagination");
+    const $search = document.getElementById("searchInput");
+    const $category = document.getElementById("categorySelect");
+    const $sort = document.getElementById("sortSelect");
+
+    // 유틸
+    const fmtDate = (s) => new Date(s).toLocaleDateString("ko-KR", { year: "numeric", month: "2-digit", day: "2-digit" });
+    function applyFilterSort(data) {
+      let arr = data.slice();
+
+      // 검색
+      if (state.q) {
+        const q = state.q.toLowerCase();
+        arr = arr.filter(n => (n.title.toLowerCase().includes(q)));
+      }
+      // 카테고리
+      if (state.category) {
+        arr = arr.filter(n => n.category === state.category);
+      }
+      // 정렬
+      arr.sort((a, b) => {
+        if (state.sort === "new") return new Date(b.date) - new Date(a.date);
+        return new Date(a.date) - new Date(b.date);
+      });
+      return arr;
+    }
+
+    function paginate(data) {
+      const total = data.length;
+      const pages = Math.max(1, Math.ceil(total / state.perPage));
+      const start = (state.page - 1) * state.perPage;
+      const slice = data.slice(start, start + state.perPage);
+      return { slice, total, pages };
+    }
+
+    function renderTable(rows) {
+      $tableBody.innerHTML = rows.map(n => `
+        <tr>
+          <td><span class="badge rounded-pill bg-light text-dark notice-badge">${n.category}</span></td>
+          <td>
+            <a class="notice-link" href="noticedetail?id=${n.id}" title="${n.title}">
+              ${n.title}
+            </a>
+          </td>
+          <td class="text-muted">${fmtDate(n.date)}</td>
+          <td class="text-center text-muted">${n.views}</td>
+        </tr>
+      `).join("");
+    }
+
+    function renderCards(rows) {
+      $cardList.innerHTML = rows.map(n => `
+        <a class="notice-card d-flex gap-3 align-items-center p-3 rounded-3 shadow-sm text-decoration-none" href="noticedetail?id=${n.id}">
+          <div class="notice-card-badge badge bg-light text-dark">${n.category}</div>
+          <div class="flex-grow-1">
+            <div class="fw-bold text-dark mb-1">${n.title}</div>
+            <div class="small text-muted">${fmtDate(n.date)} · 조회 ${n.views.toLocaleString()}</div>
+          </div>
+          <div class="ms-auto small text-muted">&rsaquo;</div>
+        </a>
+      `).join("");
+    }
+
+    function renderPagination(pages) {
+      const cur = state.page;
+      let html = "";
+
+      function pageItem(page, label = page, disabled = false, active = false) {
+        return `
+          <li class="page-item ${disabled ? 'disabled' : ''} ${active ? 'active' : ''}">
+            <a class="page-link" href="#" data-page="${page}">${label}</a>
+          </li>
+        `;
+      }
+
+      html += pageItem(cur - 1, "이전", cur === 1);
+      const maxButtons = 5;
+      const start = Math.max(1, cur - Math.floor(maxButtons / 2));
+      const end = Math.min(pages, start + maxButtons - 1);
+      for (let p = Math.max(1, end - maxButtons + 1); p <= end; p++) {
+        html += pageItem(p, p, false, p === cur);
+      }
+      html += pageItem(cur + 1, "다음", cur === pages);
+      $pagination.innerHTML = html;
+
+      // 이벤트 바인딩
+      $pagination.querySelectorAll("a.page-link").forEach(a => {
+        a.addEventListener("click", (e) => {
+          e.preventDefault();
+          const to = parseInt(a.dataset.page, 10);
+          if (!isNaN(to) && to >= 1 && to <= pages && to !== state.page) {
+            state.page = to;
+            update();
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }
+        });
+      });
+    }
+
+    function update() {
+      const filtered = applyFilterSort(notices);
+      const { slice, pages } = paginate(filtered);
+      renderTable(slice);
+      renderCards(slice);
+      renderPagination(pages);
+    }
+
+    // 이벤트
+    $search.addEventListener("input", () => {
+      state.q = $search.value.trim();
+      state.page = 1; update();
+    });
+    $category.addEventListener("change", () => {
+      state.category = $category.value;
+      state.page = 1; update();
+    });
+    $sort.addEventListener("change", () => {
+      state.sort = $sort.value;
+      state.page = 1; update();
+    });
+
+    update();
+</script>
+</body>
+
+</html>

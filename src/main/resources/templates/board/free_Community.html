@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/exodia}"> <div layout:fragment="content">
+
+    <section class="board_card">
+        <div class="free_side_box_top">
+            <div class="free_top-text">
+                <span class="free_accent-text">Blah Blah</span>
+                <h1 class="free_accent_h1">COMMUNITY</h1>
+            </div>
+            <div class="commu_title">
+                <h1></h1>
+            </div>
+        </div>
+    </section>
+<!--                <p class="top-sub">지금 실시간으로 뜨거운 이슈와 자유로운 이야기를 만나보세요.</p>-->
+
+    <form action="/community/free/list" method="get" class="toolbar_form">
+        <section class="board_card" aria-label="검색 및 필터">
+            <div class="toolbar">
+                <div class="tool_form_wrap">
+
+                    <div class="toolform1">
+                        <label for="tool-input" name="keyword"
+                               th:value="${keyword}"
+                               class="form_label">검색</label>
+                        <input type="text" id="tool-input" name="keyword" class="tool-input" placeholder="제목·태그 검색" />
+                    </div>
+
+                    <div class="toolform2">
+                        <div class="tool_select_form1">
+                            <label for="tool-select" class="form_label">카테고리</label>
+                            <select id="tool-select" name="category" class="tool-select">
+                                <option value="">전체</option>
+                                <option value="일상" th:selected="${category == '일상'}">일상</option>
+                                <option value="질문" th:selected="${category == '질문'}">질문</option>
+                                <option value="정보" th:selected="${category == '정보'}">정보</option>
+                                <option value="후기" th:selected="${category == '후기'}">후기</option>
+                                <option value="리뷰" th:selected="${category == '리뷰'}">리뷰</option>
+                                <option value="유머" th:selected="${category == '유머'}">유머</option>
+                                <option value="밈" th:selected="${category == '밈'}">밈</option>
+                                <option value="공지" th:selected="${category == '공지'}">공지</option>
+                            </select>
+                        </div>
+
+                        <div class="tool_select_form2">
+                            <label for="tool-select2" class="form_label">정렬</label>
+                            <select id="tool-select2" name="sort" class="tool-select">
+                                <option value="latest" th:selected="${sort == 'latest'}">최신순</option>
+                                <option value="views" th:selected="${sort == 'views'}">조회수순</option>
+                                <option value="likes" th:selected="${sort == 'likes'}">추천순</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="toolform3">
+                        <ul class="chips" aria-label="빠른 필터">
+                            <li><button type="button" class="chip"># 일상</button></li>
+                            <li><button type="button" class="chip"># 정보</button></li>
+                            <li><button type="button" class="chip"># 후기</button></li>
+                            <li><button type="button" class="chip"># 리뷰</button></li>
+                            <li><button type="button" class="chip"># 유머</button></li>
+                            <li><button type="button" class="chip"># 밈</button></li>
+                            <li><button type="button" class="chip"># 공지</button></li>
+                            <li><button type="button" class="chip"># 질문</button></li>
+                            <li><button type="button" class="chip"># 힘들다</button></li>
+                            <li><button type="button" class="chip"># ..</button></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="tool_btn_wrap">
+                    <div class="tool_btn_group1">
+                        <label class="form_label" for="resetBtn">reset</label>
+                        <button id="resetBtn" class="tool_btn" type="button">초기화</button>
+                    </div>
+
+                    <div class="tool_btn_group2">
+                        <label class="form_label" for="searchBtn">search</label>
+                        <button id="searchBtn" class="tool_btn" type="submit">검색하기</button>
+                    </div>
+
+                    <div class="tool_btn_group3">
+                        <label class="form_label" for="writeBtn">write</label>
+                        <button id="writeBtn" class="tool_btn" type="button">글쓰기</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </form>
+
+    <section class="board_card" aria-label="게시글 목록">
+        <table id="boardTable">
+            <thead>
+            <tr>
+                <th class="tbl_num">번호</th>
+                <th class="tbl_title">제목</th>
+                <th class="tbl_cart">카테고리</th>
+                <th class="tbl_writer">작성자</th>
+                <th class="tbl_date">날짜</th>
+                <th class="tbl_visit">조회</th>
+                <th class="tbl_like">추천</th>
+            </tr>
+            </thead>
+            <tbody id="tbody">
+            <tr th:each="board : ${boardList}">
+                <td class="user_tbl_num" th:text="${board.id}">1</td>
+                <td class="user_tbl_title">
+                    <a th:href="@{/community/free/detail(id=${board.id})}" th:text="${board.title}">제목</a>
+                </td>
+                <td class="user_tbl_cart" th:text="${board.category}">카테고리</td>
+                <td class="user_tbl_writer" th:text="${board.writer}">작성자</td>
+                <td class="user_tbl_date" th:text="${#temporals.format(board.createdDate, 'yyyy-MM-dd')}">날짜</td>
+                <td class="user_tbl_visit" th:text="${board.views}">0</td>
+                <td class="user_tbl_like" th:text="${board.likes}">0</td>
+            </tr>
+            <tr th:if="${boardList.empty}">
+                <td colspan="8" style="text-align:center; padding: 20px;">게시글이 없습니다.</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="pagenav" th:if="${!boardList.isEmpty()}">
+            <button type="button" class="page_btn" id="page_btn_L"
+                    th:onclick="|location.href='@{/community/free/list(page=${startPage - 1}, keyword=${keyword}, category=${category}, sort=${sort})}'|"
+                    th:style="${startPage == 1} ? 'display:none' : 'display:flex'">
+                &lt;
+            </button>
+            <ol class="pagination" id="pagination">
+                <li th:each="page: ${#numbers.sequence(startPage, endPage)}">
+                    <button type="button" class="page_btn"
+                            th:text="${page}"
+                            th:onclick="|location.href='@{/community/free/list(page=${page}, keyword=${keyword}, category=${category}, sort=${sort})}'|"
+                            th:classappend="${page == boardList.number + 1} ? 'active'">1</button>
+                </li>
+            </ol>
+            <button type="button" class="page_btn" id="page_btn_R"
+                    th:onclick="|location.href='@{/community/free/list(page=${endPage + 1}, keyword=${keyword}, category=${category}, sort=${sort})}'|"
+                    th:style="${endPage == boardList.totalPages} ? 'display:none' : 'display:flex'">
+                &gt;
+            </button>
+        </div>
+    </section>
+
+</div>
+<th:block layout:fragment="script">
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            console.log("Community Page Loaded - Start Init");
+
+            // 1. 사이드바 로드
+            if(typeof initAsideL === 'function') initAsideL();
+            if(typeof initAsideR === 'function') initAsideR();
+
+            // 2. 게시판(툴바, 모달) 로직 로드 (이 부분이 빠져있었습니다!)
+            if(typeof initfree === 'function') {
+                initfree();
+            } else {
+                console.error("initfree 함수를 찾을 수 없습니다. js 파일 경로를 확인하세요.");
+            }
+
+            // 3. 모달 공통 로직 로드 (free_modal.js에 있는 initModal)
+            if(typeof initModal === 'function') initModal();
+        });
+    </script>
+</th:block>
+</html>

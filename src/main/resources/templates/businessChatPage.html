@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>비즈니스 채팅방</title>
+    <link rel="stylesheet" th:href="@{/css/businessChatPage.css}">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+    <script type="text/javascript" th:src="@{/js/chatPage.js}"></script>
+</head>
+
+<body>
+<div th:replace="~{fragments/header :: headerFragment}"></div>
+<main id="main-pop" class="main-pop">
+    <aside id="left-side" class="left-side">
+        <div class="left-header">
+            <label class="title-text">채팅방</label>
+            <button id="new-room" class="new-room">+ 새 채팅방</button>
+        </div>
+
+        <input type="text" id="room-search" class="chat-mok" placeholder="채팅방 검색">
+
+        <div class="divider"><span>채팅 목록</span></div>
+
+        <div id="chat-room-list"></div>
+    </aside>
+
+    <section class="chat-area-wrapper" id="chat-area-wrapper">
+        <div class="empty-state" id="empty-state">
+            <div>
+                <p style="font-size:18px;">환영합니다!</p>
+                <p style="font-size:14px;">좌측 채팅방을 선택하거나 새 채팅방을 만들어 시작해 보세요.</p>
+            </div>
+        </div>
+    </section>
+
+    <aside id="right-side" class="right-side">
+        <div class="right-header">
+            <label class="join-title">참여자</label>
+            <button id="add-member-btn" class="add-member-btn">+ 참여자 추가</button>
+        </div>
+
+        <input type="text" id="member-search" class="join-mok" placeholder="참여자 검색">
+
+        <div class="divider"><span>온라인</span></div>
+        <div class="member-list" id="online-member-list"></div>
+
+        <div class="divider"><span>오프라인</span></div>
+        <div class="member-list" id="offline-member-list"></div>
+    </aside>
+</main>
+
+<div th:replace="~{fragments/footer :: footerFragment}"></div>
+
+
+<script th:inline="javascript">
+    // Spring Security의 인증 정보를 통해 로그인된 사용자 이메일 주입
+    const loggedInUserEmail = [[${#authentication.name}]];
+    console.log("현재 로그인된 사용자 이메일:", loggedInUserEmail);
+</script>
+</body>
+
+</html>

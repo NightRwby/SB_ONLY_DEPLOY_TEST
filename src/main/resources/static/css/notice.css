@@ -1,0 +1,360 @@
+/* ==============================
+   공지사항 스타일 추가 (append only)
+============================== */
+
+    /* 히어로/툴바 간격 */
+    .notice-hero {
+        max-width: 1200px;
+        margin-top: clamp(8px, 3vw, 24px);
+        margin-bottom: clamp(8px, 2vw, 12px);
+    }
+
+    .notice-toolbar {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 clamp(12px, 3vw, 24px) 8px;
+    }
+
+    /* 테이블 스타일 */
+    .notice-table thead th {
+        background: #fafafa;
+        border-bottom: 1px solid #e9ecef;
+        font-weight: 700;
+    }
+
+    .notice-table tbody tr td {
+        border-color: #f0f0f0;
+    }
+
+    .notice-badge {
+        border: 1px solid #e9ecef;
+        font-weight: 600;
+    }
+
+    /* 링크 스타일(제목) */
+    .notice-link {
+        color: #111;
+        text-decoration: none;
+    }
+
+    .notice-link:hover {
+        text-decoration: underline;
+    }
+
+    /* 모바일 카드형 */
+    .notice-card {
+        border: 1px solid #eee;
+        border-radius: 16px;
+        background: #fff;
+    }
+
+    .notice-card:hover {
+        box-shadow: 0 8px 24px rgba(0, 0, 0, .06);
+    }
+
+    .notice-card-badge {
+        border: 1px solid #eee;
+        font-weight: 600;
+    }
+
+    /* 페이지네이션 여백 */
+    .notice-pagination .page-link {
+        color: #111;
+    }
+
+    .notice-pagination .page-item.active .page-link {
+        background: #111;
+        border-color: #111;
+        color: #fff;
+    }
+
+    /* 상세 본문 */
+    .notice-article {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .notice-content {
+        font-size: 1rem;
+        line-height: 1.75;
+    }
+
+    .notice-content p {
+        margin-bottom: 1rem;
+    }
+
+    .notice-content ul {
+        margin-bottom: 1rem;
+    }
+
+    /* 대형 화면 중앙 폭 제한(메인 정책과 일치) */
+    @media (min-width: 1400px) {
+
+        .notice-hero,
+        .notice-toolbar,
+        .notice-article {
+            max-width: 1200px;
+        }
+    }
+
+    /* ==============================
+   Notice – Modern UI Upgrade (append only)
+============================== */
+
+    /* 컬러 토큰 */
+    :root {
+        --nn-bg: #ffffff;
+        --nn-text: #111;
+        --nn-muted: #667085;
+        --nn-border: #ECEEF0;
+        --nn-card: #ffffffcc;
+        /* glass */
+        --nn-shadow: 0 10px 30px rgba(16, 24, 40, .08);
+        --nn-grad: linear-gradient(135deg, #06b6d4 0%, #22c55e 100%);
+        --nn-chip-bg: #f6f7f9;
+        --nn-chip-bd: #e7eaee;
+        --nn-primary: #111;
+        /* 버튼/링크 기본 */
+    }
+
+    /* 라이트/다크 자동 대응(선택) */
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --nn-bg: #0b0d10;
+            --nn-text: #f5f6f8;
+            --nn-muted: #9aa4b2;
+            --nn-border: #1f242a;
+            --nn-card: #0f1318cc;
+            --nn-shadow: 0 12px 32px rgba(0, 0, 0, .32);
+            --nn-chip-bg: #151b22;
+            --nn-chip-bd: #1f242a;
+            --nn-primary: #e2e8f0;
+        }
+
+        body {
+            background: var(--nn-bg);
+        }
+
+        .navbar {
+            border-color: var(--nn-border);
+        }
+
+        .navbar-nav .nav-link {
+            color: var(--nn-primary);
+        }
+
+        footer {
+            background: transparent;
+            border-color: var(--nn-border);
+            color: var(--nn-muted);
+        }
+    }
+
+    /* 히어로 */
+    .notice-hero .py-4 {
+        background: radial-gradient(1200px 300px at 50% -50%, rgba(34, 197, 94, .10), transparent 60%);
+        border-radius: 24px;
+    }
+
+    .notice-hero h1 {
+        letter-spacing: .2px;
+        font-size: clamp(28px, 4.2vw, 40px);
+    }
+
+    .notice-hero p {
+        color: var(--nn-muted);
+        margin-top: .25rem;
+    }
+
+    /* 툴바 (검색/필터) */
+    .notice-toolbar {
+        gap: .75rem !important;
+        margin-top: .25rem;
+        margin-bottom: .5rem;
+    }
+
+    .notice-toolbar .form-control,
+    .notice-toolbar #categorySelect {min-width: 120px;}
+    .notice-toolbar #sortSelect {min-width: 100px;}
+
+    .notice-toolbar .form-select {
+        text-align-last: center;
+        text-align: center;
+        border-radius: 14px;
+        padding: .7rem 1rem;
+        border: 1px solid var(--nn-border);
+        background: var(--nn-card);
+        backdrop-filter: saturate(140%) blur(6px);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, .4);
+    }
+
+    .notice-toolbar .form-control:focus,
+    .notice-toolbar .form-select:focus {
+        border-color: #94a3b8;
+        box-shadow: 0 0 0 4px rgba(148, 163, 184, .20);
+    }
+
+    /* 드롭다운 메뉴 내 옵션 텍스트 중앙 정렬 */
+    .notice-toolbar .d-flex > .form-select option {
+        text-align: center;
+    }
+
+    /* 테이블 뷰 (md↑) */
+    .notice-table {
+        border: 1px solid var(--nn-border);
+        border-radius: 16px;
+        overflow: hidden;
+        background: var(--nn-card);
+        backdrop-filter: saturate(140%) blur(6px);
+        box-shadow: var(--nn-shadow);
+    }
+
+    .notice-table thead th {
+        background: linear-gradient(180deg, #fafbfc 0%, #f5f7fa 100%);
+        border-bottom: 1px solid var(--nn-border);
+        color: var(--nn-muted);
+        font-weight: 700;
+    }
+
+    .notice-table .notice-link {
+        color: var(--nn-text);
+        text-decoration: none;
+        font-weight: 700;
+        letter-spacing: .2px;
+    }
+
+    .notice-table .notice-link:hover {
+        color: #3EE9B9;
+    }
+
+    /* 배지 */
+    .notice-badge,
+    .notice-card-badge {
+        border-radius: 999px;
+        padding: .35rem .7rem;
+        border: 1px solid var(--nn-chip-bd);
+        background: var(--nn-chip-bg);
+        font-weight: 700;
+        font-size: .82rem;
+    }
+
+    /* 모바일 카드 뷰 (sm↓) */
+    .notice-card {
+        border: 1px solid var(--nn-border);
+        border-radius: 18px;
+        background: var(--nn-card);
+        backdrop-filter: saturate(140%) blur(6px);
+        box-shadow: var(--nn-shadow);
+        transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+
+    .notice-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 14px 34px rgba(17, 24, 39, .12);
+        border-color: #d8dde3;
+    }
+
+    .notice-card .fw-bold {
+        line-height: 1.3;
+    }
+
+    .notice-card .small {
+        color: var(--nn-muted);
+    }
+
+    /* 페이지네이션 – pill 스타일 */
+    .notice-pagination .page-item .page-link {
+        border: 1px solid var(--nn-border);
+        color: var(--nn-primary);
+        border-radius: 999px;
+        margin: 0 .2rem;
+        padding: .45rem .8rem;
+        background: var(--nn-card);
+    }
+
+    .notice-pagination .page-item.active .page-link {
+        color: #fff;
+        background: var(--nn-grad);
+        border-color: transparent;
+        box-shadow: 0 6px 16px rgba(2, 132, 199, .25);
+    }
+
+    /* 상세 페이지 */
+    .notice-article {
+        max-width: 900px;
+        margin: 0 auto;
+        border: 1px solid var(--nn-border);
+        border-radius: 18px;
+        background: var(--nn-card);
+        padding: clamp(18px, 2vw, 28px);
+        box-shadow: var(--nn-shadow);
+    }
+
+    .notice-content {
+        color: var(--nn-text);
+        font-size: clamp(15px, 1.05vw, 17px);
+        line-height: 1.8;
+    }
+
+    .notice-content p {
+        margin-bottom: 1rem;
+    }
+
+    .notice-content ul {
+        margin: .5rem 0 1.25rem 1.1rem;
+    }
+
+    .notice-attach h6 {
+        font-weight: 800;
+    }
+
+    .notice-attach a {
+        border: 1px dashed var(--nn-border);
+        border-radius: 12px;
+        padding: .6rem .8rem;
+        color: var(--nn-primary);
+    }
+
+    .notice-attach a:hover {
+        border-style: solid;
+    }
+
+    /* 링크 버튼/텍스트 */
+    a.text-decoration-none.small.text-muted:hover {
+        color: var(--nn-primary) !important;
+    }
+
+    /* 섹션 간격 통일 */
+    .notice-hero,
+    .notice-toolbar,
+    .notice-article,
+    .notice-card,
+    .notice-table {
+        margin-bottom: clamp(8px, 2.4vw, 20px);
+    }
+
+    /* 접근성: 포커스 링 */
+    :where(.notice-link, .notice-card, .page-link, .btn, .form-control, .form-select):focus {
+        outline: none;
+        box-shadow: 0 0 0 4px rgba(14, 165, 233, .25) !important;
+    }
+
+    /* 초대형 화면 폭 제한 */
+    @media (min-width: 1400px) {
+
+        .notice-hero,
+        .notice-toolbar {
+            max-width: 1200px;
+        }
+    }
+
+    /* 작은 화면에서 여백 최적화 */
+    @media (max-width: 575.98px) {
+        .notice-hero .py-4 {
+            padding: 18px 14px !important;
+        }
+
+        .notice-toolbar {
+            padding: 0 14px 8px !important;
+        }
+    }

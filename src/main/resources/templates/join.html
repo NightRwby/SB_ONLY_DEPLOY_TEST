@@ -1,22 +1,43 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원가입</title>
+    <link rel="stylesheet" th:href="@{/css/join.css}">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
 </head>
 <body>
-    <h1>JOIN PAGE</h1>
-    <form method="post" action="/join">
-        <p>
-            <label for="username" class="screenreader">Username</label>
-            <input type="text" id="username" name="username" placeholder="Username" required="" autofocus="">
-        </p>
-        <p>
-            <label for="password" class="screenreader">Password</label>
-            <input type="password" id="password" name="password" placeholder="Password" required="">
-        </p>
-<!--        <input name="_csrf"  th:value="${_csrf.token}">-->
-        <button type="submit" class="primary">Sign in</button>
-    </form>
+<wrapper id="wrapper">
+    <!-- 헤더 -->
+    <div th:replace="~{fragments/header :: headerFragment}"></div>
+    <!-- 메인 -->
+    <main class="container">
+        <form action="/join" method="POST" class="formbox">
+            <div class="logo2">Blah Blah</div>
+            <button type="submit" class="desc"><a class="google" href="javascript:void(0)">KAKAO 로그인</a></button>
+            <button type="submit" class="desc"><a class="google" href="javascript:void(0)">NAVER 로그인</a></button>
+
+            <div class="divider">&nbsp;&nbsp;또는&nbsp;&nbsp;</div>
+            <input name="phoneNumber" type="text" class="phoneNumber" placeholder="&nbsp;&nbsp;핸드폰 번호를 입력하세요.">
+            <input name="passWord" type="password" placeholder="&nbsp;&nbsp;비밀번호를 입력하세요." required>
+            <input name="userName" type="text" placeholder="&nbsp;&nbsp;사용자 이름을 입력하세요." required>
+            <input name="email" type="text" class="email" placeholder="&nbsp;&nbsp;이메일을 입력하세요." required>
+            <input name="BusinessEmail" type="text" placeholder="&nbsp;&nbsp;회사 이메일을 입력하세요(선택)">
+            <div class="policy">
+                저희 서비스를 이용하는 사람이 회원님의 연락처 정보를 BlahBlah에 업로드했을 수도 있습니다. 더 <a class="pol" href="#">알아보기</a>
+            </div>
+            <button type="submit" class="submit-btn">회원가입</button>
+
+            <div class="divider">&nbsp;&nbsp;또는&nbsp;&nbsp;</div>
+            <div class="login-btn2"><a href="/login">이미 계정이 있으신가요?</a></div>
+        </form>
+    </main>
+    <!-- 푸터 -->
+    <div th:replace="~{fragments/footer :: footerFragment}"></div>
+</wrapper>
+
 </body>
+
 </html>

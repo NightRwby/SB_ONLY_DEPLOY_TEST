@@ -1,28 +1,54 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+>
+
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인</title>
+    <!-- Main CSS -->
+    <link rel="stylesheet" th:href="@{/css/login.css}">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
 </head>
+
 <body>
-    <h1>LOGIN PAGE</h1>
-    <form method="post" action="/login">
-        <p>
-            <label for="username" class="screenreader">Username</label>
-            <input type="text" id="username" name="username" placeholder="Username" required="" autofocus="">
-        </p>
-        <p>
-            <label for="password" class="screenreader">Password</label>
-            <input type="password" id="password" name="password" placeholder="Password" required="">
-        </p>
-<!--        <input name="_csrf"  th:value="${_csrf.token}">-->
-        <button type="submit" class="primary">Sign in</button>
-    </form>
 
-    <a href="/oauth2/authorization/kakao">카카오 로그인</a> <br/>
-    <a href="/oauth2/authorization/naver">네이버 로그인</a> <br/>
-    <a href="/oauth2/authorization/google">구글 로그인</a> <br/>
+<!-- 헤더 -->
+<div th:replace="~{fragments/header :: headerFragment}"></div>
+<div class="wrapper">
+    <div class="imagebox">
+        <img src="./img/메인이미지2.png" alt="">
+    </div>
+    <div class="formbox">
+        <div class="logobox"><img src="./img/로고.png" alt=""></div>
+        <div class="inputbox">
+            <div th:if="${param.error}" style="color: red; margin-bottom: 10px; font-weight: bold; text-align: center;">
+                <p th:text="${param.error[0]}"></p>
+            </div>
+            <form method="post" action="/login">
+                <input type="text"
+                       name="email"
+                       placeholder="  이메일"
+                       th:value="${param.email} ? ${param.email[0]} : ''">
+                <input type="password" name="password" placeholder="  비밀번호">
+                <button class="go">로그인</button>
+            </form>
+            <div class="divider"><span>소셜 계정으로 간편 로그인</span></div>
+            <a href="/oauth2/authorization/kakao" class="kakao">KAKAO 로그인</a>
+            <a href="/oauth2/authorization/naver" class="naver">NAVER 로그인</a>
+        </div>
+        <div class="find-pw">
+            <a href="javascript:void(0)">비밀번호를 잊으셨나요?</a>
+        </div>
+        <div class="joinus">
+            <span>계정이 없으신가요?</span>
+            <a href="./join">가입하기</a>
+        </div>
+    </div>
 
-    <span th:text="${param.error}"></span>
+</div>
+<!-- 푸터 -->
+<div th:replace="~{fragments/footer :: footerFragment}"></div>
+
 </body>
 </html>

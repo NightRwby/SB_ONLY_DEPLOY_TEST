@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko"        xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>문의업데이트</title>
+
+    <!-- Main CSS -->
+    <link rel="stylesheet" th:href="@{/css/inquiry_create.css}">
+    <link rel="stylesheet" th:href="@{/css/common.css}">
+</head>
+<body>
+<!-- 헤더 -->
+<div th:replace="~{fragments/header :: headerFragment}"></div>
+
+<!-- 메인 -->
+<main id="main">
+    <div class="support">
+        <div class="suptitle">
+            <h2>1대1 사용자 문의 수정</h2>
+        </div>
+        <form id="inquiryForm" th:action="@{/inquiry/{id}/update(id=${inquiryId})}" th:object="${inquiry}" method="post">
+            <div class="supchoice">
+                <h1>문의 수정하기</h1>
+                <select th:field="*{inquiryType}" id="inquiry-type">
+                    <option value="" disabled
+                            th:selected="${inquiry.inquiryType == null or inquiry.inquiryType == ''}">
+                        문의 유형을 선택하세요</option>
+                    <option value="버섯">버섯 관련 문의하기</option>
+                    <option value="채팅">채팅 관련 문의하기</option>
+                    <option value="결제">결제 관련 문의하기</option>
+                    <option value="문서">문서 관련 문의하기</option>
+                    <option value="커뮤니티">커뮤니티 관련 문의하기</option>
+                    <option value="계정">계정 관련 문의하기</option>
+                    <option value="기타">기타 문의하기</option>
+                </select>
+                <div th:if = "${#fields.hasErrors('inquiryType')}"
+                     th:errors = "*{inquiryType}" class="error-message">
+                    [문의 유형 에러 메시지]
+                </div>
+            </div>
+
+            <div class="supmain">
+                <textarea th:field="*{title}" id="supmaintitle" placeholder="문의 제목을 입력해주세요."
+                          maxlength="25"></textarea>
+                <div th:if="${#fields.hasErrors('title')}"
+                     th:errors="*{title}" class="error-message">
+                    [문의 제목 에러 메시지]
+                </div>
+                <textarea th:field="*{content}" id="supmaintext" placeholder="문의 내용을 입력해주세요."
+                          maxlength="500"></textarea>
+                <div th:if="${#fields.hasErrors('content')}"
+                     th:errors="*{content}" class="error-message">
+                    [문의 내용 에러 메시지]
+                </div>
+                <span id="charcount">(0 / 500)</span>
+            </div>
+            <div class="btnarea">
+                <button id="supbtn" type="submit">수정등록</button>
+            </div>
+        </form>
+    </div>
+</main>
+
+
+<!-- 푸터 -->
+<div th:replace="~{fragments/footer :: footerFragment}"></div>
+
+<script>
+    const textArea = document.getElementById('supmaintext');
+    const charCount = document.getElementById('charcount');
+    const maxLength = 500;
+
+    // 초기 글자 수 설정
+    charCount.textContent = `(${maxLength - textArea.value.length} / ${maxLength})`;
+
+    textArea.addEventListener('input', () => {
+        const currentLength = textArea.value.length;
+        const remaining = maxLength - currentLength;
+        charCount.textContent = `(${remaining} / ${maxLength})`;
+    });
+</script>
+
+
+</body>
+
+</html>

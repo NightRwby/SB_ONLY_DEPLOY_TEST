@@ -1,9 +1,7 @@
 package com.example.demo.config.auth;
 
-import com.example.demo.domain.dtos.UserDto;
-import lombok.AllArgsConstructor;
+import com.example.demo.domain.dto.UserDto;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -11,61 +9,52 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
+import java.util.Collections;
 import java.util.Map;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class PrincipalDetails implements UserDetails, OAuth2User {
 
     private UserDto dto;
-    //OAUTH2 속성
+
+    //OAUTH 속성
     Map<String, Object> attributes;
 
-    public  PrincipalDetails(UserDto dto){
+    public PrincipalDetails(UserDto dto) {
         this.dto = dto;
     }
 
+    // 2. OAuth2 로그인
+    public PrincipalDetails(UserDto dto, Map<String, Object> attributes) {
+        this.dto = dto;
+        this.attributes = attributes;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-
+        if (dto.getRole() == null || dto.getRole().isEmpty()) {
+            return Collections.emptyList();
+        }
         Collection<GrantedAuthority> authorities = new ArrayList<>();
 
-        //계정이 단일 ROLE을 가질때("ROLE_USER")
-        //authorities.add(new SimpleGrantedAuthority(dto.getRole()));
-
-        //계정이 여러 ROLE을 가질때("ROLE_ADMIN,ROLE_USER")
-        String roles [] = dto.getRole().split(","); //["ROLE_ADMIN","ROLE_USER"]
+        String roles [] = dto.getRole().split(",");
         for(String role : roles){
-            authorities.add(new SimpleGrantedAuthority(role));
+            authorities.add(new SimpleGrantedAuthority(role.trim()));
         }
 
         return authorities;
     }
 
-    //----------------------------------------------------
-    // OAUTH2 에 사용되는 메서드
-    //----------------------------------------------------
-
-    @Override
-    public Map<String, Object> getAttributes() {
-        return attributes;
-    }
-
-    //----------------------------------------------------
-    //로컬인증에 사용되는 메서드
-    //----------------------------------------------------
+    //로컬 인증
     @Override
     public String getPassword() {
-        return dto.getPassword();
+        return dto.getPassWord();
     }
-
     @Override
     public String getUsername() {
-        return dto.getUsername();
+        return dto.getEmail();
     }
+
 
     @Override
     public boolean isAccountNonExpired() {
@@ -87,8 +76,19 @@ public class PrincipalDetails implements UserDetails, OAuth2User {
         return true;
     }
 
+
+    // OAUTH2 메서드: 소셜 인증에 사용
+    @Override
+    public Map<String, Object> getAttributes() {
+        return attributes;
+    }
+
     @Override
     public String getName() {
-        return "";
+        return dto.getUserName();
+    }
+
+    public String getEmail() {
+        return dto.getEmail();
     }
 }

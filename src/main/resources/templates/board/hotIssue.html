@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout/exodia}">
+<head>
+    <link rel="stylesheet" th:href="@{/css/hot_issue.css}">
+</head>
+<div layout:fragment="content">
+    <section class="board_card">
+        <div class="h_side_box_top">
+            <div class="h_top-text">
+                <span class="h_accent-text">Blah Blah</span>
+                <h1 class="h_accent_h1">HOT ISSUE</h1>
+            </div>
+            <div class="h_commu_title">
+                <h1>핫 이슈 게시판</h1>
+            </div>
+        </div>
+    </section>
+
+    <form id="h_toolbarForm" class="toolbar_form" onsubmit="return false;">
+        <section class="board_card" aria-label="검색 및 필터">
+            <div class="h_toolbar">
+                <div class="h_tool_form_wrap">
+
+                    <div class="h_toolform1">
+                        <label for="h_q" class="h_form_label">검색</label>
+                        <input type="text" id="h_q" class="h_tool-input" placeholder="제목·내용·태그 검색" />
+                    </div>
+
+                    <div class="h_toolform2">
+                        <div class="h_tool_select_form1">
+                            <label for="h_cat" class="h_form_label">카테고리</label>
+                            <select id="h_cat" class="h_tool-select">
+                                <option value="">전체</option>
+                                <option value="연예인">연예인</option>
+                                <option value="스포츠">스포츠</option>
+                                <option value="정치">정치</option>
+                                <option value="부동산">부동산</option>
+                                <option value="애니">애니</option>
+                                <option value="게임">게임</option>
+                                <option value="유머/밈">유머/밈</option>
+                                <option value="공지">공지</option>
+                            </select>
+                        </div>
+
+                        <div class="h_tool_select_form2">
+                            <label for="h_sort" class="h_form_label">정렬</label>
+                            <select id="h_sort" class="h_tool-select">
+                                <option value="latest">최신순</option>
+                                <option value="views">조회수순</option>
+                                <option value="likes">추천순</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="h_toolform3">
+                        <ul class="h_chips" aria-label="빠른 필터">
+                            <li><button type="button" class="h_chip" data-chip="연예인"># 연예인</button></li>
+                            <li><button type="button" class="h_chip" data-chip="스포츠"># 스포츠</button></li>
+                            <li><button type="button" class="h_chip" data-chip="정치"># 정치</button></li>
+                            <li><button type="button" class="h_chip" data-chip="부동산"># 부동산</button></li>
+                            <li><button type="button" class="h_chip" data-chip="애니"># 애니</button></li>
+                            <li><button type="button" class="h_chip" data-chip="게임"># 게임</button></li>
+                            <li><button type="button" class="h_chip" data-chip="유머/밈"># 유머/밈</button></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="h_tool_btn_wrap">
+                    <div class="h_tool_btn_group1">
+                        <label class="h_form_label" for="h_resetBtn">reset</label>
+                        <button id="h_resetBtn" class="h_tool_btn" type="button">초기화</button>
+                    </div>
+
+                    <div class="h_tool_btn_group2">
+                        <label class="h_form_label">search</label>
+                        <button id="h_searchBtn" class="h_tool_btn" type="button" onclick="document.getElementById('h_q').focus()">검색하기</button>
+                    </div>
+
+                    <div class="h_tool_btn_group3">
+                        <label class="h_form_label" for="h_writeBtn">write</label>
+                        <button id="h_writeBtn" class="h_tool_btn" type="button">글쓰기</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </form>
+
+    <section class="board_card" aria-label="게시글 목록">
+        <div style="width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;">
+            <table id="h_boardTable">
+                <colgroup>
+                    <col style="width: 8%">
+                    <col style="width: auto">
+                    <col style="width: 10%">
+                    <col style="width: 12%">
+                    <col style="width: 12%">
+                    <col style="width: 8%">
+                    <col style="width: 8%">
+                    <col style="width: 10%">
+                </colgroup>
+                <thead>
+                <tr>
+                    <th class="h_tbl_num">번호</th>
+                    <th class="h_tbl_title">제목</th>
+                    <th class="h_tbl_cart">카테고리</th>
+                    <th class="h_tbl_writer">작성자</th>
+                    <th class="h_tbl_date">날짜</th>
+                    <th class="h_tbl_visit">조회</th>
+                    <th class="h_tbl_like">추천</th>
+                    <th class="h_tbl_state">관리</th>
+                </tr>
+                </thead>
+                <tbody id="h_tbody">
+                </tbody>
+            </table>
+        </div>
+
+        <div class="h_pagenav">
+            <div id="h_pagination"></div>
+        </div>
+    </section>
+</div>
+
+<th:block layout:fragment="script">
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            console.log("Hot Issue Page Loaded (Prefix: h_)");
+            if(typeof initAsideL === 'function') initAsideL();
+            if(typeof initAsideR === 'function') initAsideR();
+            if(typeof init_hot_issue === 'function') init_hot_issue();
+        });
+    </script>
+</th:block>
+</html>
