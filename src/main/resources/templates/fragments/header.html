@@ -1,7 +1,9 @@
 <header id="header" th:fragment="headerFragment">
-    <div class="top-header">
+    <div class="top-header" id="top_header">
         <div class="logoarea">
-            <a class="logo-a" href="/main"><img class="logo" src="/img/logo.png" alt="logo"></a>
+            <a class="logo-a" id="head_logo" href="/main">
+                <img class="logo" id="logo" src="/img/logo3.png" alt="logo">
+            </a>
         </div>
         <div class="navarea">
             <ul class="nav">
@@ -11,7 +13,6 @@
                 <li class="nav-li" sec:authorize="isAnonymous()">
                     <a href="/join" class="nav-item">회원가입</a>
                 </li>
-
                 <li class="nav-li" sec:authorize="isAuthenticated()">
                     <form th:action="@{/logout}" method="post" style="display:inline;">
                         <button type="submit" class="nav-item" style="border: none; cursor: pointer; padding: 0;">로그아웃</button>
@@ -20,7 +21,6 @@
                 <li class="nav-li" sec:authorize="isAuthenticated()">
                     <a href="/myPage" class="nav-item">내 정보</a>
                 </li>
-
                 <li class="nav-li"><a href="/noticepage" class="nav-item">공지사항</a></li>
                 <li class="nav-li"><a href="/inquiry_center" class="nav-item">고객센터</a></li>
             </ul>
@@ -28,3 +28,22 @@
     </div>
     <nav class="tab-bar" id="tab-bar"></nav>
 </header>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const logoImg = document.getElementById('logo');
+
+        function updateLogo() {
+            if (!logoImg) return;
+            if (window.innerWidth <= 580) {
+                logoImg.src = "/img/logo.png";
+            } else {
+                logoImg.src = "/img/logo3.png";
+            }
+        }
+
+        updateLogo();
+
+        window.addEventListener('resize', updateLogo);
+    });
+</script>

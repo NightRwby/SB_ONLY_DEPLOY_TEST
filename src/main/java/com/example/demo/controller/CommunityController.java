@@ -42,7 +42,7 @@ public class CommunityController {
             if (userOptional.isPresent()) {
                 User user = userOptional.get();
                 UserProfile profile = user.getUserProfile();
-                model.addAttribute("myProfile", new UserProfileDto(user.getId(), user.getEmail(), profile.getNickName()));
+                model.addAttribute("myProfile", new UserProfileDto(user.getId(), user.getEmail(), user.getNickName(), profile.getProfileImageUrl(), profile.getStateMessage(), profile.getOnlineStatus()));
 
             }
         }

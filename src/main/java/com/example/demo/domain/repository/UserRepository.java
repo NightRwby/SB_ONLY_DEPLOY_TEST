@@ -17,7 +17,6 @@ public interface UserRepository extends JpaRepository<User,Long> {
     boolean existsByEmail(String Email);
     void deleteByEmail(String email);
 
-
     List<User> findByEmailIn(List<String> emails);
 
     @Query("SELECT u FROM User u WHERE " +

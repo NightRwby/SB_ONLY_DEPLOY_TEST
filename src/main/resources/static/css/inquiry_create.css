@@ -2,18 +2,6 @@
     box-sizing: border-box;
 }
 
-/* 나눔동화또박 폰트를 불러오는 설정 */
-@font-face {
-    font-family: 'NanumDonghwaTobak';
-    /* 폰트 이름 지정 */
-    src: url('../fonts/NanumDonghwaTobak.ttf') format('truetype');
-    /* 폰트 파일 경로와 형식 */
-    font-weight: normal;
-    /* 기본 두께 */
-    font-style: normal;
-    /* 기본 스타일 */
-}
-
 body {
     font-family: 'NanumDonghwaTobak', sans-serif;
 }

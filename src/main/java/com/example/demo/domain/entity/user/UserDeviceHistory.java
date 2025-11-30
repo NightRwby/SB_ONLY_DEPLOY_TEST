@@ -1,13 +1,11 @@
 package com.example.demo.domain.entity.user;
 
-
 import com.example.demo.domain.enums.DeviceType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.time.LocalDateTime;
 
 @Entity

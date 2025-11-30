@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @Slf4j
@@ -117,7 +118,15 @@ public class UserController {
                 User user = userOptional.get();
                 UserProfile userProfile = user.getUserProfile();
                 // 4. UserProfileDto (ID, Email, NickName)를 모델에 담아 전달
-                model.addAttribute("myProfile", new UserProfileDto(user.getId(), user.getEmail(), userProfile.getNickName()));
+                model.addAttribute("myProfile", new UserProfileDto(
+                        user.getId(),
+                        user.getEmail(),
+                        userProfile.getNickname(),
+                        userProfile.getProfileImageUrl(),
+                        userProfile.getStateMessage(),
+                        // 값이 없으면 기본값 "online" 설정
+                        userProfile.getOnlineStatus() != null ? userProfile.getOnlineStatus() : "online"
+                ));
 
                 // View Resolver에 따라 슬래시 제거 또는 유지
                 return "/chatPage";
@@ -233,11 +242,22 @@ public class UserController {
             // @AuthenticationPrincipal로 현재 로그인 사용자 정보(PrincipalDetails)를 받습니다.
             @AuthenticationPrincipal PrincipalDetails principalDetails,
             Model model) {
+
+        model.addAttribute("userDto", principalDetails.getDto());
+        String userEmail = principalDetails.getUsername();
+        System.out.println("DEBUG: userEmail from Principal: " + userEmail);
+        ProfileResponseDto profileDto = userService.getProfileData(userEmail);
+
         // 1. PrincipalDetails가 Model에 필요한지 확인하고 추가
-        if (principalDetails != null) {
-            model.addAttribute("userDto", principalDetails.getDto());
+        if (profileDto == null) {
+            profileDto = new ProfileResponseDto();
+            System.err.println("🚨 ERROR: User Profile is NULL for email: ");
+        }else{System.out.println("✅ Profile Found. bannerImageUrl: " + profileDto.getBannerImageUrl());
+            log.info("GET /myPage page ");
         }
-        log.info("GET /myPage page ");
+
+        model.addAttribute("profile",profileDto);
+        log.info("GET /myPage page completed.");
         return "myPage"; // or "/myPage"
     }
 
@@ -339,4 +359,6 @@ public class UserController {
             return;
         }
     }
+
+
 }

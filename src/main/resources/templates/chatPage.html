@@ -6,8 +6,8 @@
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>ChatPage</title>
-    <link rel="stylesheet" th:href="@{/css/chatPage.css}">
     <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/chatPage.css}">
 
     <!--헤더/푸터 jquery방식 -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -87,7 +87,7 @@
                         <button id="invite-member-btn" class="member-tab btn-tab">+ 참여자 추가</button>
                         <button id="open-friend-panel-btn" class="member-tab btn-tab">친구 목록</button>
                     </div>
-                    <input type="text" class="member-search" placeholder="참여자 검색">
+                    <input type="text" id="room-member-search-input" class="member-search" placeholder="참여자 검색">
                 </div>
 
                 <div class="member-list-wrapper">
@@ -122,25 +122,42 @@
     <div class="menu-item" id="ctx-cancel">취소</div>
 </div>
 
+<div id="message-context-menu" class="context-menu">
+    <div class="menu-item" id="ctx-msg-copy">복사</div>
+    <div class="menu-item" id="ctx-msg-edit">수정</div> <div class="menu-item warning" id="ctx-msg-delete">삭제</div>
+</div>
+
 <div id="add-friend-modal" class="modal">
-    <div class="modal-content">
+    <div class="modal-content friend-modal-content">
         <div class="modal-header">
-            <h3>친구 추가 및 요청</h3>
+            <h3>친구 추가</h3>
             <button class="modal-close-btn" data-modal="add-friend-modal">✖</button>
         </div>
-        <div class="add-friend-modal-body" style="display:flex; flex-direction:column; gap:15px;">
 
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <h4 style="margin:0;">🔍 사용자 검색 (친구 요청)</h4>
-                <button id="btn-send-requests" class="btn-primary-sm" style="display:none;">선택한 친구 요청 보내기</button>
+        <div class="add-friend-modal-body">
+
+            <div class="modal-section">
+                <div class="section-header">
+                    <h4 class="section-title">🔍 새로운 친구 찾기</h4>
+                    <button id="btn-send-requests" class="btn-primary-sm">요청 보내기</button>
+                </div>
+
+                <div class="input-wrapper">
+                    <input type="text" id="friend-search-input" class="modern-input" placeholder="이메일, 닉네임으로 검색해보세요">
+                </div>
+
+                <div id="search-results-list" class="search-results-list check-mode custom-scrollbar">
+                </div>
             </div>
 
-            <input type="text" id="friend-search-input" placeholder="이메일, 닉네임 또는 이름으로 검색">
+            <div class="modal-divider"></div>
 
-            <div id="search-results-list" class="search-results-list check-mode"></div>
+            <div class="modal-section">
+                <h4 class="section-title">✉️ 받은 친구 요청</h4>
+                <div id="received-requests-list" class="requests-list custom-scrollbar">
+                </div>
+            </div>
 
-            <h4 style="margin-top:10px;">✉️ 받은 친구 요청</h4>
-            <div id="received-requests-list" class="requests-list"></div>
         </div>
     </div>
 </div>
@@ -466,6 +483,16 @@
         const btnSendRequests = document.getElementById('btn-send-requests');
         let myOnlineStatus = true;  // 기본값 온라인
 
+        // ---  메시지 우클릭 컨텍스트 메뉴 로직 ---
+        const msgContextMenu = document.getElementById('message-context-menu');
+        const ctxMsgCopy = document.getElementById('ctx-msg-copy');
+        const ctxMsgEdit = document.getElementById('ctx-msg-edit');
+        const ctxMsgDelete = document.getElementById('ctx-msg-delete');
+
+        let targetMessageElement = null; // 우클릭한 메시지 요소
+        let targetMessageId = null;      // 메시지 ID (DB ID)
+        let targetMessageText = "";      // 메시지 내용
+
         // 멤버 우클릭 강퇴 (Context Menu)
         const contextMenu = document.getElementById('context-menu');
         const kickBtn = document.getElementById('ctx-kick-member');
@@ -522,7 +549,10 @@
         const myProfile = {
            userId: '[[${myProfile?.id}]]' === '' ? null : '[[${myProfile?.id}]]',
            email: '[[${myProfile?.email}]]' ? '[[${myProfile?.email}]]' : '',
-           nickName: '[[${myProfile?.nickName}]]' ? '[[${myProfile?.nickName}]]' : ''
+           nickName: '[[${myProfile?.nickName}]]' ? '[[${myProfile?.nickName}]]' : '',
+           profileImageUrl: '[[${myProfile?.profileImageUrl}]]',
+           onlineStatus: '[[${myProfile?.onlineStatus}]]' || 'online',
+           stateMessage: '[[${myProfile?.stateMessage}]]'
         };
         myProfile.initial = getKoreanInitials(myProfile.nickName);
         // 검증 로그
@@ -714,19 +744,14 @@
 
             addEventListeners() {
                 this.toggleBtn.addEventListener('click', () => {
-                    // 1. 파일 드롭 영역의 활성화/비활성화 상태를 토글
-                    const isActive = this.fileDropArea.classList.toggle('active'); // 토글 후의 새로운 상태
+                    // 1. 파일 드롭 영역의 활성화 상태 토글
+                    const isActive = this.fileDropArea.classList.toggle('active');
 
-                    this.toggleBtn.textContent = '✖';
-
-                    // 2. 새로운 상태(isActive)에 따라 버튼의 회전 클래스를 제어
+                    // 2. 상태에 따라 클래스(opened)만 조절
                     if (isActive) {
-                         // 영역이 방금 열렸다면 (active: true) -> '✖' 모양(0도 회전)
-                         this.toggleBtn.classList.add('opened');
+                         this.toggleBtn.classList.add('opened'); // CSS가 회전 애니메이션 실행
                     } else {
-                         // 영역이 방금 닫혔다면 (active: false) -> '+' 모양(45도 회전)
-                         this.toggleBtn.classList.remove('opened');
-                         // 버튼클릭시 업로드파일 리스트 전부제거
+                         this.toggleBtn.classList.remove('opened'); // 다시 원상복구
                          this.clearFiles();
                     }
                 });
@@ -758,23 +783,20 @@
                      this.fileInput.click();
                 });
 
-                // 🔑 [추가] 파일 목록 요약 컨테이너에 이벤트 위임을 사용하여 X 버튼 클릭 처리
+                // 파일 삭제 버튼 이벤트
                 this.fileListEl.addEventListener('click', (e) => {
                     const button = e.target.closest('.remove-file-btn');
                     if (button) {
                         const fileName = button.dataset.fileName;
-                        // removeFile 함수를 호출하여 this.fileList에서 파일 제거 및 UI 업데이트
                         this.removeFile(fileName);
                     }
                 });
 
-
-                // --- 텍스트 입력 필드 이벤트 (Send 버튼 활성화/비활성화) ---
+                // --- 텍스트 입력 필드 이벤트 ---
                 this.inputEl.addEventListener('input', () => {
                     this.updateSendButtonState();
                 });
 
-                // --- 엔터 키 입력 이벤트 (채팅/파일 전송) ---
                 this.inputEl.addEventListener('keypress', (e) => {
                     if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
@@ -808,7 +830,6 @@
 
                 // 파일 목록이 비워질 때 'opened' 클래스를 제거하여 + 모양(45도)으로 돌아갑니다.
                 this.toggleBtn.classList.remove('opened');
-                this.toggleBtn.textContent = '✖';
             }
             updateSendButtonState() {
                  const hasText = this.inputEl.value.trim().length > 0;
@@ -819,16 +840,16 @@
             updateUI() {
                 this.updateSendButtonState();
 
-                // 1. 🔑 [수정 1] 파일 목록 요소는 즉시 비웁니다.
+                // 1.  파일 목록 요소는 즉시 비웁니다.
                 this.fileListEl.innerHTML = '';
 
                 // 2. 파일이 없는 경우
                 if (this.fileList.length === 0) {
 
-                    // 🔑 [수정 2: 핵심] 먼저 has-files 클래스를 제거하여 CSS Transition (max-height: 200px -> 0)을 즉시 시작합니다.
+                    // 먼저 has-files 클래스를 제거하여 CSS Transition (max-height: 200px -> 0)을 즉시 시작합니다.
                     this.previewContainer.classList.remove('has-files');
 
-                    // 🔑 [수정 3: 안정성 확보] Transition 시간(0.3s)이 지난 후, DOM에서 내용물을 완전히 제거하고 display: none으로 전환합니다.
+                    // Transition 시간(0.3s)이 지난 후, DOM에서 내용물을 완전히 제거하고 display: none으로 전환합니다.
                     // Transition이 부드럽게 완료될 시간을 줍니다.
                     setTimeout(() => {
                         this.previewContainer.innerHTML = '';
@@ -840,7 +861,7 @@
 
                 // 3. 파일이 있는 경우
 
-                // 🔑 [수정 4: 필수] 파일이 갱신될 때마다 프리뷰 컨테이너의 내용을 가장 먼저 비웁니다.
+                // 파일이 갱신될 때마다 프리뷰 컨테이너의 내용을 가장 먼저 비웁니다.
                 // 이전 파일의 미리보기가 남아있지 않도록 합니다.
                 this.previewContainer.innerHTML = '';
 
@@ -1283,6 +1304,13 @@
                             return;
                         }
 
+                        // 현재 활성화된 탭의 Room ID를 미리 안전하게 추출
+                        let currentActiveRoomId = null;
+                        const activePrefix = 'group_';
+                        if (activeTabId && activeTabId.startsWith(activePrefix)) {
+                             currentActiveRoomId = activeTabId.substring(activePrefix.length);
+                        }
+
                         rooms.forEach(room => {
                             const item = document.createElement('div');
                             item.className = 'chat-room-item';
@@ -1309,9 +1337,22 @@
                                     ${unreadBadge}
                                 </div>
                             `;
+
+                            // currentActiveRoomId를 사용하여 안전하게 비교
+                            if (room.roomId === currentActiveRoomId) {
+                                 item.classList.add('active-room');
+                            }
+
                             chatRoomList.appendChild(item);
                         });
+
                         attachDeleteButtons(chatRoomList);
+
+                        // activeTabId가 있을 때만 activateTab 호출
+                        if (activeTabId) {
+                            // activeTabId가 전역 변수로 정의되어 있다고 가정
+                            activateTab(activeTabId);
+                        }
                     } catch (e) {
                         console.error('Failed to render chat rooms:', e);
                         chatRoomList.innerHTML = `
@@ -1374,9 +1415,6 @@
 
                         // 메시지 이력 로드 함수 호출 추가 (isInitialLoad: true)
                         loadChatMessages(tabId, true);
-
-                        // (선택 사항: STOMP 연결도 openTab 내부에서 처리되지 않는다면 여기서 처리해야 함)
-                        // connectWebSocket(tabId);
                     });
                 }
             }
@@ -1588,14 +1626,20 @@
             }).join('');
         }
 
-        // --- B. 친구 검색 로직 (friendSearchInput 이벤트 리스너는 DOMContentLoaded 시작 부분에서 이미 캐싱됨) ---
+        // --- B. 친구 검색 로직 ---
         if (friendSearchInput) {
             friendSearchInput.addEventListener('input', (e) => {
                 const query = e.target.value.trim();
+
                 if (query.length > 1) {
+                    // 1. 검색어가 있으면 리스트 표시 (.active 추가)
+                    searchResultsList.classList.add('active');
                     searchUsers(query);
                 } else {
+                    // 2. 검색어가 없거나 짧으면 리스트 숨김 (.active 제거) 및 초기화
+                    searchResultsList.classList.remove('active');
                     if (searchResultsList) searchResultsList.innerHTML = '';
+                    btnSendRequests.style.display = 'none'; // 요청 버튼도 숨김
                 }
             });
         }
@@ -1604,12 +1648,15 @@
          */
         function searchUsers(query) {
             if (!searchResultsList) return;
+
+            // 검색 시작 시 로딩 표시 (창은 이미 열려있음)
             searchResultsList.innerHTML = '<div class="loading-message">검색 중...</div>';
 
             fetch(`/api/friends/search?query=${encodeURIComponent(query)}`)
                 .then(res => res.json())
                 .then(users => {
                     if (users.length === 0) {
+                        // 결과가 없어도 "결과 없음" 메시지를 보여주기 위해 창은 열어둠
                         searchResultsList.innerHTML = '<div class="info-message">검색 결과가 없습니다.</div>';
                         btnSendRequests.style.display = 'none';
                         return;
@@ -1633,6 +1680,10 @@
 
                     // 검색 결과가 있으면 버튼 표시
                     btnSendRequests.style.display = 'block';
+                })
+                .catch(err => {
+                    console.error(err);
+                    searchResultsList.innerHTML = '<div class="info-message">검색 중 오류가 발생했습니다.</div>';
                 });
         }
         // [기능 2] 선택한 친구들에게 요청 보내기
@@ -1655,12 +1706,19 @@
             try {
                 await Promise.all(promises);
                 alert(`${checkboxes.length}명에게 친구 요청을 보냈습니다.`);
+
+                // 1. UI 초기화
                 btnSendRequests.style.display = 'none';
                 searchResultsList.innerHTML = '';
                 document.getElementById('friend-search-input').value = '';
+
+                // 2. [추가됨] 리스트 박스 숨기기 (active 클래스 제거)
+                searchResultsList.classList.remove('active');
+
             } catch (e) {
                 console.error(e);
-                alert("일부 요청 전송 중 오류가 발생했습니다.");
+                // 오류가 나더라도 일단 리스트를 닫고 싶다면 여기에도 remove('active')를 넣을 수 있습니다.
+                alert("일부 요청 전송 중 오류가 발생했습니다. (이미 요청했거나 친구인 상태일 수 있습니다.)");
             }
         });
 
@@ -1808,6 +1866,123 @@
                 initializeChatLightbox();
             }
         }
+
+        // 채팅 영역 전체에 우클릭 이벤트 위임
+        document.addEventListener('contextmenu', (e) => {
+            const messageBubble = e.target.closest('.chat-message');
+
+            // 1. 채팅 메시지 위에서 우클릭했는지 확인
+            if (!messageBubble) {
+                msgContextMenu.style.display = 'none';
+                return;
+            }
+
+            e.preventDefault(); // 기본 메뉴 차단
+
+            targetMessageElement = messageBubble;
+            // 메시지 ID는 HTML 생성 시 data-id 속성으로 넣어줘야 함 (아래 createChatMessageHTML 수정 필요)
+            targetMessageId = messageBubble.dataset.messageId;
+
+            // 텍스트 내용 가져오기 (bubble 클래스 내부 텍스트)
+            const bubbleContent = messageBubble.querySelector('.bubble');
+            targetMessageText = bubbleContent ? bubbleContent.textContent : "";
+
+            // 2. '내가 쓴 메시지'인지 확인 (.mine 클래스)
+            const isMine = messageBubble.classList.contains('mine');
+
+            // 3. 메뉴 항목 제어 (내 글이면 수정/삭제 보임, 아니면 복사만 보임)
+            if (isMine) {
+                ctxMsgEdit.style.display = 'block';
+                ctxMsgDelete.style.display = 'block';
+            } else {
+                ctxMsgEdit.style.display = 'none';
+                ctxMsgDelete.style.display = 'none';
+            }
+
+            // 4. 메뉴 위치 설정 및 표시
+            msgContextMenu.style.display = 'block';
+            msgContextMenu.style.left = `${e.pageX}px`;
+            msgContextMenu.style.top = `${e.pageY}px`;
+        });
+
+        // 배경 클릭 시 메뉴 닫기 (기존 코드에 통합하거나 추가)
+        document.addEventListener('click', (e) => {
+            if (!msgContextMenu.contains(e.target)) {
+                msgContextMenu.style.display = 'none';
+            }
+        });
+
+        // [기능 1] 복사
+        ctxMsgCopy.addEventListener('click', () => {
+            if (targetMessageText) {
+                navigator.clipboard.writeText(targetMessageText).then(() => {
+                    // 알림토스트나 로그 (선택사항)
+                    // console.log("복사됨");
+                });
+            }
+            msgContextMenu.style.display = 'none';
+        });
+
+        // [기능 2] 삭제
+        ctxMsgDelete.addEventListener('click', async () => {
+            if (!targetMessageId) return;
+
+            if (confirm("정말 이 메시지를 삭제하시겠습니까?")) {
+                try {
+                    // DELETE API 호출
+                    const response = await fetch(`/api/chat/message/${targetMessageId}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${getCookie('access-token')}` }
+                    });
+
+                    if (response.ok) {
+                        // UI에서 즉시 삭제 (또는 '삭제된 메시지입니다'로 변경)
+                        if (targetMessageElement) {
+                            targetMessageElement.remove();
+                            // 또는 targetMessageElement.querySelector('.bubble').textContent = "삭제된 메시지입니다.";
+                        }
+                    } else {
+                        alert("메시지 삭제 실패");
+                    }
+                } catch (error) {
+                    console.error("삭제 오류:", error);
+                }
+            }
+            msgContextMenu.style.display = 'none';
+        });
+
+        // [기능 3] 수정 (Prompt 사용 예시 - 모달로 변경 가능)
+        ctxMsgEdit.addEventListener('click', async () => {
+            if (!targetMessageId) return;
+
+            const newText = prompt("메시지 수정:", targetMessageText);
+            if (newText !== null && newText.trim() !== "" && newText !== targetMessageText) {
+                try {
+                    // PUT API 호출
+                    const response = await fetch(`/api/chat/message/${targetMessageId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${getCookie('access-token')}`
+                        },
+                        body: JSON.stringify({ message: newText })
+                    });
+
+                    if (response.ok) {
+                        // UI 업데이트
+                        if (targetMessageElement) {
+                            targetMessageElement.querySelector('.bubble').textContent = newText;
+                        }
+                    } else {
+                        alert("메시지 수정 실패");
+                    }
+                } catch (error) {
+                    console.error("수정 오류:", error);
+                }
+            }
+            msgContextMenu.style.display = 'none';
+        });
+
         if (addFriendConfirmBtn && addFriendInput && friendList) {
             addFriendConfirmBtn.addEventListener('click', () => {
                 const name = (addFriendInput.value || '').trim();
@@ -2119,7 +2294,10 @@
                     }
 
                     chatParticipants[tabId] = participants.map(p => ({
-                        email: p.email, nickName: p.nickName, userId: p.userId
+                        email: p.email,
+                        nickName: p.nickName,
+                        userId: p.userId,
+                        profileImageUrl: p.profileImageUrl
                     }));
 
                     subscribeChatRoom(tabId, roomId);
@@ -2679,7 +2857,17 @@
         function activateTab(tabId) {
             activeTabId = tabId;
             const tabInfo = openTabs[tabId];
-            currentRoomId = tabInfo ? tabInfo.roomId : null;
+            // currentRoomId 변수를 const 대신 let으로 바꿔서 필요할 때 재할당할 수 있게 합니다.
+            let currentRoomId = tabInfo ? tabInfo.roomId : null;
+
+            console.log('--- activateTab Debug ---');
+            console.log(`1. tabId: ${tabId}`);
+            console.log(`2. tabInfo (openTabs에서): `, tabInfo);
+
+            if (!currentRoomId && tabId.startsWith('group_')) {
+                currentRoomId = tabId.substring('group_'.length);
+                console.log(`3. tabId에서 추출된 currentRoomId: ${currentRoomId}`);
+            }
 
             tabBar.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             chatAreaWrapper.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
@@ -2692,6 +2880,7 @@
                 activeContentEl.classList.add('active');
 
                 // 1. 멤버 목록만 갱신 (메시지는 건드리지 않음)
+                // currentRoomId가 이제 null이 아닐 확률이 높으므로 정상 작동합니다.
                 renderMemberList(tabId, currentRoomId);
 
                 // 2. 파일 매니저 상태 업데이트
@@ -2700,6 +2889,33 @@
                 }
                 activeTabEl.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
             }
+
+            // 1. 모든 채팅방 아이템에서 active-room 클래스 제거 (초기화)
+            const allRoomItems = document.querySelectorAll('.chat-room-item');
+            allRoomItems.forEach(item => item.classList.remove('active-room'));
+
+            // 2. 현재 활성화된 방의 ID와 일치하는 아이템 찾아서 active-room 클래스 추가
+            // 추출된 currentRoomId를 사용하여 정확한 아이템을 찾습니다.
+            if (currentRoomId) {
+                // =======================================================
+                // 💡 [디버깅 로그 추가] 최종 선택자 문자열 확인
+                const selector = `.chat-room-item[data-room-id="${currentRoomId}"]`;
+                console.log(`5. 최종 CSS 선택자: ${selector}`);
+                // =======================================================
+
+                const targetItem = document.querySelector(selector);
+
+                // =======================================================
+                // 💡 [디버깅 로그 추가] 선택된 요소가 있는지 확인
+                console.log('6. targetItem (선택된 요소): ', targetItem);
+                // =======================================================
+
+                if (targetItem) {
+                    targetItem.classList.add('active-room');
+                }
+            }
+
+            console.log('---------------------------');
         }
 
         function closeTab(tabId) {
@@ -2725,6 +2941,10 @@
                     currentRoomId = null;
                     memberList.innerHTML = '<div class="empty-member">채팅방을 선택하면 참여자가 표시됩니다.</div>';
                     emptyState.style.display = 'flex';
+
+                    document.querySelectorAll('.chat-room-item').forEach(item => {
+                        item.classList.remove('active-room');
+                    });
                 }
             }
             // 파일 매니저 제거
@@ -2831,37 +3051,52 @@
             return scrolledDistance <= (listContainer.clientHeight + tolerance);
         }
         function initMyProfile() {
-            // Thymeleaf 변수나 API로 받아온 값 적용
-            const initial = myProfile.nickName ? myProfile.nickName[0] : '?';
-
-            pImg.textContent = initial;
-            // 실제 이미지가 있다면: pImg.style.backgroundImage = `url(${myProfile.profileImageUrl})`; pImg.textContent = '';
-
+            // 닉네임 표시
             pName.textContent = myProfile.nickName;
-            // pMessage.textContent = myProfile.bio || "상태 메시지 없음"; // UserProfile에 bio가 있다면
 
-            updateOnlineStatusUI();
+            // 프로필 이미지 처리 로직
+            const hasImage = myProfile.profileImageUrl &&
+                             myProfile.profileImageUrl !== 'null' &&
+                             myProfile.profileImageUrl.trim() !== '';
+
+            if (hasImage) {
+                // 1. 이미지가 있을 경우
+                pImg.textContent = '';
+                pImg.style.backgroundImage = `url('${myProfile.profileImageUrl}')`;
+                pImg.style.backgroundSize = 'cover';
+                pImg.style.backgroundPosition = 'center';
+                pImg.style.backgroundRepeat = 'no-repeat';
+            } else {
+                // 2. 이미지가 없을 경우 (null)
+                const initial = myProfile.nickName ? myProfile.nickName[0] : '?';
+                pImg.textContent = initial;
+
+                pImg.style.backgroundImage = '';
+
+                // 혹시 남아있을 수 있는 스타일 속성들 초기화
+                pImg.style.backgroundSize = '';
+                pImg.style.backgroundPosition = '';
+                pImg.style.backgroundRepeat = '';
+            }
+            // 상태메시지 처리 로직
+            pMessage.textContent = myProfile.stateMessage ? myProfile.stateMessage : '상태메시지가 없습니다';
+
+            applyOnlineStatusUI(myProfile.onlineStatus);
         }
+        function applyOnlineStatusUI(status) {
+            const pDot = document.getElementById('pDot');
+            const pStateText = document.getElementById('pStateText');
 
-        function updateOnlineStatusUI() {
-            if (myOnlineStatus) {
-                pDot.classList.remove('offline');
+            // 기존 클래스 초기화
+            pDot.classList.remove('online', 'offline');
+
+            if (status === 'online') {
                 pDot.classList.add('online');
                 pStateText.textContent = '온라인';
             } else {
-                pDot.classList.remove('online');
-                pDot.classList.add('offline');
+                pDot.classList.add('offline'); // 회색 점
                 pStateText.textContent = '오프라인';
             }
-        }
-
-        // 상태 점 클릭 시 토글
-        if (pDot) {
-            pDot.addEventListener('click', () => {
-                myOnlineStatus = !myOnlineStatus;
-                updateOnlineStatusUI();
-                // 필요하다면 서버에 상태 변경 API 호출
-            });
         }
 
         initMyProfile();
@@ -2872,47 +3107,82 @@
          */
         function createChatMessageHTML(message) {
             const currentMyEmail = myProfile.email || null;
-            const senderEmail = message.sender ||    null;
-            console.log("[디버그]message", message);
-            // 1. message.type이 'mine' 또는 'other'로 설정되어 있다면 그 값을 isMine에 반영합니다.
-            const isTypeSet = message.type === 'mine' || message.type === 'other';
+            const senderEmail = message.sender || null;
 
+            // 1. 내 메시지 여부 확인
+            const isTypeSet = message.type === 'mine' || message.type === 'other';
             let isMine;
             if (isTypeSet) {
-                // 낙관적 렌더링 시 (message.type = 'mine') 이 로직을 따릅니다.
                 isMine = message.type === 'mine';
             } else {
                 isMine = senderEmail && currentMyEmail && senderEmail === currentMyEmail;
             }
 
-            // isSystem 판별 로직은 DTO의 type 필드를 사용하도록 변경
-            // 이 message.type은 'ENTER', 'QUIT', 'TALK', 'IMAGE' 등을 담는 용도로 사용됩니다.
+            // 2. 메시지 타입 및 시스템 메시지 확인
             let contentMessageType = message.messageType;
             if (!contentMessageType && message.type !== 'mine' && message.type !== 'other') {
                 contentMessageType = message.type;
             }
             const isSystem = contentMessageType === 'ENTER' || contentMessageType === 'QUIT';
+
+            // 3. 이름 및 초성 계산
             const rawSenderName = message.senderName || message.sender || 'Unknown';
-
-            // DTO에서 값이 null/빈 문자열로 오더라도 '?'로 표시되도록 안전하게 처리
             const displayName = rawSenderName && rawSenderName.trim() !== '' ? rawSenderName : '?';
-
-            // 초성이 없을 경우, rawSenderName(이름 또는 이메일)을 사용하여 계산하거나, 첫 글자를 사용합니다.
             const displayInitial = displayName !== '?' ? getKoreanInitials(displayName) : '?';
 
-            // 아바타 표시 조건: 내 메시지가 아니고, 시스템 메시지가 아닐 때 (isMine이 이제 정확하므로 이 로직은 정상 작동합니다)
+            // 4. 아바타 표시 조건 (내 메시지가 아니고, 시스템 메시지가 아닐 때)
             const showAvatar = !isMine && !isSystem;
 
-            // 1. 메시지 내용 (content) 결정
-            let contentHTML = '';
+            // ============================================================
+            // 프로필 이미지 URL 찾기 및 아바타 HTML 생성
+            // ============================================================
+            let avatarHtml = '';
 
+            if (showAvatar) {
+                let senderProfileUrl = message.senderProfileImage; // 1차: 메시지 자체에 포함된 경우
+
+                // 2차: 메시지에 없다면 참여자 목록(chatParticipants)에서 조회
+                // message 객체에 tabId가 있다면 그것을 쓰고, 없다면 activeTabId(현재 보는 방)를 fallback으로 사용
+                const targetTabId = message.tabId || activeTabId;
+
+                if ((!senderProfileUrl || senderProfileUrl === 'null') && targetTabId && chatParticipants[targetTabId]) {
+                    // 참여자 목록에서 이메일이 일치하는 사람 찾기
+                    const foundMember = chatParticipants[targetTabId].find(m => m.email === senderEmail);
+                    if (foundMember) {
+                        senderProfileUrl = foundMember.profileImageUrl;
+                    }
+                }
+
+                // 유효한 이미지인지 확인 (null, "null", 빈 문자열 체크)
+                const hasProfileImage = senderProfileUrl &&
+                                        senderProfileUrl !== 'null' &&
+                                        senderProfileUrl.trim() !== '';
+
+                if (hasProfileImage) {
+                    // 이미지가 있는 경우: 배경 이미지로 설정 (내 프로필과 동일한 스타일)
+                    avatarHtml = `
+                        <div class="avatar"
+                             style="background-image: url('${senderProfileUrl}');
+                                    background-size: cover;
+                                    background-position: center;
+                                    background-repeat: no-repeat;
+                                    color: transparent;">
+                        </div>`;
+                } else {
+                    // 이미지가 없는 경우: 기존처럼 초성 표시
+                    avatarHtml = `<div class="avatar">${displayInitial}</div>`;
+                }
+            }
+            // ============================================================
+
+
+            // 5. 메시지 내용 (Content) 결정
+            let contentHTML = '';
             const messageContent = message.message || message.text || '';
 
             if (isSystem) {
-                // 시스템 메시지 내용에 통합된 필드 사용
                 contentHTML = `<p class="system-message">${messageContent}</p>`;
             } else {
-                // 유니크 ID 생성 (버튼 제어용)
                 const btnId = `dl-btn-${message.time.replace(/:/g,'')}-${Math.floor(Math.random()*1000)}`;
 
                 // (A) IMAGE 타입
@@ -2920,17 +3190,11 @@
                     contentHTML = `
                         <div class="image-bubble">
                             <a href="${message.fileUrl}" class="glightbox" data-gallery="chat-photos">
-                                <img src="${message.fileUrl}"
-                                     class="image-preview"
-                                     height="200"
-                                     onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' viewBox=\\'0 0 100 100\\'><text y=\\'0.9em\\' font-size=\\'80\\'>🖼️</text></svg>';"
-                                >
+                                <img src="${message.fileUrl}" class="image-preview" height="200"
+                                     onerror="this.onerror=null; this.src='data:image/svg+xml;utf8,<svg xmlns=\\'http://www.w3.org/2000/svg\\' viewBox=\\'0 0 100 100\\'><text y=\\'0.9em\\' font-size=\\'80\\'>🖼️</text></svg>';">
                             </a>
-
-                            <button id="${btnId}" class="btn-download-action"
-                                    onclick="downloadWithProgress('${message.fileUrl}', '', '${btnId}')">
-                                ${iconDownload}
-                                ${progressRingHTML}
+                            <button id="${btnId}" class="btn-download-action" onclick="downloadWithProgress('${message.fileUrl}', '', '${btnId}')">
+                                ${iconDownload} ${progressRingHTML}
                             </button>
                         </div>
                         ${messageContent ? `<p class="caption">${messageContent}</p>` : ''}
@@ -2940,7 +3204,6 @@
                 else if (contentMessageType === 'FILE' && message.fileUrl) {
                     let fileName = '알 수 없는 파일';
                     let fileSize = '';
-
                     if (message.metadata) {
                          try {
                              const meta = typeof message.metadata === 'string' ? JSON.parse(message.metadata) : message.metadata;
@@ -2948,8 +3211,6 @@
                              if(meta.fileSize) fileSize = formatBytes(meta.fileSize);
                          } catch (e) {}
                     }
-
-                    //   인라인 onclick 함수에 사용될 파일 이름을 안전하게 이스케이프 처리합니다.
                     const safeFileName = fileName.replace(/'/g, "\\'").replace(/"/g, '\\"');
 
                     contentHTML = `
@@ -2961,8 +3222,7 @@
                             </div>
                             <button id="${btnId}" class="btn-download-action" title="다운로드"
                                     onclick="downloadWithProgress('${message.fileUrl}', '${safeFileName}', '${btnId}')">
-                                ${iconDownload}
-                                ${progressRingHTML}
+                                ${iconDownload} ${progressRingHTML}
                             </button>
                         </div>
                          ${messageContent ? `<p class="caption">${messageContent}</p>` : ''}
@@ -2970,37 +3230,70 @@
                 }
                 // (C) TALK 타입
                 else {
-                    // [디버깅용 로그 추가]
-                    if (contentMessageType === 'IMAGE' || contentMessageType === 'FILE') {
-                        console.error("⚠️ 미디어 렌더링 실패 (URL 누락됨):", message);
-                    }
-
-                    // 메시지 내용이 없으면 공백 처리 방지 (선택 사항)
-                    const displayContent = messageContent ? messageContent : (isSystem ? '' : '&nbsp;');
+                    const displayContent = messageContent ? messageContent : '&nbsp;';
                     contentHTML = `<div class="bubble">${displayContent}</div>`;
                 }
             }
 
-            // 2. 최종 메시지 구조
+            // 6. 최종 HTML 반환
             return `
                 <li class="chat-message ${isMine ? 'mine' : 'other'} ${isSystem ? 'system' : ''}"
                     data-created-at="${message.createdAt}"
-                >
+                    data-message-id="${message.messageId || message.id}">
 
-                    ${showAvatar ? `<div class="avatar">${displayInitial}</div>` : ''}
-
-                    <div class="message-body">
-
+                    ${avatarHtml} <div class="message-body">
                         ${showAvatar ? `<div class="sender-name">${displayName}</div>` : ''}
-
                         <div class="content-box">
                             ${contentHTML}
                             <div class="message-time">${message.time}</div>
                         </div>
-
                     </div>
                 </li>
             `;
+        }
+
+        function filterMemberList(query) {
+            const memberListContainer = document.getElementById('member-list');
+            if (!memberListContainer) {
+                console.warn('멤버 목록 컨테이너 (#member-list)를 찾을 수 없습니다.');
+                return;
+            }
+
+            const memberItems = memberListContainer.querySelectorAll('.friend-item');
+            const lowerCaseQuery = query.toLowerCase().trim();
+
+            memberItems.forEach(item => {
+                const nameElement = item.querySelector('.member-name');
+
+                if (!nameElement) {
+                    item.style.display = 'none';
+                    return;
+                }
+
+                const memberName = nameElement.textContent.toLowerCase();
+
+                if (memberName.includes(lowerCaseQuery)) {
+                    // 이름을 찾으면 다시 보이게 설정
+                    item.style.display = 'flex';
+                } else {
+                    // 일치하지 않으면 숨기기
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+
+        const currentRoomMemberSearchField = document.getElementById('room-member-search-input');
+
+        if (currentRoomMemberSearchField) {
+            currentRoomMemberSearchField.addEventListener('keyup', (e) => {
+                const query = e.target.value;
+
+                // 1. **(필요 시)** DB/서버 조회 로직이 있다면 여기에 추가
+
+                // 2. 현재 채팅방 멤버 목록 클라이언트 측 필터링 실행
+                filterMemberList(query);
+            });
         }
 
         function scrollToBottom(tabId) {
@@ -3478,28 +3771,19 @@
 
 
     //친구목록 스크립트
-    //전체패널(크기조정)
-    const open_list_wrap = document.getElementById('friend-panel-right');
-    //고정 목록(크기조정)
-    const fixed_list = document.getElementById('fixed_column');
-    //움직일 목록
-    const open_column = document.getElementById('frd_column');
-    //버튼
+    const friendPanel = document.getElementById('friend-panel-right');
     const openFriendPanelBtn = document.getElementById('open-friend-panel-btn');
-    if (openFriendPanelBtn) {
-        openFriendPanelBtn.addEventListener('click',()=>{
-            fixed_list.style.width= "260px";
-            const isMove = open_column.classList.toggle('addmove');
-            if(isMove){
-                open_column.style.transition = "0.3s ease";
-                open_column.style.right = "260px";
 
+    if (openFriendPanelBtn && friendPanel) {
+        openFriendPanelBtn.addEventListener('click', () => {
+            // 1. 'open' 클래스를 토글합니다.
+            // (애니메이션과 위치 이동은 chatPage.css의 .friend-panel-right.open .friend-column 설정이 처리함)
+            const isOpen = friendPanel.classList.toggle('open');
+
+            // 2. 패널이 열릴 때만 데이터 로드
+            if (isOpen) {
                 if (window.WindowLoadFriendList) window.WindowLoadFriendList();
                 if (window.WindowLoadReceivedRequests) window.WindowLoadReceivedRequests();
-
-            } else{
-                open_column.style.transition = "0.3s ease";
-                open_column.style.right = "0px";
             }
         });
     }

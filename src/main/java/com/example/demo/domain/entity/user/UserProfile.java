@@ -30,9 +30,10 @@ public class UserProfile {
     @JoinColumn(name = "email", referencedColumnName = "email", unique = true, nullable = false)
     private User user; // FK를 관리할 User 객체 필드
 
-    private String nickName;
+    private String nickname;
     private String profileImageUrl;
-    private String bio;
+    private String bannerImageUrl;
+    private String stateMessage;
     private boolean readReceiptsEnabled;
     @Column(nullable = false)
     private boolean isAccountNonExpired;
@@ -42,6 +43,8 @@ public class UserProfile {
     private boolean isEnabled;
     @Column(nullable = false)
     private boolean isCredentialsNonExpired;
+    // 접속 상태 (online, offline, away 등)
+    private String onlineStatus;
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;

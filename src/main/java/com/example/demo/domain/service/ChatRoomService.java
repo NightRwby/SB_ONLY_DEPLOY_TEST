@@ -1,6 +1,5 @@
 package com.example.demo.domain.service;
 
-
 import com.example.demo.domain.dto.*;
 import com.example.demo.domain.entity.ChatMessageEntity;
 import com.example.demo.domain.entity.ChatRoomEntity;
@@ -14,8 +13,6 @@ import com.example.demo.domain.repository.UserRepository;
 import com.example.demo.util.KoreanNameUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 // 🔑 추가: 권한 관련 예외 처리를 위한 import
 import org.springframework.security.access.AccessDeniedException;
@@ -213,7 +210,7 @@ public class ChatRoomService {
             systemMessageText = inviterName + "님이 " + representativeName + "님 외 " + (addedNames.size() - 1) + "명을 초대했습니다.";
         }
 
-        // 시스템 메시지 DTO에 senderName 및 senderInitial 필드 추가 (이전 요청의 핵심 수정 사항)
+        // 시스템 메시지 DTO에 senderName 및 senderInitial 필드 추가
         ChatMessageDto systemMessage = ChatMessageDto.builder()
                 .type(ChatMessageDto.MessageType.ENTER)
                 .chatType(ChatMessageDto.ChatType.GROUP)
@@ -398,7 +395,7 @@ public class ChatRoomService {
         // 2. RoomMemberEntity 삭제
         roomMemberRepository.deleteAll(roomMemberRepository.findByRoom(room));
 
-        // ChatMessageEntity도 삭제해야 할 수 있음 (Cascade 설정에 따라 다름)
+        // 🔑 [보강] ChatMessageEntity도 삭제해야 할 수 있음 (Cascade 설정에 따라 다름)
         // chatMessageRepository.deleteByRoomId(roomUuid);
 
         // 3. ChatRoomEntity 삭제
@@ -480,6 +477,8 @@ public class ChatRoomService {
 
         // 4. LastReadTime 갱신
         roomMember.setLastReadTime(LocalDateTime.now());
+        // 🔑 [복구] 명시적 저장 호출 (더 안전하게)
+        roomMemberRepository.save(roomMember);
     }
 
     /**

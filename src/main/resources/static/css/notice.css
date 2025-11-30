@@ -118,7 +118,7 @@
     }
 
     /* 라이트/다크 자동 대응(선택) */
-    @media (prefers-color-scheme: dark) {
+/*    @media (prefers-color-scheme: dark) {
         :root {
             --nn-bg: #0b0d10;
             --nn-text: #f5f6f8;
@@ -148,7 +148,7 @@
             border-color: var(--nn-border);
             color: var(--nn-muted);
         }
-    }
+    }*/
 
     /* 히어로 */
     .notice-hero .py-4 {
@@ -216,6 +216,14 @@
         font-weight: 700;
     }
 
+    .notice-table tbody tr {
+        transition: background .15s ease, transform .15s ease;
+    }
+
+    .notice-table tbody tr:hover {
+        background: rgba(2, 132, 199, .05);
+    }
+
     .notice-table .notice-link {
         color: var(--nn-text);
         text-decoration: none;
@@ -224,7 +232,8 @@
     }
 
     .notice-table .notice-link:hover {
-        color: #3EE9B9;
+        text-decoration: underline;
+        text-underline-offset: 2px;
     }
 
     /* 배지 */

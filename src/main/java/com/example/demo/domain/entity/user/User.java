@@ -30,7 +30,7 @@ public class User implements UserDetails {
     private String email;
     @Column(nullable = false)
     private String passWord;
-    @Column(unique = true,nullable = false)
+    @Column(unique = true,nullable = true)
     private String phoneNumber;
     private String role;
     private String userName;
@@ -56,9 +56,9 @@ public class User implements UserDetails {
 
 
     public String getNickName(){
-        if(userProfile.getNickName() == null)
+        if(userProfile.getNickname() == null)
             return this.userName;
-        return userProfile.getNickName();
+        return userProfile.getNickname();
     }
 
     public void updatePassword(String newEncodedPassword){

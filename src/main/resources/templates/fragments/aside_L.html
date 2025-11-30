@@ -1,4 +1,3 @@
-
 <aside id="aside_L" th:fragment="asideLFragment">
     <div class="side_nav">
         <div class="slt_wrap">
@@ -6,17 +5,13 @@
         </div>
         <div id="followscr">
             <ul>
-                <a href="/community/free/list" class="side_item si_free"
-                   th:classappend="${category == 'free'} ? 'active'">자유게시판</a>
+                <a href="/community/free/list" class="side_item si_free">자유게시판</a>
 
-                <a href="/noticepage" class="side_item si_notice"
-                   th:classappend="${category == 'notice'} ? 'active'">공지사항</a>
+                <a href="/noticepage" class="side_item si_notice">공지사항</a>
 
-                <a href="/community/cover-letter/list" class="side_item si_CL"
-                   th:classappend="${category == 'cover-letter'} ? 'active'">자소서 게시판</a>
+                <a href="/community/cover-letter/list" class="side_item si_CL">자소서 게시판</a>
 
-                <a href="/community/hot/list" class="side_item si_IS"
-                   th:classappend="${category == 'hot'} ? 'active'">HOT ISSUE 게시판</a>
+                <a href="/community/hot/list" class="side_item si_IS">HOT ISSUE 게시판</a>
             </ul>
             <div class="side_note">
                 자유롭게 일상, 질문, 정보, 후기 등을 올려주세요.<br>
@@ -24,4 +19,29 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // 1. 현재 주소창의 주소를 가져옵니다.
+            const currentPath = window.location.pathname;
+
+            // 2. 모든 버튼의 불을 끕니다 (초기화)
+            const allButtons = document.querySelectorAll('.side_item');
+            allButtons.forEach(btn => btn.classList.remove('active'));
+
+            // 3. 주소에 맞는 버튼을 찾아 불을 켭니다.
+            if (currentPath.includes('/community/free')) {
+                document.querySelector('.si_free')?.classList.add('active');
+            }
+            else if (currentPath.includes('/noticepage')) {
+                document.querySelector('.si_notice')?.classList.add('active');
+            }
+            else if (currentPath.includes('/community/cover-letter')) {
+                document.querySelector('.si_CL')?.classList.add('active');
+            }
+            else if (currentPath.includes('/community/hot')) {
+                document.querySelector('.si_IS')?.classList.add('active');
+            }
+        });
+    </script>
 </aside>

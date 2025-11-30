@@ -17,7 +17,11 @@ public interface BlockListRepository extends JpaRepository<UserBlocking,Long> {
     //내가 차단당했는지 확인
     List<UserBlocking> findByBlockedUserEmail(String blockedEmail);
 
-    Optional<UserBlocking> findByUserEmailAndBlockedUserEmail(String userEmail, String blockedEmail);
+    List<UserBlocking> findByUserEmail(String email);
+
+    Optional<UserBlocking> findByUser_EmailAndBlockedUserEmail(String userEmail,String blockedEmail);
+
+
 
 
 }

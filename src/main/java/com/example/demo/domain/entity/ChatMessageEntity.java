@@ -1,6 +1,5 @@
 package com.example.demo.domain.entity;
 
-
 import com.example.demo.domain.dto.ChatMessageDto;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -72,5 +71,10 @@ public class ChatMessageEntity {
         this.createdAt =  createdAt;
         this.fileUrl = fileUrl;
         this.metadata = metadata;
+    }
+
+    // 메시지 내용 수정을 위한 메서드
+    public void setMessage(String message) {
+        this.message = message;
     }
 }

@@ -28,7 +28,7 @@ public class ChatMessageDto {
         TALK,
         @Schema(description = "채팅방 퇴장")
         QUIT,
-        // 💡 [추가] 미디어 및 링크 타입
+        // 미디어 및 링크 타입
         @Schema(description = "이미지 전송")
         IMAGE,
         @Schema(description = "파일 전송")
@@ -36,6 +36,9 @@ public class ChatMessageDto {
         @Schema(description = "URL 링크")
         URL_LINK
     }
+
+    @Schema(description = "메시지 고유 ID (수정/삭제 식별용)", example = "152")
+    private Long messageId;
 
     @Schema(description = "메시지 타입", example = "TALK", required = true)
     private MessageType type;

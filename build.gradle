@@ -88,7 +88,8 @@ dependencies {
 
     implementation 'com.amazonaws:aws-java-sdk-s3:1.12.723'
 
-
+    //layout:decorate 기능
+    implementation 'nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect'
 
 }
 

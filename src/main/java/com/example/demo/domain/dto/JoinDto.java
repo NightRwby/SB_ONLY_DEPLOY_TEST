@@ -10,7 +10,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class JoinDto {
-    @NotBlank(message = "필수 입력 항목입니다.")
     private String phoneNumber;
     @NotBlank(message = "비밀번호를 입력하세요.")
     private String passWord;

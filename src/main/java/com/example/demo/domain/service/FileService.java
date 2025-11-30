@@ -36,7 +36,7 @@ public class FileService {
     // =========================================================================
     public Resource loadFileAsResource(String storageKey) throws IOException {
 
-        // 조건부 로직만 남기고 S3 try-catch 블록 제거
+        // 🚨 [수정] 조건부 로직만 남기고 S3 try-catch 블록 제거
         if (storageModeManager.isLocalMode()) {
             log.warn("DOWNLOADING IN LOCAL MODE: {}", storageKey);
             return LocalFileUtil.loadFromLocal(storageKey);
@@ -51,7 +51,7 @@ public class FileService {
     // -------------------------------------------------------------------------
     private Resource loadFromS3(String storageKey) throws IOException {
         try {
-            // 2. S3에서 파일 데이터를 InputStream으로 읽어오기
+            // 2. 🔑 [핵심] S3에서 파일 데이터를 InputStream으로 읽어오기
             S3Object s3Object = s3Client.getObject(new GetObjectRequest(s3BucketName, storageKey));
             InputStream inputStream = s3Object.getObjectContent();
 
@@ -81,9 +81,9 @@ public class FileService {
     // =========================================================================
     public FileUrlResponse uploadFile(MultipartFile file, String dirPath) throws IOException {
         String originalFilename = file.getOriginalFilename();
-        String storageKey; // storageKey는 여기서 선언하고 할당합니다.
+        String storageKey; // 🔑 storageKey는 여기서 선언하고 할당합니다.
 
-        // 조건부 로직만 남김
+        // 🚨 [수정] 조건부 로직만 남김
         if (storageModeManager.isLocalMode()) {
             log.warn("UPLOADING IN LOCAL MODE: {}", originalFilename);
             storageKey = LocalFileUtil.saveToLocal(file, dirPath);
@@ -112,7 +112,7 @@ public class FileService {
         // 1. 저장할 고유 키 (Storage Key) 생성
         String uuid = UUID.randomUUID().toString();
         String extension = determineFileType(originalFilename);
-        String storageKey = dirPath + "/" + uuid + "." + extension; // S3 Key 생성
+        String storageKey = dirPath + "/" + uuid + "." + extension; // 🔑 S3 Key 생성
 
         // 2. 파일 메타데이터 설정 (필수)
         ObjectMetadata metadata = new ObjectMetadata();
@@ -120,7 +120,7 @@ public class FileService {
         metadata.setContentLength(file.getSize());
 
         try (InputStream inputStream = file.getInputStream()) {
-            // 3. S3에 파일 업로드 요청
+            // 3. 🔑 [핵심] S3에 파일 업로드 요청
             s3Client.putObject(new PutObjectRequest(
                     s3BucketName,
                     storageKey,
@@ -134,6 +134,68 @@ public class FileService {
 
         return storageKey;
     }
+
+    // -------------------------------------------------------------------------
+    //  프로필 업데이트를 위한 헬퍼 메서드 추가
+    // -------------------------------------------------------------------------
+
+    public String uploadAndReturnStorageKey(MultipartFile file,String dirPath){
+        String originalFilename = file.getOriginalFilename();
+        String storageKey = null;
+
+        if (storageModeManager.isLocalMode()){
+            log.warn("UPLOADING PROFILE IN LOCAL MODE: {}", originalFilename);
+            storageKey = LocalFileUtil.saveToLocal(file, dirPath);
+        }else {
+            log.info("UPLOADING PROFILE IN S3 MODE: {}", originalFilename);
+            try {
+                storageKey = saveToS3(file, dirPath);
+            } catch (Exception e) {
+                log.error("S3 파일 업로드 중 오류 발생: {}", originalFilename, e);
+            }
+        }
+
+        log.info("DEBUG: FileService returned final storageKey: {}", storageKey);
+
+        if (storageKey == null || storageKey.isEmpty()) {
+            log.error("ERROR: FileService가 파일을 저장하지 못하고 NULL 또는 빈 키를 반환했습니다.");
+        }
+
+        return storageKey;
+    }
+
+
+    // -------------------------------------------------------------------------
+    // 프로필 이미지 삭제 메서드
+    // -------------------------------------------------------------------------
+
+    public void deleteFile(String fileUrl) {
+        if (fileUrl == null || fileUrl.isEmpty()) {
+            return; // 삭제할 URL이 없으면 즉시 종료
+        }
+
+        // 1. URL에서 Storage Key 추출
+        // 예: /api/profile/download/profile/uuid.jpg -> profile/uuid.jpg
+        // 여기서는 간단하게 URL의 마지막 부분(StorageKey)을 추출한다고 가정합니다.
+        String storageKey = extractStorageKey(fileUrl);
+
+        if (storageModeManager.isLocalMode()) {
+            // 🚨 Local Mode: LocalFileUtil 사용
+            LocalFileUtil.deleteFromLocal(storageKey);
+        } else {
+            // 🚨 S3 Mode: S3 삭제 헬퍼 메서드 사용 (구현 필요)
+            // deleteFromS3(storageKey);
+        }
+    }
+
+    private String extractStorageKey(String fileUrl){
+        String prefix ="/api/profile/download";
+        if(fileUrl.startsWith(prefix)){
+            return fileUrl.substring(prefix.length());
+        }
+        return fileUrl;
+    }
+
 
     // -------------------------------------------------------------------------
     // 확장자 추출 메서드

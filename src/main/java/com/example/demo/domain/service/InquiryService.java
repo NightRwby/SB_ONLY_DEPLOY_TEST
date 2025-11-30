@@ -28,7 +28,7 @@ public class InquiryService {
         return inquiryRepository.findAllByOrderByCreatedAtDesc();
     }
 
-    //    단건조회
+    // 단건조회
     public InquiryEntity getInquiryById(Long id) {
         return inquiryRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 문의가 없습니다. id=" + id));

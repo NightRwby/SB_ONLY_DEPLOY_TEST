@@ -1,14 +1,15 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org"
->
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>블라블라</title>
     <!-- Main CSS -->
-    <link rel="stylesheet" th:href="@{/css/main.css}">
     <link rel="stylesheet" th:href="@{/css/common.css}">
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <!--  Google Font  -->
+    <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 
@@ -19,21 +20,8 @@
 
 <!-- 메인 콘텐츠 -->
 <main>
-
-
-
     <!-- 섹션 2 -->
     <section class="section-2">
-        <!-- 중앙 고정 시작하기 버튼 (나중에 다른 기능 추가 할거임) -->
-        <button type="button" class="start-btn" id="start-btn"
-                th:attr="data-target=${#authorization.expression('isAuthenticated()') ? '/chatPage' : '/login'}">시작하기
-        </button>
-        <button type="button"
-                class="community-btn"
-                id="community"
-                data-href="/community/home">
-            커뮤니티
-        </button>
         <div class="slider-container" id="slider-container">
             <div class="slide">
                 <img class="slide-image" src="./img/슬라이드1.png" alt="슬라이드 이미지 1">
@@ -45,9 +33,23 @@
                 <img class="slide-image" src="./img/슬라이드3.png" alt="슬라이드 이미지 3">
             </div>
         </div>
-        <div class="slider-nav" id="slider-nav">
-            <!-- 스크립트로 점 채울려고 -->
+
+        <div class="button-container">
+            <button type="button" class="paw-button start-btn"
+                    th:attr="data-target=${#authorization.expression('isAuthenticated()') ? '/chatPage' : '/login'}">
+                <span class="toe toe-1"></span>
+                <span class="toe toe-2"></span>
+                <span class="toe toe-3"></span>
+                <span class="toe toe-4"></span>
+                <span class="pad">시작하기!</span>
+            </button>
+
+            <button type="button" class="bone-button community-btn" data-href="/community/home">
+                커뮤니티 가기
+            </button>
         </div>
+
+        <div class="slider-nav" id="slider-nav"></div>
     </section>
 
     <!-- 섹션 1 -->
@@ -60,66 +62,87 @@
     </section>
 
     <!-- 섹션 3 -->
-    <section class="section-3 content-box-style">
+    <section class="section-3 content-box-style" id="top_image_section">
         <div class="emote-wrap">
-            <img class="emote-image" src="/img/이모티콘_이미지.png" alt="이모티콘 설명 이미지?">
+            <img class="emote-image" src="/img/chatpage.png" alt="이모티콘 설명 이미지?">
         </div>
     </section>
 
-    <!-- 섹션 4 핫이슈? 넣는건가 일단 만듬 -->
-    <section class="section-4">
-        <div class="content-box-style">
-            <div class="favorit-contents">
-                <h3>나만의 <span style="color: black;">관심사</span>를 선택해봐!</h3>
-                <p>선택하면 채팅치다가도 관심사의 이슈를 볼 수 있어!<br/>클릭하는 재미도 쏠쏠</p>
-                <button class="sport">스포츠</button>
-                <button class="talent">연예인</button>
-                <button class="politics">정치</button>
-                <button class="any">애니메이션</button>
-                <button class="movie">영화</button>
-                <button class="drama">드라마</button>
-                <button class="car">자동차</button>
-                <button class="house">부동산</button>
-            </div>
-        </div>
-        <div class="content-box-style">
-            <div class="video-wrap"> <!-- 왼쪽은 비디오로 해야 핫이슈 움직이는 거 볼 수 있을거같아서 일단 비디오 -->
-                <video autoplay muted loop playsinline preload="auto"
-                       controlslist="nodownload noplaybackrate nofullscreen noremoteplayback" disablepictureinpicture
-                       aria-hidden="true">
-                    <source src="/video/hotissue.mp4" type="video/mp4">
-                    <!-- 브라우저가 비디오를 지원하지 않는 경우를 위한 대체 텍스트 -->
-                    당신의 브라우저는 동영상을 지원하지 않습니다.
-                </video>
-            </div>
+    <!-- 섹션 7 -->
+    <section class="section-3 content-box-style" id="bottom_image_section">
+        <div class="emote-wrap">
+            <img class="emote-image" src="/img/communityPage.png" alt="이모티콘 설명 이미지?">
         </div>
     </section>
 
-    <!-- 섹션 5 -->
-    <section class="section-5">
-        <div class="icon-grid">
-            <a href="javascript:void(0);" class="icon-block">
-                <div class="icon-placeholder">💬</div>
-                <h3>실시간 채팅</h3>
-                <p>빠르고 안정적인 1:1, 그룹 채팅 지원</p>
-            </a>
-            <a href="javascript:void(0);" class="icon-block">
-                <div class="icon-placeholder">📄</div>
-                <h3>파일 전송</h3>
-                <p>사진, 문서, 영상 파일 공유 지원</p>
-            </a>
-            <a href="javascript:void(0);" class="icon-block">
-                <div class="icon-placeholder">😊</div>
-                <h3>감성 이모티콘</h3>
-                <p>감정을 표현하는 다양한 이모티콘 제공</p>
-            </a>
-            <a href="javascript:void(0);" class="icon-block">
-                <div class="icon-placeholder">🛡️</div>
-                <h3>강력한 보안</h3>
-                <p>엔드투엔드 암호화로 안전한 대화</p>
-            </a>
-        </div>
+
+    <section class="sec5_6_wrap">
+        <h1>실시간 채팅과 커뮤니티를 한 번에 이용하는 서비스</h1>
+        <!--    섹션 5-->
+        <section class="section-5">
+            <div class="sec5_title">
+                <h3 class="sec5_title_item1">끊김 없는<br>실시간 채팅</h3>
+                <h3 class="sec5_title_item2">다양한 이모티콘<br>즐거운 대화</h3>
+            </div>
+            <div class="icon-grid">
+                <a href="javascript:void(0);" class="icon-block">
+                    <div class="icon-placeholder">💬</div>
+                    <h3>1:1 & 그룹 채팅</h3>
+                    <p>친구, 가족, 동료들과 빠르고 끊김 없는 대화를 즐겨보세요.</p>
+                </a>
+                <a href="javascript:void(0);" class="icon-block">
+                    <div class="icon-placeholder">📁</div>
+                    <h3>대용량 파일 전송</h3>
+                    <p>사진, 동영상, 문서를 원본 화질 그대로 공유할 수 있습니다.</p>
+                </a>
+                <a href="javascript:void(0);" class="icon-block">
+                    <div class="icon-placeholder">😊</div>
+                    <h3>이모티콘 스토어</h3>
+                    <p>나만의 감정을 표현하는 다양한 캐릭터 이모티콘을 제공합니다.</p>
+                </a>
+                <a href="javascript:void(0);" class="icon-block">
+                    <div class="icon-placeholder">🔒</div>
+                    <h3>보안 채팅</h3>
+                    <p>강력한 암호화 기술로 사용자의 대화 내용을 안전하게 보호합니다.</p>
+                </a>
+            </div>
+        </section>
+
+
+        <!--    섹션6-->
+        <section class="section-5">
+            <div class="sec5_title">
+                <h3 class="sec5_title_item1">취향이 통하는<br>우리만의 공간</h3>
+                <h3 class="sec5_title_item2">관심사로 연결되는<br>자유로운 커뮤니티</h3>
+            </div>
+            <div class="icon-grid">
+                <a href="javascript:void(0);" class="icon-block">
+                    <div class="icon-placeholder">📝</div>
+                    <h3>자유 게시판</h3>
+                    <p>일상의 소소한 이야기부터 진지한 토론까지 자유롭게 나눠요.</p>
+                </a>
+                <a href="javascript:void(0);" class="icon-block">
+                    <div class="icon-placeholder">🔥</div>
+                    <h3>실시간 트렌드</h3>
+                    <p>지금 가장 핫한 이슈와 인기 게시글을 한눈에 확인하세요.</p>
+                </a>
+                <a href="javascript:void(0);" class="icon-block">
+                    <div class="icon-placeholder">❤️</div>
+                    <h3>공감과 소통</h3>
+                    <p>좋아요와 댓글로 이웃들과 따뜻한 소통을 시작해보세요.</p>
+                </a>
+                <a href="javascript:void(0);" class="icon-block">
+                    <div class="icon-placeholder">🏷️</div>
+                    <h3>관심사 태그</h3>
+                    <p>정보공유, 유머/밈, 자유로운 게시판 등 내가 좋아하는 주제만 골라볼 수 있어요.</p>
+                </a>
+            </div>
+        </section>
+
     </section>
+    <div class="last_btn">
+        <button>올라가기</button>
+    </div>
 
 </main>
 
@@ -129,17 +152,57 @@
 <!-- 스크립트트 -->
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        /* 콘텐츠 1 글자 애니메이션 */
+
+        /* 1. 콘텐츠 1 글자 애니메이션 (스크롤 300px 이상일 때 실행) */
         const textElements = document.querySelectorAll('#text-anim-container .anim-text');
-        if (textElements.length > 0) {
-            setTimeout(() => { textElements[0]?.classList.add('visible'); }, 500);
-            setTimeout(() => { textElements[1]?.classList.add('visible'); }, 1500);
-            setTimeout(() => { textElements[2]?.classList.add('visible'); }, 2500);
+        let isTextAnimated = false; // 애니메이션 중복 실행 방지 변수
+
+        const topEmoteWrap = document.querySelector("#top_image_section .emote-wrap");
+        const bottomEmoteWrap = document.querySelector('#bottom_image_section .emote-wrap');
+
+        let isTopImgAnimated = false;
+        let isBottomImgAnimated = false;
+
+        // 스크롤 감지 함수
+        function checkScroll() {
+            let currentScroll = window.scrollY;
+
+            // 아직 실행 안 됐고(false), 스크롤 위치가 300 이상이면
+            if (!isTextAnimated && window.scrollY >= 400) {
+                isTextAnimated = true; // 상태 변경
+
+                if (textElements.length > 0) {
+                    setTimeout(() => { textElements[0]?.classList.add('visible'); }, 300);
+                    setTimeout(() => { textElements[1]?.classList.add('visible'); }, 1300);
+                    setTimeout(() => { textElements[2]?.classList.add('visible'); }, 2300);
+
+                }
+            }
+
+            if (!isTopImgAnimated && currentScroll >= 5200) {
+                isTopImgAnimated = true;
+                if (topEmoteWrap) {
+                    topEmoteWrap.classList.add('slide-active');
+                }
+            }
+
+            if (!isBottomImgAnimated && currentScroll >= 5800) {
+                isBottomImgAnimated = true;
+                if (bottomEmoteWrap) {
+                    bottomEmoteWrap.classList.add('slide-active');
+                }
+            }
         }
 
-        /* 콘텐츠 2 자동 슬라이더 */
+        // 스크롤 이벤트 리스너 등록
+        window.addEventListener('scroll', checkScroll);
+        checkScroll();
+
+
+        /* 2. 콘텐츠 2 자동 슬라이더 */
         const slider = document.getElementById('slider-container');
         const nav = document.getElementById('slider-nav');
+
         if (slider && nav) {
             const slides = slider.querySelectorAll('.slide');
             const slideCount = slides.length;
@@ -147,11 +210,13 @@
             let slideInterval = setInterval(nextSlide, 4000);
 
             if (slideCount > 0) {
+                // 네비게이션 점 생성
                 for (let i = 0; i < slideCount; i++) {
                     const dot = document.createElement('div');
                     dot.classList.add('slider-nav-dot');
                     dot.dataset.index = i;
                     if (i === 0) dot.classList.add('active');
+
                     dot.addEventListener('click', function () {
                         goToSlide(parseInt(this.dataset.index));
                     });
@@ -165,12 +230,15 @@
                 currentSlide = slideIndex % slideCount;
                 if (currentSlide < 0) currentSlide = slideCount - 1;
 
+                // 슬라이드 이동 (3개 기준 33.33%씩 이동)
                 slider.style.transform = `translateX(-${currentSlide * (100 / slideCount)}%)`;
 
+                // 점 활성화 상태 변경
                 navDots.forEach((dot, index) => {
                     dot.classList.toggle('active', index === currentSlide);
                 });
 
+                // 자동 넘김 타이머 초기화 (클릭 시 멈칫하도록)
                 clearInterval(slideInterval);
                 slideInterval = setInterval(nextSlide, 4000);
             }
@@ -178,36 +246,43 @@
             function nextSlide() {
                 goToSlide(currentSlide + 1);
             }
-        } // <-- 슬라이더 조건문은 여기서 닫힙니다.
+        }
 
-        /* ✅ 시작 버튼 기능 활성화 (슬라이더와 분리) */
-        const startBtn = document.getElementById('start-btn');
-        if (startBtn) {
-            startBtn.addEventListener('click', function () {
-                // Thymeleaf로 설정된 data-target 속성 값을 가져와 바로 이동합니다.
+
+        /* 3. 버튼 이벤트 연결 (수정된 부분) */
+
+        // 시작하기 버튼들
+        const startBtns = document.querySelectorAll('.start-btn');
+        startBtns.forEach(function(btn) {
+            btn.addEventListener('click', function () {
                 const targetUrl = this.getAttribute('data-target');
-
                 if (targetUrl) {
                     window.location.href = targetUrl;
                 }
             });
-        }
-        const communityBtn = document.getElementById('community');
+        });
 
-        if (communityBtn) {
-            // 2. 버튼 클릭 이벤트 리스너를 등록합니다.
-            communityBtn.addEventListener('click', () => {
-                // 3. 'data-href' 속성 값을 읽어옵니다.
-                const targetUrl = communityBtn.getAttribute('data-href');
-
+        // 커뮤니티 버튼들
+        const communityBtns = document.querySelectorAll('.community-btn');
+        communityBtns.forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                const targetUrl = this.getAttribute('data-href');
                 if (targetUrl) {
-                    // 4. 페이지를 해당 URL로 이동시킵니다.
                     window.location.href = targetUrl;
                 }
             });
-        }
+        });
 
     });
+
+    const last_button = document.querySelector(".last_btn button");
+    last_button.addEventListener('click',()=>{
+        window.scrollTo({
+            top:0,
+            behavior: 'smooth'
+        });
+    });
+
 </script>
 </body>
 

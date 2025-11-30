@@ -1,6 +1,5 @@
 package com.example.demo.config.auth.loginHandler;
 
-import com.example.demo.config.auth.PrincipalDetails;
 import com.example.demo.config.auth.jwt.JWTProperties;
 import com.example.demo.config.auth.jwt.JWTTokenProvider;
 import com.example.demo.config.auth.jwt.TokenInfo;
@@ -17,8 +16,6 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.util.List;
 
 @Slf4j
 @Component
@@ -33,47 +30,50 @@ public class CustomSuccessHandler implements AuthenticationSuccessHandler {
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
 
-        //TOKEN 을 COOKIE로 전달
         TokenInfo tokenInfo = jwtTokenProvider.generateToken(authentication);
-        Cookie cookie = new Cookie(JWTProperties.ACCESS_TOKEN_COOKIE_NAME,tokenInfo.getAccessToken());
-        cookie.setMaxAge(JWTProperties.ACCESS_TOKEN_EXPIRATION_TIME);    //accesstoken 유지시간
-        cookie.setPath("/");    //쿠키 적용경로(/ : 모든경로)
-        response.addCookie(cookie); //응답정보에 쿠키 포함
-        log.info("CustomSuccessHandler's onAuthenticationSuccess invoke...");
 
-        //REDIS에 REFRESHTOKEN 저장
-        Cookie emailCookie = new Cookie("email",authentication.getName());
-        emailCookie.setMaxAge(JWTProperties.REFRESH_TOKEN_EXPIRATION_TIME);
+        // ---------------------------------------------------------
+        // 1. Access Token (API 요청용)
+        // ---------------------------------------------------------
+        // - HttpOnly: false (자바스크립트가 API 헤더에 넣어야 함)
+        // - MaxAge: Refresh Token과 동일하게 설정 (만료되어도 쿠키 껍데기는 유지해서 재발급 요청 가능하게 함)
+        Cookie accessCookie = new Cookie(JWTProperties.ACCESS_TOKEN_COOKIE_NAME, tokenInfo.getAccessToken());
+        accessCookie.setMaxAge(JWTProperties.REFRESH_TOKEN_EXPIRATION_TIME / 1000);
+        accessCookie.setPath("/");
+        accessCookie.setHttpOnly(false);
+        response.addCookie(accessCookie);
+
+        // ---------------------------------------------------------
+        // 2. Refresh Token (재발급 인증용 - 필수!)
+        // ---------------------------------------------------------
+        // - HttpOnly: true (보안상 자바스크립트는 접근 불가, 서버 전송용)
+        Cookie refreshCookie = new Cookie(JWTProperties.REFRESH_TOKEN_COOKIE_NAME, tokenInfo.getRefreshToken());
+        refreshCookie.setMaxAge(JWTProperties.REFRESH_TOKEN_EXPIRATION_TIME / 1000);
+        refreshCookie.setPath("/");
+        refreshCookie.setHttpOnly(true);
+        response.addCookie(refreshCookie);
+
+        // ---------------------------------------------------------
+        // 3. [복구됨] Email 쿠키 (UI 표시용)
+        // ---------------------------------------------------------
+        Cookie emailCookie = new Cookie("email", authentication.getName());
+        emailCookie.setMaxAge(JWTProperties.REFRESH_TOKEN_EXPIRATION_TIME / 1000);
         emailCookie.setPath("/");
+        emailCookie.setHttpOnly(false); // JS에서 읽어서 화면에 보여줘야 하므로 false
         response.addCookie(emailCookie);
-        redisUtil.setDataExpire("RT:"+authentication.getName(),tokenInfo.getRefreshToken(),JWTProperties.REFRESH_TOKEN_EXPIRATION_TIME);
 
-        log.info("CustomSuccessHandler's onAuthenticationSuccess invoke...genToken.."+tokenInfo);
+        // ---------------------------------------------------------
+        // 4. Redis 저장 및 리다이렉트
+        // ---------------------------------------------------------
+        redisUtil.setDataExpire("RT:" + authentication.getName(), tokenInfo.getRefreshToken(), JWTProperties.REFRESH_TOKEN_EXPIRATION_TIME);
 
-
-        //Role 별로 redirect 경로 수정
         String redirectUrl = "/";
-        for(GrantedAuthority authority : authentication.getAuthorities())
-        {
-            log.info("authority : " + authority);
-            String role = authority.getAuthority(); //String
-
-            if(role.contains("ROLE_ADMIN")){
-                // /admin 리다이렉트
-                redirectUrl = "/admin";
-                break;
-            }else if(role.contains("ROLE_MANAGER")){
-                // /manager 리다이렉트
-                redirectUrl = "/manager";
-                break;
-            }else{
-                // /user 리다이렉트
-                redirectUrl = "/main";
-                break;
-            }
-
+        for (GrantedAuthority authority : authentication.getAuthorities()) {
+            String role = authority.getAuthority();
+            if (role.contains("ROLE_ADMIN")) { redirectUrl = "/admin"; break; }
+            else if (role.contains("ROLE_MANAGER")) { redirectUrl = "/manager"; break; }
+            else { redirectUrl = "/main"; break; }
         }
         response.sendRedirect(redirectUrl);
-
     }
 }

@@ -9,7 +9,6 @@ public class JWTProperties {
 
 
     //AccessToken 만료시간 != AccessToken Cookie 만료시간
-    //-> RefreshToken 을 따로 관리하는 경우
     public static final int ACCESS_TOKEN_COOKIE_EXPIRATION_TIME=ACCESS_TOKEN_EXPIRATION_TIME;
 
 }

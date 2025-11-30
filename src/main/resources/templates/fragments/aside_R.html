@@ -3,22 +3,27 @@
 <aside id="aside_R" th:fragment="asideRFragment">
     <div id="followscr2">
         <section class="profile_card" aria-label="내 프로필">
+
             <div class="p_header">
                 <div class="p_user">
                     <div class="p_img" id="p_img" aria-label="프로필 이미지" role="img">?</div>
+
                     <div class="p_name">
-                        <span id="pName">로그인이 필요합니다</span>
-                        <span class="p_state_label">
+                        <span id="pName">로그인 필요</span>
+                        <div class="p_state_label">
                             <span id="pDot" class="p_status_dot offline"></span>
                             <span id="pStateText">오프라인</span>
-                        </span>
+                        </div>
                     </div>
                 </div>
-                <p class="p_message" id="pMessage">
-                    “ 자유게시판에서 소통 중 ”<br />
-                    " 버섯 마을 모험 떠남.."
-                </p>
+
+                <div class="p_message_box">
+                    <p class="p_message" id="pMessage">
+                        상태 메시지가 없습니다.
+                    </p>
+                </div>
             </div>
+
             <div class="p_actions">
                 <button class="p_btn" id="editProfileOpen">프로필 편집</button>
                 <div class="meta">※ 내가 쓴 글만 수정/삭제할 수 있습니다.</div>

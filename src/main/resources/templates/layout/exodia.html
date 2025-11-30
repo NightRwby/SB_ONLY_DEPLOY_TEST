@@ -9,7 +9,8 @@
     <link rel="stylesheet" th:href="@{/css/free_community.css}">
     <link rel="stylesheet" th:href="@{/css/free_modal.css}">
     <link rel="stylesheet" th:href="@{/css/community.css}">
-<!--    <link rel="stylesheet" th:href="@{/css/cover_letter.css}">-->
+    <link rel="stylesheet" th:href="@{/css/cover_letter.css}">
+    <link rel="stylesheet" th:href="@{/css/profileCard.css}">
 
 
     <th:block layout:fragment="css"></th:block>
@@ -33,11 +34,19 @@
 
 
 <script>
+    // Thymeleaf 변수가 null이면 빈 문자열('')로 처리하도록 수정
     window.myProfile = {
-       userId: '[[${myProfile?.id}]]' === '' ? null : '[[${myProfile?.id}]]',
-       email: '[[${myProfile?.email}]]' ? '[[${myProfile?.email}]]' : '',
-       nickName: '[[${myProfile?.nickName}]]' ? '[[${myProfile?.nickName}]]' : ''
+       userId: '[[${myProfile?.id}]]',
+       email: '[[${myProfile?.email}]]',
+       nickName: '[[${myProfile?.nickName}]]',
+       nickName: '[[${myProfile?.nickName}]]',
+       isOnline: '[[${myProfile?.onlineStatus}]]',
+       // 저장된 값이 없으면(null) 빈 문자열로 치환
+       profileImageUrl: '[[${myProfile?.profileImageUrl != null ? myProfile.profileImageUrl : ""}]]',
+       stateMessage: '[[${myProfile?.stateMessage != null ? myProfile.stateMessage : ""}]]'
     };
+
+    console.log("내 프로필 데이터 확인:", window.myProfile); // 콘솔에서 데이터 들어오는지 확인용
 </script>
 <script src="/js/aside_L.js"></script>
 <script src="/js/aside_R.js"></script>

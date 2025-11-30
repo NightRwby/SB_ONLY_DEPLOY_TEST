@@ -7,9 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.IOException;
@@ -25,45 +23,66 @@ public class FileController {
         this.fileService = fileService;
     }
 
-    // 클라이언트 요청 예: /api/chat/download?storageKey=chat/uuid/file.png&fileName=원래_파일명.png
+    // 1. 파일 다운로드 API
+    // 요청: /api/chat/download?storageKey=...&fileName=...
     @GetMapping("/api/chat/download")
     public ResponseEntity<Resource> downloadFile(
-            @RequestParam String storageKey, // 파일의 S3 키를 받습니다.
+            @RequestParam String storageKey,
             @RequestParam(required = false) String fileName,
             Authentication authentication) {
 
         Resource resource;
         try {
-            // 1. Service를 통해 S3에서 파일 스트림을 Resource 형태로 로드 (권한 확인 포함)
+            // S3에서 파일 로드
             resource = fileService.loadFileAsResource(storageKey);
         } catch (IOException e) {
-            // S3 파일 로드 중 입출력 에러 발생 시 (500 에러)
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "파일 전송 중 오류가 발생했습니다.", e);
-        } catch (ResponseStatusException e) {
-            // Service에서 던진 404, 403 에러 처리
-            throw e;
         }
 
-        // 2. 다운로드될 파일명 결정
-        // fileName이 프론트에서 넘어온다면 사용하고, 없다면 S3 키에서 추출 (S3 키가 파일명을 포함하는 경우)
+        // 다운로드 파일명 설정
         String downloadFileName = (fileName != null && !fileName.isEmpty())
                 ? fileName
                 : resource.getFilename();
 
-        // 3. HTTP 헤더 설정 (다운로드 강제 및 한글 파일명 인코딩)
         try {
-            String contentType = "application/octet-stream";
-
+            // 한글 파일명 깨짐 방지 인코딩
             String encodedFileName = URLEncoder.encode(downloadFileName, "UTF-8").replaceAll("\\+", "%20");
             String contentDisposition = "attachment; filename*=UTF-8''" + encodedFileName;
 
             return ResponseEntity.ok()
-                    .contentType(MediaType.parseMediaType(contentType))
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM) // 바이너리 데이터로 처리
                     .header(HttpHeaders.CONTENT_DISPOSITION, contentDisposition)
                     .body(resource);
 
         } catch (UnsupportedEncodingException e) {
             return ResponseEntity.internalServerError().build();
         }
+    }
+
+    // 2. 프로필/배너 이미지 조회 API (화면 표시용 - 인라인)
+    @GetMapping("/download/{storageKey}")
+    public ResponseEntity<Resource> downloadProfileImage(@PathVariable String storageKey) {
+        Resource resource;
+        try {
+            resource = fileService.loadFileAsResource(storageKey);
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "이미지 로드 중 오류가 발생했습니다.", e);
+        }
+
+        // 이미지 타입에 맞는 Content-Type 설정 (브라우저가 이미지를 바로 보여주도록 함)
+        String contentType = determineContentType(storageKey);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .body(resource);
+    }
+
+    // MIME 타입 결정 헬퍼 메서드
+    private String determineContentType(String storageKey) {
+        String lowerKey = storageKey.toLowerCase();
+        if (lowerKey.endsWith(".png")) return "image/png";
+        if (lowerKey.endsWith(".jpg") || lowerKey.endsWith(".jpeg")) return "image/jpeg";
+        if (lowerKey.endsWith(".gif")) return "image/gif";
+        return MediaType.APPLICATION_OCTET_STREAM_VALUE;
     }
 }
